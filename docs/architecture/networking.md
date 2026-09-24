@@ -119,6 +119,27 @@ Desired networking state is committed under `kubernetes/`. Argo CD Application `
 | Host | `platform-lab.local` | Environment-specific hostname |
 | Overlay | Local patches ingress-nginx Service type | AWS overlay unchanged; no MetalLB Service |
 
-## Validation results
+## Validation results (24 September 2026)
 
-Filled after MetalLB LoadBalancer reconciliation.
+### Ingress + NetworkPolicy (Step 7)
+
+| Check | Result |
+|---|---|
+| Commit | `99a0f98` |
+| Argo CD | Synced / Healthy |
+| Ingress HTTP via NodePort | `192.168.56.11:30080` with Host header → 200 |
+
+### MetalLB LoadBalancer (Step 7.5)
+
+| Check | Result |
+|---|---|
+| Commit | `bfeb721` — `feat: expose local ingress-nginx through MetalLB` |
+| Argo CD | Synced / Healthy on `bfeb721` |
+| ingress-nginx Service | **Before:** NodePort; **After:** LoadBalancer EXTERNAL-IP **`192.168.56.200`** |
+| MetalLB | Annotation `metallb.io/ip-allocated-from-pool: lab-pool`; event `announcing from node "k8s-worker-01" with protocol "layer2"` |
+| platform-lab Service | Still **ClusterIP** `:8000` |
+| NetworkPolicy | Unchanged; still present |
+| Deployment | **2/2 Ready**, image `0.1.2`, restarts **0** |
+| HTTP via VIP | `curl -H "Host: platform-lab.local" http://192.168.56.200/{,/health,/version,/info}` → **200**; version `0.1.2`, release `automated-ci-cd`, environment `local-gitops` |
+| Jenkins | Build `#10` on `bfeb721`; no `app/**`; Docker build/push/promote skipped; SUCCESS |
+| New image tag | None |
