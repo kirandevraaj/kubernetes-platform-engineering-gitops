@@ -83,7 +83,7 @@ When those overlays exist, they will describe the same application shape with di
 
 1. **Repository baseline.** Completed. Project layout, architecture notes, and a read-only record of the current lab.
 2. **Application and container image.** Completed. The service, tests, and Dockerfile are in `app/`. `kirandevraaj/platform-lab:0.1.0` is published. The tag `latest` is not used.
-3. **Kubernetes packaging.** Next. Base manifests and local/AWS overlays, applied only after review.
+3. **Kubernetes packaging.** Implemented locally and not deployed. Base manifests and the local and AWS overlays are in `kubernetes/`. `kubectl kustomize` validation passed. A server-side dry-run did not reach the cluster API, and the manifests have not been applied.
 4. **Jenkins CI.** Planned. Build, test, and publish the image.
 5. **Argo CD GitOps.** Planned. The cluster reconciles from Git.
 6. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
