@@ -1,0 +1,20 @@
+# Example values for terraform/aws.
+# Copy to terraform.tfvars locally if needed. Do NOT commit terraform.tfvars.
+# Do NOT put credentials, access keys, or session tokens in this file.
+
+aws_region   = "ap-south-1"
+project_name = "platform-lab"
+environment  = "aws"
+
+vpc_cidr             = "10.50.0.0/16"
+availability_zones   = ["ap-south-1a", "ap-south-1b"]
+public_subnet_cidrs  = ["10.50.0.0/20", "10.50.16.0/20"]
+private_subnet_cidrs = ["10.50.32.0/20", "10.50.48.0/20"]
+
+kubernetes_version = "1.36"
+node_instance_type = "t3.medium"
+desired_node_count = 2
+min_node_count     = 1
+max_node_count     = 3
+
+enable_single_nat_gateway = true

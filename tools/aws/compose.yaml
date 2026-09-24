@@ -1,0 +1,27 @@
+# Local-only developer workstation for AWS / Terraform tooling.
+# Does not create AWS resources. Does not bake credentials into the image.
+
+name: platform-aws-tools
+
+services:
+  aws-tools:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: platform-aws-tools:latest
+    container_name: platform-aws-tools
+    working_dir: /workspace
+    # Keep the container available for repeated docker exec sessions.
+    command: ["sleep", "infinity"]
+    stdin_open: true
+    tty: true
+    volumes:
+      # Repository root on the host -> /workspace in the container.
+      - ../../:/workspace
+      # Persist AWS CLI config outside the image (never baked into layers).
+      - aws-config:/root/.aws
+    # Do not mount the Docker socket unless a demonstrated need appears.
+
+volumes:
+  aws-config:
+    name: platform-aws-tools-aws
