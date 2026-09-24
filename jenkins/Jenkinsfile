@@ -1,5 +1,4 @@
-// CI for platform-lab. This file defines the pipeline only.
-// Jenkins is not configured to run it yet. Do not put registry secrets here.
+// CI for platform-lab. Do not put registry secrets here.
 // The Docker Hub credential dockerhub-platform-lab is created in Jenkins, not in Git.
 
 pipeline {

@@ -1,6 +1,6 @@
 # Jenkins CI
 
-Status: the pipeline is defined, and a local controller runtime is running on Docker Desktop. The Linux agent image is built and is not connected. No Jenkins job exists, the Docker Hub credential does not exist, and `jenkins/Jenkinsfile` has not been executed.
+Status: first CI run completed. Job `platform-lab-ci` on Jenkins at http://127.0.0.1:8080 builds from `main` using this Jenkinsfile on node `linux-agent`. Credential `dockerhub-platform-lab` is present in Jenkins only. Build `#2` published `kirandevraaj/platform-lab:0.1.0`.
 
 ## Local runtime
 
@@ -81,7 +81,7 @@ Then, in the UI:
 4. Confirm Pipeline, Git, and Credentials Binding are installed.
 5. Create the `linux-agent` node with the values above, then start the agent profile.
 
-Do not create the Docker Hub credential `dockerhub-platform-lab` until a later step. Do not run `jenkins/Jenkinsfile` yet.
+The Docker Hub credential `dockerhub-platform-lab`, the `linux-agent` node, and the Pipeline job `platform-lab-ci` were created manually in Jenkins. The job points at this repository's `main` branch and script path `jenkins/Jenkinsfile`.
 
 ## Purpose
 
@@ -95,7 +95,7 @@ The pipeline in `jenkins/Jenkinsfile` does this work:
 2. Run the existing pytest suite in `app/tests`.
 3. Read `APP_VERSION` from `app/src/__init__.py`.
 4. Build `kirandevraaj/platform-lab:<APP_VERSION>` from `app/Dockerfile` with context `app/`.
-5. Inspect the image and run a localhost-only health check.
+5. Inspect the image and run `/health` on a temporary container attached to the agent Docker network.
 6. Push that one tag to Docker Hub.
 
 A failing test or a failed image check stops the pipeline before the push.
@@ -110,6 +110,12 @@ A failing test or a failed image check stops the pipeline before the push.
 | Docker Build | `docker build -f app/Dockerfile -t kirandevraaj/platform-lab:<APP_VERSION> app` |
 | Docker Image Validation | Checks repository and tag, user `app`, port 8000, healthcheck, and `/app/src` files, then requests `/health` on the temporary container over the agent Docker network and removes it |
 | Docker Hub Push | Logs in with the Jenkins credential and pushes `kirandevraaj/platform-lab:<APP_VERSION>` |
+
+### Image validation networking
+
+The agent container talks to the Docker Desktop daemon through `/var/run/docker.sock`. A published port such as `-p 127.0.0.1:18000:8000` binds on the Docker Desktop VM, not inside the agent network namespace. The first CI run failed when the validation stage probed that published localhost address from the agent.
+
+The pipeline therefore attaches the temporary container to the same Compose network as the agent (`platform-lab-jenkins`) and requests `http://<container-name>:8000/health` by Docker DNS. A `trap` removes the temporary container when the stage exits. No host port publish is required for this check.
 
 ## Docker Hub credential
 
@@ -129,7 +135,7 @@ Do not create this credential in Git. Do not commit a Jenkins home directory, a 
 
 ## Required tools
 
-The agent that eventually runs this Jenkinsfile needs:
+The `linux-agent` node that runs this Jenkinsfile needs:
 
 | Tool | Use |
 |---|---|

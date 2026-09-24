@@ -6,11 +6,11 @@ A portfolio project that builds a small platform around a containerized applicat
 
 Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
 
-The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.0`. The local overlay is applied on that cluster. The Jenkins pipeline definition is in `jenkins/Jenkinsfile`. A local Jenkins controller runs on Docker Desktop. The pipeline has not been executed. Terraform resources and Argo CD resources are not included yet.
+The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.0`. The local overlay is applied on that cluster. Jenkins CI runs on Docker Desktop: job `platform-lab-ci` builds, validates, and publishes that image from `jenkins/Jenkinsfile`. Terraform resources and Argo CD resources are not included yet.
 
 ## Architecture overview
 
-The diagram below is the intended shape. The Python application is containerized and version `0.1.0` is published and running on the local lab. The Jenkins pipeline is defined and has not been executed. Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
+The diagram below is the intended shape. The Python application is containerized and version `0.1.0` is published and running on the local lab. Jenkins CI has published that image from `jenkins/Jenkinsfile`. Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
 
 ```text
 Developer
@@ -20,7 +20,7 @@ Git repository
    |
    +--> container image (published: kirandevraaj/platform-lab:0.1.0)
    |
-   +--> Jenkins CI (controller up, pipeline not run) --> image build and test
+   +--> Jenkins CI (executed) --> image build, test, and Docker Hub push
    |
    +--> Argo CD / GitOps (planned) --> Kubernetes
                                           |
@@ -65,7 +65,7 @@ Planned, and not in this repository yet:
 | Observability | Prometheus, Grafana, OpenTelemetry |
 | AWS path | Terraform |
 
-The Jenkins controller runtime is in `jenkins/runtime` and listens on http://127.0.0.1:8080. No Jenkins job or Docker Hub credential has been created.
+The Jenkins controller and Linux agent run on Docker Desktop (http://127.0.0.1:8080). Job `platform-lab-ci` uses credential `dockerhub-platform-lab` and publishes `kirandevraaj/platform-lab:<APP_VERSION>`. It does not deploy to Kubernetes.
 
 Docker Desktop client 29.6.1 builds the local image. It is not the cluster runtime. Terraform is not installed.
 
@@ -86,7 +86,7 @@ When those overlays exist, they will describe the same application shape with di
 2. **Application and container image.** Completed. The service, tests, and Dockerfile are in `app/`. `kirandevraaj/platform-lab:0.1.0` is published. The tag `latest` is not used.
 3. **Kubernetes packaging.** Completed. Deployed to the local lab on 24 September 2026. `kubectl apply -k kubernetes/overlays/local` created namespace `platform-lab`, ConfigMap `platform-lab-config`, Deployment `platform-lab` (2/2 ready), and ClusterIP Service `platform-lab`. The AWS overlay has not been applied.
 4. **Jenkins CI pipeline definition.** Completed. `jenkins/Jenkinsfile` checks out the repository, tests `app/tests`, reads `APP_VERSION`, builds and validates `kirandevraaj/platform-lab:<APP_VERSION>`, and pushes that tag. See [jenkins/README.md](jenkins/README.md).
-5. **Jenkins execution and publishing.** Not yet completed. The controller is running on Docker Desktop and the Linux agent image is built. The agent is not connected, no job has run, and the Docker Hub credential has not been created.
+5. **Jenkins execution and publishing.** Completed. Job `platform-lab-ci` ran on `linux-agent`, built and validated `kirandevraaj/platform-lab:0.1.0`, and pushed that tag with credential `dockerhub-platform-lab`. Image validation reaches the temporary container over the agent Docker network (not a published host loopback port). No `latest` tag. No Kubernetes deploy from CI.
 6. **Argo CD GitOps.** Planned. The cluster reconciles from Git.
 7. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
 8. **Observability.** Planned. Prometheus, Grafana, and OpenTelemetry for the application.
@@ -101,11 +101,11 @@ Version `0.1.0` is the current published image. It was pushed successfully. The 
 |---|---|
 | Image | `kirandevraaj/platform-lab:0.1.0` |
 | Docker Hub | https://hub.docker.com/r/kirandevraaj/platform-lab |
-| Digest | `sha256:e6c16fbebf01422a6a0f0c21b3aebb0991ccca4c3a2af190d0b0ad5f264ba788` |
+| Digest | `sha256:993d9f8a61d2ba4e9bc1a5c5c98ddb2875edcbb249fbed45794b33270101d919` |
 
 ```text
 docker pull kirandevraaj/platform-lab:0.1.0
-docker pull kirandevraaj/platform-lab@sha256:e6c16fbebf01422a6a0f0c21b3aebb0991ccca4c3a2af190d0b0ad5f264ba788
+docker pull kirandevraaj/platform-lab@sha256:993d9f8a61d2ba4e9bc1a5c5c98ddb2875edcbb249fbed45794b33270101d919
 ```
 
 ## Safety note

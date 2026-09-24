@@ -1,6 +1,6 @@
 # CI/CD flow
 
-Status: CI pipeline is defined in `jenkins/Jenkinsfile`. A Jenkins 2.568.3 LTS controller is running on Docker Desktop at http://127.0.0.1:8080. The Linux agent image is built and is not connected. The pipeline has not run. CD is not implemented. No Argo CD Application exists yet.
+Status: first CI run completed. Job `platform-lab-ci` on Jenkins 2.568.3 LTS (Docker Desktop, http://127.0.0.1:8080) builds from `main` on node `linux-agent` and publishes `kirandevraaj/platform-lab:<APP_VERSION>` to Docker Hub. CD is not implemented. No Argo CD Application exists yet.
 
 ## CI and CD
 
@@ -34,7 +34,7 @@ Jenkins CI
 
 `APP_VERSION` is read from `app/src/__init__.py`. The current value is `0.1.0`, so the image name is `kirandevraaj/platform-lab:0.1.0`. The tag `latest` is not used.
 
-The Docker Hub token is a Jenkins credential named `dockerhub-platform-lab`. It is not stored in Git. Creating that credential and running the job are still outstanding.
+The Docker Hub token is Jenkins credential `dockerhub-platform-lab`. It is not stored in Git. Image validation attaches a temporary container to the agent Compose network and probes `/health` by container DNS name. A published host loopback port is incorrect for this socket-mounted agent layout and is not used.
 
 ## Local Jenkins runtime
 
@@ -48,12 +48,12 @@ Docker Desktop Linux engine
     |-- Jenkins controller (127.0.0.1:8080)
     |       JENKINS_HOME volume: platform-lab-jenkins-home
     |
-    \-- Linux agent image (not connected yet)
+    \-- Linux agent (online, labels linux docker)
             WebSocket to the controller
             Docker CLI via /var/run/docker.sock
 ```
 
-The agent socket mount can control the Docker Desktop engine. That is limited to this personal lab. The project pipeline has not been executed. Details and the manual unlock steps are in [jenkins/README.md](../../jenkins/README.md).
+The agent socket mount can control the Docker Desktop engine. That is limited to this personal lab. Details are in [jenkins/README.md](../../jenkins/README.md).
 
 ## What CI does not do
 
