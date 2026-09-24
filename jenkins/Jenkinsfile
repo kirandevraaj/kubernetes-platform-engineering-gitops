@@ -1,11 +1,30 @@
-// CI for platform-lab. Do not put registry secrets here.
-// The Docker Hub credential dockerhub-platform-lab is created in Jenkins, not in Git.
+// CI for platform-lab. Do not put registry or GitHub secrets here.
+// Credentials (created in Jenkins, not in Git):
+//   dockerhub-platform-lab  — Docker Hub push
+//   github-platform-lab     — GitOps promotion push to origin/main
+//
+// Flow: app/** change → test → build → validate → push image →
+//       update local Kustomize tag → commit/push GitOps → Argo CD syncs.
+// Non-app commits skip build/push/promotion so the GitOps commit cannot loop CI.
 
 pipeline {
     agent { label 'linux && docker' }
 
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    triggers {
+        // Lab uses polling instead of a GitHub webhook.
+        pollSCM('H/2 * * * *')
+    }
+
     environment {
         IMAGE_REPO = 'kirandevraaj/platform-lab'
+        GITOPS_LOCAL_KUSTOMIZATION = 'kubernetes/overlays/local/kustomization.yaml'
+        GIT_AUTHOR_NAME = 'Jenkins CI'
+        GIT_AUTHOR_EMAIL = 'jenkins-ci@local'
     }
 
     stages {
@@ -15,7 +34,41 @@ pipeline {
             }
         }
 
+        stage('Detect Application Change') {
+            steps {
+                script {
+                    def appChanged = false
+                    def paths = []
+                    for (changeLogSet in currentBuild.changeSets) {
+                        for (entry in changeLogSet.items) {
+                            for (file in entry.affectedFiles) {
+                                def path = file.path
+                                paths << path
+                                if (path == 'app' || path.startsWith('app/')) {
+                                    appChanged = true
+                                }
+                            }
+                        }
+                    }
+                    env.APP_CHANGED = appChanged ? 'true' : 'false'
+                    if (paths.isEmpty()) {
+                        echo 'No SCM change set on this build (manual/seed or identical revision). Skipping app CI/CD stages.'
+                    } else {
+                        echo "SCM paths in this build: ${paths.unique().join(', ')}"
+                    }
+                    if (appChanged) {
+                        echo 'Application source under app/** changed. Running test, build, publish, and GitOps promotion.'
+                    } else {
+                        echo 'No app/** change detected. Skipping test, build, publish, and GitOps promotion.'
+                    }
+                }
+            }
+        }
+
         stage('Unit Test') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
             steps {
                 sh '''
                     set -eu
@@ -33,6 +86,9 @@ pipeline {
         }
 
         stage('Read Application Version') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
             steps {
                 script {
                     env.APP_VERSION = sh(returnStdout: true, script: '''
@@ -71,7 +127,30 @@ PY
             }
         }
 
+        stage('Refuse Existing Image Tag') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
+            steps {
+                sh '''
+                    set -eu
+                    if [ "$APP_VERSION" = "latest" ] || [ -z "$APP_VERSION" ]; then
+                        echo "Refusing empty or latest APP_VERSION"
+                        exit 1
+                    fi
+                    if docker manifest inspect "${IMAGE_REPO}:${APP_VERSION}" >/dev/null 2>&1; then
+                        echo "Refusing to reuse existing Docker Hub tag ${IMAGE_REPO}:${APP_VERSION}"
+                        exit 1
+                    fi
+                    echo "Docker Hub does not yet have ${IMAGE_REPO}:${APP_VERSION}"
+                '''
+            }
+        }
+
         stage('Docker Build') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
             steps {
                 sh '''
                     set -eu
@@ -85,6 +164,9 @@ PY
         }
 
         stage('Docker Image Validation') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
             steps {
                 sh '''
                     set -eu
@@ -155,6 +237,9 @@ PY
         }
 
         stage('Docker Hub Push') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-platform-lab',
@@ -171,12 +256,155 @@ PY
                         printf '%s' "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USER" --password-stdin
                         docker push "${IMAGE_REPO}:${APP_VERSION}"
                         docker logout
+                        set -x
+                        digest="$(docker image inspect --format '{{index .RepoDigests 0}}' "${IMAGE_REPO}:${APP_VERSION}")"
+                        echo "Published image digest: ${digest}"
                     '''
                 }
             }
             post {
                 always {
                     sh 'docker logout >/dev/null 2>&1 || true'
+                }
+            }
+        }
+
+        stage('Promote GitOps') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
+            steps {
+                sh '''
+                    set -eu
+                    if [ "$APP_VERSION" = "latest" ] || [ -z "$APP_VERSION" ]; then
+                        echo "Refusing to promote latest or an empty version"
+                        exit 1
+                    fi
+                    if command -v python3 >/dev/null 2>&1; then
+                        PY=python3
+                    else
+                        PY=python
+                    fi
+                    "$PY" - <<PY
+from pathlib import Path
+
+path = Path("${GITOPS_LOCAL_KUSTOMIZATION}")
+version = "${APP_VERSION}"
+content = f"""apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: kirandevraaj/platform-lab
+    newTag: "{version}"
+"""
+path.write_text(content, encoding="utf-8")
+print(f"Updated {path} to newTag={version}")
+PY
+                    git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}"
+                    if git diff --quiet -- "${GITOPS_LOCAL_KUSTOMIZATION}"; then
+                        echo "Local overlay already points at ${APP_VERSION}; nothing to promote"
+                        exit 1
+                    fi
+                    other="$(git diff --name-only | grep -v "^${GITOPS_LOCAL_KUSTOMIZATION}\$" || true)"
+                    if [ -n "$other" ]; then
+                        echo "Unexpected tracked modifications before promotion commit:"
+                        echo "$other"
+                        exit 1
+                    fi
+                    echo "Promotion change is limited to ${GITOPS_LOCAL_KUSTOMIZATION}"
+                '''
+            }
+        }
+
+        stage('Git Push') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-platform-lab',
+                    usernameVariable: 'GIT_USERNAME',
+                    passwordVariable: 'GIT_PASSWORD'
+                )]) {
+                    sh '''
+                        set -eu
+                        ASKPASS="$(mktemp)"
+                        cleanup() {
+                            rm -f "$ASKPASS"
+                        }
+                        trap cleanup EXIT
+                        cat > "$ASKPASS" <<'EOF'
+#!/bin/sh
+case "$1" in
+Username*) printf '%s\n' "$GIT_USERNAME" ;;
+Password*) printf '%s\n' "$GIT_PASSWORD" ;;
+esac
+EOF
+                        chmod 700 "$ASKPASS"
+                        export GIT_ASKPASS="$ASKPASS"
+                        export GIT_TERMINAL_PROMPT=0
+                        export GIT_CONFIG_COUNT=1
+                        export GIT_CONFIG_KEY_0=credential.helper
+                        export GIT_CONFIG_VALUE_0=
+
+                        git config user.name "${GIT_AUTHOR_NAME}"
+                        git config user.email "${GIT_AUTHOR_EMAIL}"
+
+                        git fetch origin main
+                        git reset --hard origin/main
+
+                        if command -v python3 >/dev/null 2>&1; then
+                            PY=python3
+                        else
+                            PY=python
+                        fi
+                        "$PY" - <<PY
+from pathlib import Path
+
+path = Path("${GITOPS_LOCAL_KUSTOMIZATION}")
+version = "${APP_VERSION}"
+content = f"""apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: kirandevraaj/platform-lab
+    newTag: "{version}"
+"""
+path.write_text(content, encoding="utf-8")
+PY
+                        git add -- "${GITOPS_LOCAL_KUSTOMIZATION}"
+                        git diff --cached -- "${GITOPS_LOCAL_KUSTOMIZATION}"
+                        cached_files="$(git diff --cached --name-only)"
+                        if [ "$cached_files" != "${GITOPS_LOCAL_KUSTOMIZATION}" ]; then
+                            echo "Promotion commit must contain only ${GITOPS_LOCAL_KUSTOMIZATION}"
+                            echo "Cached files:"
+                            echo "$cached_files"
+                            exit 1
+                        fi
+                        if git diff --cached --quiet; then
+                            echo "No staged promotion change after aligning with origin/main"
+                            exit 1
+                        fi
+                        git commit -m "chore: promote platform-lab ${APP_VERSION} to local GitOps"
+                        set +x
+                        git push origin HEAD:main
+                        set -x
+                        echo "Pushed GitOps promotion for ${IMAGE_REPO}:${APP_VERSION}"
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                if (env.APP_CHANGED == 'true') {
+                    echo "Completed app CI/CD for version ${env.APP_VERSION ?: 'unknown'}"
+                } else {
+                    echo 'Build finished without app CI/CD stages (no app/** change).'
                 }
             }
         }

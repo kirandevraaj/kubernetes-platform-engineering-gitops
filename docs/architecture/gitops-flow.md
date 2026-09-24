@@ -15,18 +15,19 @@ flowchart LR
 
   developer -->|commit / push| github
   github -->|checkout| jenkins
-  jenkins -->|build test push image| hub
-  github -->|desired state| argocd
+  jenkins -->|build test push promote GitOps| hub
+  jenkins -->|overlay image tag commit| github
+  github -->|CD desired state| argocd
   hub -->|image pull by nodes| cluster
   argocd -->|reconcile manifests| cluster
 ```
 
 | Concern | System | Does | Does not |
 |---|---|---|---|
-| CI | Jenkins on Docker Desktop | Test, build, validate, publish image | `kubectl apply`, cluster edits |
+| CI | Jenkins on Docker Desktop | Test, build, validate, publish image, commit local overlay tag | `kubectl apply`, AWS overlay edits |
 | CD | Argo CD on `ckad-lab` | Read Git, sync manifests to the cluster | Build or push images |
 
-Git is the source of truth for Kubernetes desired state under `kubernetes/overlays/local`. Argo CD is the reconciler. Jenkins stops at Docker Hub.
+Git is the source of truth for Kubernetes desired state under `kubernetes/overlays/local`. Argo CD is the reconciler. Jenkins may commit a new local overlay image tag after publishing to Docker Hub; it still does not call `kubectl`. Non-app commits, including that promotion commit, do not rebuild the image.
 
 ## Installed components
 

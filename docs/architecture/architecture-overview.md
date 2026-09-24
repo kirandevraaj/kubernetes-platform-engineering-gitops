@@ -35,7 +35,7 @@ The repository holds the application source under `app/`, including a Dockerfile
 - `kubernetes/overlays/local` for this VMware cluster (applied)
 - `kubernetes/overlays/aws` for a later AWS cluster (not applied)
 
-The local overlay is running on this cluster. The AWS overlay has not been applied. The published image used by the local lab is `kirandevraaj/platform-lab:0.1.1`. Jenkins CI on Docker Desktop runs `jenkins/Jenkinsfile` on node `linux-agent` and publishes images; it does not deploy to this cluster. Argo CD `v3.5.3` runs in namespace `argocd` on `ckad-lab` and reconciles Application `platform-lab-local` from `kubernetes/overlays/local` on `main`. Prometheus, Grafana, and OpenTelemetry are planned to observe the application. Terraform under `terraform/aws` is reserved for the AWS path and does not describe this VMware lab. AWS is a separate future deployment target.
+The local overlay is running on this cluster. The AWS overlay has not been applied. The published image used by the local lab is `kirandevraaj/platform-lab:0.1.1`. Jenkins CI on Docker Desktop runs `jenkins/Jenkinsfile` on node `linux-agent`: it polls GitHub, publishes images when `app/**` changes, and commits the local overlay image tag; it does not deploy to this cluster. Argo CD `v3.5.3` runs in namespace `argocd` on `ckad-lab` and reconciles Application `platform-lab-local` from `kubernetes/overlays/local` on `main`. Prometheus, Grafana, and OpenTelemetry are planned to observe the application. Terraform under `terraform/aws` is reserved for the AWS path and does not describe this VMware lab. AWS is a separate future deployment target.
 
 ## Delivery flow
 

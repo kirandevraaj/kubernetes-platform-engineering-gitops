@@ -6,7 +6,7 @@ A portfolio project that builds a small platform around a containerized applicat
 
 Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
 
-The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.1`. The local overlay is reconciled by Argo CD from Git onto that cluster. Jenkins CI runs on Docker Desktop and publishes the image; it does not deploy. A full Jenkins → Docker Hub → GitHub → Argo CD → Kubernetes promotion of `0.1.1` was demonstrated on 24 September 2026. Terraform resources are not included yet.
+The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.1`. The local overlay is reconciled by Argo CD from Git onto that cluster. Jenkins CI on Docker Desktop polls GitHub, publishes versioned images when `app/**` changes, and commits the local overlay image tag. It does not deploy. A full Jenkins → Docker Hub → GitHub → Argo CD → Kubernetes promotion of `0.1.1` was demonstrated manually; automated promotion is implemented in `jenkins/Jenkinsfile`. Terraform resources are not included yet.
 
 ## Architecture overview
 
@@ -20,7 +20,7 @@ Git repository
    |
    +--> container image (published: kirandevraaj/platform-lab:0.1.1)
    |
-   +--> Jenkins CI (executed) --> image build, test, and Docker Hub push
+   +--> Jenkins CI (pollSCM, app/** gated) --> image publish + local GitOps promote
    |
    +--> Argo CD / GitOps (local overlay synced) --> Kubernetes
                                           |
@@ -106,10 +106,11 @@ When those overlays exist, they will describe the same application shape with di
 5. **Jenkins execution and publishing.** Completed. Job `platform-lab-ci` publishes versioned tags with credential `dockerhub-platform-lab`. Image validation reaches the temporary container over the agent Docker network. No `latest` tag. No Kubernetes deploy from CI.
 6. **Argo CD GitOps.** Completed. Argo CD `v3.5.3` is installed in namespace `argocd` on `ckad-lab`. Application `platform-lab-local` watches `kubernetes/overlays/local` on `main` and syncs to namespace `platform-lab` on the in-cluster API. Automated sync, prune, and selfHeal are enabled. See [gitops/README.md](gitops/README.md) and [docs/architecture/gitops-flow.md](docs/architecture/gitops-flow.md).
 7. **Manual CI/CD integration test (0.1.1).** Completed on 24 September 2026. Release `0.1.1` was pushed to GitHub; Jenkins built and published `kirandevraaj/platform-lab:0.1.1`; the local overlay was updated to that tag and pushed; Argo CD reconciled without `kubectl apply`; both pods ran `0.1.1`; `GET /` returned version `0.1.1`, environment `local-gitops`, and release `ci-cd-integration-test`. See [docs/architecture/ci-cd-flow.md](docs/architecture/ci-cd-flow.md).
-8. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
-9. **Observability.** Planned. Prometheus, Grafana, and OpenTelemetry for the application.
-10. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
-11. **Python automation.** Planned. Repeatable checks and operational helpers.
+8. **Automated CI/CD promotion.** Implemented. `jenkins/Jenkinsfile` uses `pollSCM`, runs build/push/promotion only for `app/**` changes, refuses reused Docker Hub tags, updates only `kubernetes/overlays/local/kustomization.yaml`, and pushes with `github-platform-lab`. Non-app commits (including the promotion commit itself) skip CI/CD stages to avoid a loop. See [jenkins/README.md](jenkins/README.md).
+9. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
+10. **Observability.** Planned. Prometheus, Grafana, and OpenTelemetry for the application.
+11. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
+12. **Python automation.** Planned. Repeatable checks and operational helpers.
 
 ## Published container artifact
 

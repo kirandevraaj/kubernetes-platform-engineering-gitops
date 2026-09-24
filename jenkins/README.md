@@ -1,6 +1,6 @@
 # Jenkins CI
 
-Status: CI publishes versioned images from `main` on node `linux-agent`. Credential `dockerhub-platform-lab` is present in Jenkins only. The first successful publish was build `#2` for `0.1.0`. The `0.1.1` integration release was also built and pushed by the same job before GitOps promotion.
+Status: automated CI/CD is implemented in `jenkins/Jenkinsfile`. Job `platform-lab-ci` polls GitHub, builds only when `app/**` changes, publishes `kirandevraaj/platform-lab:<APP_VERSION>`, and promotes that tag in `kubernetes/overlays/local/kustomization.yaml`. Argo CD deploys; Jenkins does not call `kubectl`.
 
 ## Local runtime
 
@@ -81,98 +81,105 @@ Then, in the UI:
 4. Confirm Pipeline, Git, and Credentials Binding are installed.
 5. Create the `linux-agent` node with the values above, then start the agent profile.
 
-The Docker Hub credential `dockerhub-platform-lab`, the `linux-agent` node, and the Pipeline job `platform-lab-ci` were created manually in Jenkins. The job points at this repository's `main` branch and script path `jenkins/Jenkinsfile`.
+Credentials created in Jenkins (not in Git):
+
+| ID | Purpose |
+|---|---|
+| `dockerhub-platform-lab` | Docker Hub push |
+| `github-platform-lab` | GitOps promotion push to `origin/main` |
 
 ## Purpose
 
-Jenkins is the continuous integration system for `platform-lab`. It builds, tests, and publishes the container image. It does not deploy to Kubernetes. Desired cluster state, including which image tag the Deployment should run, is changed in Git and reconciled by Argo CD.
+Jenkins is the continuous integration system for `platform-lab`. It builds, tests, and publishes the container image, then writes the new tag into the local GitOps overlay. It does not deploy to Kubernetes. Desired cluster state is reconciled by Argo CD after the promotion commit lands on `main`.
 
-## CI responsibilities
+## Automated flow
 
-The pipeline in `jenkins/Jenkinsfile` does this work:
+```text
+pollSCM (H/2 * * * *)
+        |
+        v
+Detect Application Change  (app/** only)
+        |
+        +-- no app/** --> SUCCESS, skip remaining CI/CD stages
+        |
+        +-- app/** --> Unit Test
+                       Read APP_VERSION
+                       Refuse existing Docker Hub tag
+                       Docker Build
+                       Docker Image Validation
+                       Docker Hub Push
+                       Promote GitOps (local kustomization only)
+                       Git Push (github-platform-lab)
+```
 
-1. Check out the repository.
-2. Run the existing pytest suite in `app/tests`.
-3. Read `APP_VERSION` from `app/src/__init__.py`.
-4. Build `kirandevraaj/platform-lab:<APP_VERSION>` from `app/Dockerfile` with context `app/`.
-5. Inspect the image and run `/health` on a temporary container attached to the agent Docker network.
-6. Push that one tag to Docker Hub.
+Polling is intentional for this lab. No GitHub webhook is configured.
 
-A failing test or a failed image check stops the pipeline before the push.
+### Loop prevention
+
+The promotion commit changes only `kubernetes/overlays/local/kustomization.yaml`. The next poll still runs the job, but **Detect Application Change** sees no `app/**` path in the SCM change set, so build/push/promotion stages are skipped. The build remains SUCCESS.
+
+`disableConcurrentBuilds()` prevents two promotions from racing.
+
+### Version and image rules
+
+| Rule | Behavior |
+|---|---|
+| Version source | `APP_VERSION` in `app/src/__init__.py` only |
+| Image | `kirandevraaj/platform-lab:<APP_VERSION>` |
+| `latest` | Never built or pushed |
+| Existing Hub tag | Build fails rather than overwriting |
+
+### GitOps promotion
+
+Jenkins rewrites `kubernetes/overlays/local/kustomization.yaml` to:
+
+```yaml
+images:
+  - name: kirandevraaj/platform-lab
+    newTag: "<APP_VERSION>"
+```
+
+It does not edit `kubernetes/base/**`, `kubernetes/overlays/aws/**`, or `gitops/**`. The commit author is `Jenkins CI <jenkins-ci@local>`. Push uses credential `github-platform-lab` through a temporary `GIT_ASKPASS` helper (token not written into remotes or files).
 
 ## Pipeline stages
 
 | Stage | What it does |
 |---|---|
 | Checkout | `checkout scm` |
-| Unit Test | Creates `.venv`, installs `app/requirements-dev.txt`, runs `python -m pytest app/tests` |
-| Read Application Version | Parses the `APP_VERSION` assignment in `app/src/__init__.py` |
+| Detect Application Change | Sets `APP_CHANGED` from the SCM change set (`app/**`) |
+| Unit Test | Creates `.venv`, installs `app/requirements-dev.txt`, runs pytest (app changes only) |
+| Read Application Version | Parses `APP_VERSION` from `app/src/__init__.py` |
+| Refuse Existing Image Tag | Fails if `kirandevraaj/platform-lab:<APP_VERSION>` already exists on Docker Hub |
 | Docker Build | `docker build -f app/Dockerfile -t kirandevraaj/platform-lab:<APP_VERSION> app` |
-| Docker Image Validation | Checks repository and tag, user `app`, port 8000, healthcheck, and `/app/src` files, then requests `/health` on the temporary container over the agent Docker network and removes it |
-| Docker Hub Push | Logs in with the Jenkins credential and pushes `kirandevraaj/platform-lab:<APP_VERSION>` |
+| Docker Image Validation | Inspects image metadata, runs a one-shot import check, then `/health` over the agent Docker network; removes the temporary container |
+| Docker Hub Push | Logs in with `dockerhub-platform-lab`, pushes the version tag, prints the image digest |
+| Promote GitOps | Updates only the local overlay image tag |
+| Git Push | Fast-forwards to `origin/main`, commits, pushes with `github-platform-lab` |
 
 ### Image validation networking
 
-The agent container talks to the Docker Desktop daemon through `/var/run/docker.sock`. A published port such as `-p 127.0.0.1:18000:8000` binds on the Docker Desktop VM, not inside the agent network namespace. The first CI run failed when the validation stage probed that published localhost address from the agent.
-
-The pipeline therefore attaches the temporary container to the same Compose network as the agent (`platform-lab-jenkins`) and requests `http://<container-name>:8000/health` by Docker DNS. A `trap` removes the temporary container when the stage exits. No host port publish is required for this check.
-
-## Docker Hub credential
-
-The Jenkinsfile does not contain a Docker Hub username, password, or access token.
-
-A Jenkins administrator creates a separate **Username with password** credential:
-
-| Field | Value |
-|---|---|
-| Credentials ID | `dockerhub-platform-lab` |
-| Username | Docker Hub account that can push `kirandevraaj/platform-lab` |
-| Password | Docker Hub access token for that account |
-
-The push stage binds that credential with `usernamePassword` and passes the token to `docker login --password-stdin`. The token is not written into the repository and is not echoed by the pipeline script. `docker logout` runs after the push and again if the stage exits early.
-
-Do not create this credential in Git. Do not commit a Jenkins home directory, a `credentials.xml`, or a token file.
-
-## Required tools
-
-The `linux-agent` node that runs this Jenkinsfile needs:
-
-| Tool | Use |
-|---|---|
-| `python3` (or `python`) | Virtual environment, pytest, and reading `APP_VERSION` |
-| `pip` | Installed with that Python, used as `python -m pip` |
-| Docker Engine and `docker` CLI | Build, inspect, temporary run, and push |
-
-The shell steps use `sh`, so the agent is a Linux agent, or an agent whose default shell can run that syntax. The virtual environment path `.venv/bin/activate` matches that agent. The workstation `.venv` is not the CI environment.
+The agent talks to Docker Desktop through `/var/run/docker.sock`. Published host ports bind on the Docker Desktop VM, not in the agent namespace. Validation attaches the temporary container to the agent Compose network and probes `http://<container-name>:8000/health`.
 
 ## Secrets stay in Jenkins
 
-Git stores the pipeline and the credential ID. Jenkins Credentials stores the token, encrypted on the controller. A clone of this repository cannot log in to Docker Hub. Rotating the token is a Jenkins credential update, not a commit.
-
-## Image name
-
-| Piece | Source |
-|---|---|
-| Repository | `IMAGE_REPO` in the Jenkinsfile: `kirandevraaj/platform-lab` |
-| Tag | `APP_VERSION` in `app/src/__init__.py` |
-
-Current source resolves to `kirandevraaj/platform-lab:0.1.1`. There is no second version constant in the pipeline.
-
-The tag `latest` is not built or pushed. A moving tag hides which source revision is running. The pipeline stops if `APP_VERSION` is `latest` or if the built image also carries a `latest` tag.
+Git stores the pipeline and credential IDs. Jenkins Credentials stores tokens. A clone of this repository cannot log in to Docker Hub or push to GitHub as the CI identity.
 
 ## Artifact flow
 
 ```text
-app/src and app/tests
+app/** change on main
         |
         v
-Jenkins unit tests
+Jenkins unit tests + image build
         |
         v
-Image kirandevraaj/platform-lab:<APP_VERSION>
+Docker Hub kirandevraaj/platform-lab:<APP_VERSION>
         |
         v
-Docker Hub
+Git commit: local overlay newTag=<APP_VERSION>
+        |
+        v
+Argo CD sync on ckad-lab
 ```
 
-Publishing the image does not change the cluster. The running local workload keeps the image reference already declared in `kubernetes/`. A later change to that reference, and Argo CD reconciliation, are separate from this pipeline.
+AWS is intentionally outside this automation. The AWS overlay keeps its own image tag until a separate promotion path exists.
