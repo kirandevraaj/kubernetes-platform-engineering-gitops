@@ -6,11 +6,11 @@ A portfolio project that builds a small platform around a containerized applicat
 
 Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
 
-The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.0`. The local overlay is applied on that cluster and is reconciled by Argo CD from Git. Jenkins CI runs on Docker Desktop and publishes the image; it does not deploy. Terraform resources are not included yet.
+The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.1`. The local overlay is reconciled by Argo CD from Git onto that cluster. Jenkins CI runs on Docker Desktop and publishes the image; it does not deploy. A full Jenkins → Docker Hub → GitHub → Argo CD → Kubernetes promotion of `0.1.1` was demonstrated on 24 September 2026. Terraform resources are not included yet.
 
 ## Architecture overview
 
-The diagram below is the intended shape. The Python application is containerized and version `0.1.0` is published and running on the local lab. Jenkins CI publishes that image. Argo CD reconciles the local Kubernetes overlay from Git. Terraform and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
+The diagram below is the intended shape. The Python application is containerized and version `0.1.1` is published and running on the local lab. Jenkins CI publishes that image. Argo CD reconciles the local Kubernetes overlay from Git. Terraform and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
 
 ```text
 Developer
@@ -18,7 +18,7 @@ Developer
    v
 Git repository
    |
-   +--> container image (published: kirandevraaj/platform-lab:0.1.0)
+   +--> container image (published: kirandevraaj/platform-lab:0.1.1)
    |
    +--> Jenkins CI (executed) --> image build, test, and Docker Hub push
    |
@@ -59,7 +59,7 @@ Local runtime observed on 24 September 2026 (read-only):
 | k8s-worker-01 | worker | 192.168.56.11 | Ubuntu 24.04.4 LTS | v1.31.14 | containerd 2.2.1 |
 | k8s-worker-02 | worker | 192.168.56.12 | Ubuntu 24.04.4 LTS | v1.31.14 | containerd 2.2.1 |
 
-Platform components already running in the local cluster: Calico v3.30.7 (CNI), CoreDNS, kube-proxy, metrics-server, ingress-nginx (NodePort 30080/30443), MetalLB, and the local-path provisioner. The application workload `platform-lab` is deployed in namespace `platform-lab` from `kubernetes/overlays/local`: two replicas of `kirandevraaj/platform-lab:0.1.0` and a ClusterIP Service on port 8000. The AWS overlay is not applied.
+Platform components already running in the local cluster: Calico v3.30.7 (CNI), CoreDNS, kube-proxy, metrics-server, ingress-nginx (NodePort 30080/30443), MetalLB, and the local-path provisioner. The application workload `platform-lab` is deployed in namespace `platform-lab` from `kubernetes/overlays/local`: two replicas of `kirandevraaj/platform-lab:0.1.1` and a ClusterIP Service on port 8000. The AWS overlay is not applied.
 
 ## Technology stack
 
@@ -72,14 +72,13 @@ Present in the local lab now:
 | Orchestration | Kubernetes v1.31.14 |
 | Node runtime | containerd 2.2.1 |
 | Networking | Calico v3.30.7, ingress-nginx, MetalLB |
-| Application | Python FastAPI service under `app/`, version 0.1.0, running in namespace `platform-lab` on the local cluster |
-| Published image | `kirandevraaj/platform-lab:0.1.0` on Docker Hub |
+| Application | Python FastAPI service under `app/`, version 0.1.1, running in namespace `platform-lab` on the local cluster |
+| Published image | `kirandevraaj/platform-lab:0.1.1` on Docker Hub |
 
 Planned, and not in this repository yet:
 
 | Area | Tool |
 |---|---|
-| CD | Argo CD / GitOps |
 | Observability | Prometheus, Grafana, OpenTelemetry |
 | AWS path | Terraform |
 
@@ -101,31 +100,31 @@ When those overlays exist, they will describe the same application shape with di
 ## Implementation status
 
 1. **Repository baseline.** Completed. Project layout, architecture notes, and a read-only record of the current lab.
-2. **Application and container image.** Completed. The service, tests, and Dockerfile are in `app/`. `kirandevraaj/platform-lab:0.1.0` is published. The tag `latest` is not used.
-3. **Kubernetes packaging.** Completed. Deployed to the local lab on 24 September 2026. `kubectl apply -k kubernetes/overlays/local` created namespace `platform-lab`, ConfigMap `platform-lab-config`, Deployment `platform-lab` (2/2 ready), and ClusterIP Service `platform-lab`. The AWS overlay has not been applied.
+2. **Application and container image.** Completed. The service, tests, and Dockerfile are in `app/`. Current published tag is `kirandevraaj/platform-lab:0.1.1`. The tag `latest` is not used.
+3. **Kubernetes packaging.** Completed. Initially applied on 24 September 2026 with `kubectl apply -k kubernetes/overlays/local`. Ongoing changes are GitOps-only through Argo CD. The AWS overlay has not been applied.
 4. **Jenkins CI pipeline definition.** Completed. `jenkins/Jenkinsfile` checks out the repository, tests `app/tests`, reads `APP_VERSION`, builds and validates `kirandevraaj/platform-lab:<APP_VERSION>`, and pushes that tag. See [jenkins/README.md](jenkins/README.md).
-5. **Jenkins execution and publishing.** Completed. Job `platform-lab-ci` ran on `linux-agent`, built and validated `kirandevraaj/platform-lab:0.1.0`, and pushed that tag with credential `dockerhub-platform-lab`. Image validation reaches the temporary container over the agent Docker network (not a published host loopback port). No `latest` tag. No Kubernetes deploy from CI.
+5. **Jenkins execution and publishing.** Completed. Job `platform-lab-ci` publishes versioned tags with credential `dockerhub-platform-lab`. Image validation reaches the temporary container over the agent Docker network. No `latest` tag. No Kubernetes deploy from CI.
 6. **Argo CD GitOps.** Completed. Argo CD `v3.5.3` is installed in namespace `argocd` on `ckad-lab`. Application `platform-lab-local` watches `kubernetes/overlays/local` on `main` and syncs to namespace `platform-lab` on the in-cluster API. Automated sync, prune, and selfHeal are enabled. See [gitops/README.md](gitops/README.md) and [docs/architecture/gitops-flow.md](docs/architecture/gitops-flow.md).
-7. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
-8. **Observability.** Planned. Prometheus, Grafana, and OpenTelemetry for the application.
-9. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
-10. **Python automation.** Planned. Repeatable checks and operational helpers.
+7. **Manual CI/CD integration test (0.1.1).** Completed on 24 September 2026. Release `0.1.1` was pushed to GitHub; Jenkins built and published `kirandevraaj/platform-lab:0.1.1`; the local overlay was updated to that tag and pushed; Argo CD reconciled without `kubectl apply`; both pods ran `0.1.1`; `GET /` returned version `0.1.1`, environment `local-gitops`, and release `ci-cd-integration-test`. See [docs/architecture/ci-cd-flow.md](docs/architecture/ci-cd-flow.md).
+8. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
+9. **Observability.** Planned. Prometheus, Grafana, and OpenTelemetry for the application.
+10. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
+11. **Python automation.** Planned. Repeatable checks and operational helpers.
 
 ## Published container artifact
 
-Version `0.1.0` is the current published image. It was pushed successfully. The tag `latest` is intentionally unused, so a pull always names `0.1.0`. The digest is the immutable reference for that artifact.
+Version `0.1.1` is the current published image used by the local lab. The tag `latest` is intentionally unused. The digest is the immutable reference for that artifact.
 
 | Field | Value |
 |---|---|
-| Image | `kirandevraaj/platform-lab:0.1.0` |
+| Image | `kirandevraaj/platform-lab:0.1.1` |
 | Docker Hub | https://hub.docker.com/r/kirandevraaj/platform-lab |
-| Digest | `sha256:993d9f8a61d2ba4e9bc1a5c5c98ddb2875edcbb249fbed45794b33270101d919` |
+| Digest | `sha256:820a90907dbd09e650acaea652dd48741ef36849b34c581bc2732dc7cb8eba8c` |
 
 ```text
-docker pull kirandevraaj/platform-lab:0.1.0
-docker pull kirandevraaj/platform-lab@sha256:993d9f8a61d2ba4e9bc1a5c5c98ddb2875edcbb249fbed45794b33270101d919
+docker pull kirandevraaj/platform-lab:0.1.1
+docker pull kirandevraaj/platform-lab@sha256:820a90907dbd09e650acaea652dd48741ef36849b34c581bc2732dc7cb8eba8c
 ```
-
 ## Safety note
 
 The local VMware lab and the AWS account are separate deployment targets. Commands, kube contexts, Terraform workspaces, and GitOps applications for one target must not be aimed at the other. Cluster, VM, and network changes wait for explicit approval.

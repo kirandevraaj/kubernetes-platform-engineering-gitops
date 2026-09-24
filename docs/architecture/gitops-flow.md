@@ -1,6 +1,6 @@
 # GitOps flow
 
-Status: Argo CD is installed on the VMware `ckad-lab` cluster and reconciles Application `platform-lab-local` from Git. CD is live for the local overlay. The AWS overlay is not managed yet.
+Status: Argo CD is installed on the VMware `ckad-lab` cluster and reconciles Application `platform-lab-local` from Git. CD is live for the local overlay, including the `0.1.1` image promotion. The AWS overlay is not managed yet.
 
 ## CI versus CD
 
@@ -66,6 +66,10 @@ Manual cluster edits are temporary. With self-heal, Argo CD restores the Git val
 **Git-driven change.** Commit `e2b7964` changed ConfigMap `APP_ENVIRONMENT` from `local` to `local-gitops`. After a hard refresh, Application `platform-lab-local` moved to revision `e2b7964`, status Synced/Healthy, and the live ConfigMap showed `local-gitops`. The OutOfSync window was shorter than the five-second poll interval during that refresh.
 
 **Self-heal.** The live ConfigMap was patched to `APP_ENVIRONMENT=manual-drift`. Argo CD reported OutOfSync, then restored `local-gitops` and returned to Synced/Healthy within a few seconds. Deployment stayed 2/2 Ready; replicas were not changed.
+
+**Image promotion 0.1.1.** After Jenkins published `kirandevraaj/platform-lab:0.1.1`, commit `a8ca030` set the local overlay image tag to `0.1.1`. Argo CD reconciled that Git change automatically. The live Deployment rolled to `0.1.1` without a manual `kubectl apply`. Both pods ran the new image. `GET /` showed version `0.1.1`, environment `local-gitops`, and release `ci-cd-integration-test`.
+
+CI publishing the image and GitOps changing the desired image tag are separate steps. Docker Hub alone does not move the cluster.
 
 ## Repository map
 

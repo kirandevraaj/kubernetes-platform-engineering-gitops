@@ -1,6 +1,6 @@
 # Jenkins CI
 
-Status: first CI run completed. Job `platform-lab-ci` on Jenkins at http://127.0.0.1:8080 builds from `main` using this Jenkinsfile on node `linux-agent`. Credential `dockerhub-platform-lab` is present in Jenkins only. Build `#2` published `kirandevraaj/platform-lab:0.1.0`.
+Status: CI publishes versioned images from `main` on node `linux-agent`. Credential `dockerhub-platform-lab` is present in Jenkins only. The first successful publish was build `#2` for `0.1.0`. The `0.1.1` integration release was also built and pushed by the same job before GitOps promotion.
 
 ## Local runtime
 
@@ -85,7 +85,7 @@ The Docker Hub credential `dockerhub-platform-lab`, the `linux-agent` node, and 
 
 ## Purpose
 
-Jenkins is the continuous integration system for `platform-lab`. It builds, tests, and publishes the container image. It does not deploy to Kubernetes. Deployment from Git is a later Argo CD phase.
+Jenkins is the continuous integration system for `platform-lab`. It builds, tests, and publishes the container image. It does not deploy to Kubernetes. Desired cluster state, including which image tag the Deployment should run, is changed in Git and reconciled by Argo CD.
 
 ## CI responsibilities
 
@@ -156,7 +156,7 @@ Git stores the pipeline and the credential ID. Jenkins Credentials stores the to
 | Repository | `IMAGE_REPO` in the Jenkinsfile: `kirandevraaj/platform-lab` |
 | Tag | `APP_VERSION` in `app/src/__init__.py` |
 
-Current source resolves to `kirandevraaj/platform-lab:0.1.0`. There is no second version constant in the pipeline.
+Current source resolves to `kirandevraaj/platform-lab:0.1.1`. There is no second version constant in the pipeline.
 
 The tag `latest` is not built or pushed. A moving tag hides which source revision is running. The pipeline stops if `APP_VERSION` is `latest` or if the built image also carries a `latest` tag.
 
