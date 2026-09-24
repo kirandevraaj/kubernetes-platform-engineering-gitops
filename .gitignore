@@ -76,3 +76,7 @@ $RECYCLE.BIN/
 .env
 .env.*
 !.env.example
+
+# Jenkins controller state stays in the Docker volume platform-lab-jenkins-home.
+jenkins/runtime/jenkins_home/
+jenkins/runtime/.env

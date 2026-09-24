@@ -1,6 +1,6 @@
 # CI/CD flow
 
-Status: CI pipeline is defined in `jenkins/Jenkinsfile`. Jenkins is not installed or configured, and the pipeline has not run. CD is not implemented. No Argo CD Application exists yet.
+Status: CI pipeline is defined in `jenkins/Jenkinsfile`. A Jenkins 2.568.3 LTS controller is running on Docker Desktop at http://127.0.0.1:8080. The Linux agent image is built and is not connected. The pipeline has not run. CD is not implemented. No Argo CD Application exists yet.
 
 ## CI and CD
 
@@ -35,6 +35,25 @@ Jenkins CI
 `APP_VERSION` is read from `app/src/__init__.py`. The current value is `0.1.0`, so the image name is `kirandevraaj/platform-lab:0.1.0`. The tag `latest` is not used.
 
 The Docker Hub token is a Jenkins credential named `dockerhub-platform-lab`. It is not stored in Git. Creating that credential and running the job are still outstanding.
+
+## Local Jenkins runtime
+
+The controller and the future build agent run on Docker Desktop, on the Compose network `platform-lab-jenkins`. They do not run on the VMware nodes. Docker Desktop Kubernetes stays disabled.
+
+```text
+Windows workstation
+    |
+    v
+Docker Desktop Linux engine
+    |-- Jenkins controller (127.0.0.1:8080)
+    |       JENKINS_HOME volume: platform-lab-jenkins-home
+    |
+    \-- Linux agent image (not connected yet)
+            WebSocket to the controller
+            Docker CLI via /var/run/docker.sock
+```
+
+The agent socket mount can control the Docker Desktop engine. That is limited to this personal lab. The project pipeline has not been executed. Details and the manual unlock steps are in [jenkins/README.md](../../jenkins/README.md).
 
 ## What CI does not do
 

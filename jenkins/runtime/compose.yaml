@@ -1,0 +1,41 @@
+name: platform-lab-jenkins
+
+services:
+  controller:
+    build:
+      context: ./controller
+    image: platform-lab-jenkins-controller:2.568.3
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - jenkins-home:/var/jenkins_home
+    networks:
+      - jenkins
+    restart: unless-stopped
+
+  agent:
+    profiles:
+      - agent
+    build:
+      context: ./agent
+    image: platform-lab-jenkins-agent:1
+    environment:
+      JENKINS_URL: http://controller:8080
+      JENKINS_AGENT_NAME: linux-agent
+      JENKINS_AGENT_WORKDIR: /home/jenkins/agent
+      JENKINS_WEB_SOCKET: "true"
+      JENKINS_SECRET: ${JENKINS_AGENT_SECRET:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - jenkins
+    depends_on:
+      - controller
+
+networks:
+  jenkins:
+    name: platform-lab-jenkins
+
+volumes:
+  jenkins-home:
+    name: platform-lab-jenkins-home

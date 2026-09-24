@@ -1,6 +1,87 @@
 # Jenkins CI
 
-Status: pipeline definition only. Jenkins is not installed or configured for this repository yet. No job, credential, or controller change has been made. The pipeline has not been executed.
+Status: the pipeline is defined, and a local controller runtime is running on Docker Desktop. The Linux agent image is built and is not connected. No Jenkins job exists, the Docker Hub credential does not exist, and `jenkins/Jenkinsfile` has not been executed.
+
+## Local runtime
+
+Jenkins runs on Docker Desktop. It does not run on `k8s-ctrl-01`, `k8s-worker-01`, or `k8s-worker-02`. Those VMs are the Project 1 Kubernetes cluster. Docker Desktop Kubernetes is disabled. The Linux engine stays enabled.
+
+| Piece | Value |
+|---|---|
+| Controller image | `jenkins/jenkins:2.568.3-lts-jdk21` (Jenkins 2.568.3 LTS from the Jenkins download page) |
+| Built controller | `platform-lab-jenkins-controller:2.568.3` |
+| Agent base | `jenkins/inbound-agent:3391.va_37fa_a_305d6d-3-jdk21` |
+| Built agent | `platform-lab-jenkins-agent:1` |
+| UI | http://127.0.0.1:8080 |
+| JENKINS_HOME | Docker volume `platform-lab-jenkins-home` |
+| Network | `platform-lab-jenkins` |
+| Agent TCP port 50000 | Not published |
+
+Compose file: `jenkins/runtime/compose.yaml`.
+
+```powershell
+docker compose -f jenkins/runtime/compose.yaml up -d
+```
+
+That command starts the controller only. The agent is behind the Compose profile `agent` and is not started until you create the node in the UI.
+
+### Plugins
+
+`jenkins/runtime/controller/plugins.txt` requests three plugins. `jenkins-plugin-cli` also installs the dependencies those plugins require.
+
+| Plugin | Why it is here |
+|---|---|
+| `workflow-aggregator` | Declarative Pipeline, including `sh` steps |
+| `git` | `checkout scm` |
+| `credentials-binding` | `withCredentials` and `usernamePassword` |
+
+WebSocket inbound agents are part of this Jenkins LTS core. No extra agent plugin is installed. The setup wizard is left enabled. This repository does not set an administrator password.
+
+### Agent
+
+The agent container is a separate Linux image. It has Java 21, bash, sh, git, Python 3, pip, `python3 -m venv`, CA certificates, and the Docker CLI 29.6.1. It does not contain a Docker daemon.
+
+When you start it later, Compose mounts `/var/run/docker.sock` from Docker Desktop. The entrypoint adds the `jenkins` user to the socket's group, then runs `jenkins-agent` as that user with `JENKINS_WEB_SOCKET=true`. On this Docker Desktop engine the socket group is root, so the user is added to that group for the life of the container.
+
+Giving the agent the Docker socket lets a job start, stop, and remove containers on this Docker Desktop engine, and build images with the host daemon. That is acceptable on this isolated personal lab. It is not a pattern to copy onto a shared build host. Docker-in-Docker is not used.
+
+Create the node yourself. Suggested values for this lab:
+
+| Field | Value |
+|---|---|
+| Name | `linux-agent` |
+| Executors | 1 |
+| Labels | `linux docker` |
+| Remote root directory | `/home/jenkins/agent` |
+| Launch method | Launch agent by connecting it to the controller |
+| WebSocket | Enabled |
+
+Copy the node secret from the UI. Do not commit it. Then, from the repository root:
+
+```powershell
+$env:JENKINS_AGENT_SECRET = "<secret from the node page>"
+docker compose -f jenkins/runtime/compose.yaml --profile agent up -d agent
+```
+
+`JENKINS_AGENT_SECRET` is empty in Compose unless you set it in the shell. The agent will not connect without that value.
+
+### Manual setup still required
+
+Open http://127.0.0.1:8080. Jenkins shows the initial unlock screen. The one-time unlock password is in the controller at `/var/jenkins_home/secrets/initialAdminPassword`. Read it from the running container. Do not store it in Git.
+
+```powershell
+docker exec platform-lab-jenkins-controller-1 cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+Then, in the UI:
+
+1. Paste the unlock password.
+2. Create the first administrator account.
+3. Finish the setup wizard. The image already contains the plugins above. You do not need to install a suggested plugin bundle if the wizard offers one.
+4. Confirm Pipeline, Git, and Credentials Binding are installed.
+5. Create the `linux-agent` node with the values above, then start the agent profile.
+
+Do not create the Docker Hub credential `dockerhub-platform-lab` until a later step. Do not run `jenkins/Jenkinsfile` yet.
 
 ## Purpose
 
