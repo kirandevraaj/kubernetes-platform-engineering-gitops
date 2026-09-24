@@ -6,7 +6,7 @@ resources:
   - servicemonitor.yaml
 images:
   - name: kirandevraaj/platform-lab
-    newTag: "0.1.2"
+    newTag: "0.1.3"
 patches:
   - path: networkpolicy-prometheus-patch.yaml
     target:
