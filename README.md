@@ -6,7 +6,7 @@ A portfolio project that builds a small platform around a containerized applicat
 
 Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
 
-The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.2`. The local overlay is reconciled by Argo CD from Git onto that cluster. Jenkins CI on Docker Desktop polls GitHub, publishes versioned images when `app/**` changes, and commits the local overlay image tag. It does not deploy. Automated promotion of `0.1.2` was demonstrated on 24 September 2026. Terraform resources are not included yet.
+The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.3`. The local overlay is reconciled by Argo CD from Git onto that cluster. Jenkins CI on Docker Desktop polls GitHub, publishes versioned images when `app/**` changes, and commits the local overlay image tag. It does not deploy. Observability (Prometheus + Grafana) is GitOps-managed in namespace `monitoring`. Terraform resources are not included yet.
 
 ## Architecture overview
 
@@ -109,23 +109,23 @@ When those overlays exist, they will describe the same application shape with di
 7. **Manual CI/CD integration test (0.1.1).** Completed on 24 September 2026. Release `0.1.1` was pushed to GitHub; Jenkins built and published `kirandevraaj/platform-lab:0.1.1`; the local overlay was updated to that tag and pushed; Argo CD reconciled without `kubectl apply`; both pods ran `0.1.1`; `GET /` returned version `0.1.1`, environment `local-gitops`, and release `ci-cd-integration-test`. See [docs/architecture/ci-cd-flow.md](docs/architecture/ci-cd-flow.md).
 8. **Automated CI/CD promotion.** Completed and demonstrated. `jenkins/Jenkinsfile` uses `pollSCM`, runs build/push/promotion only for `app/**` changes, refuses reused Docker Hub tags, updates only `kubernetes/overlays/local/kustomization.yaml`, and pushes with `github-platform-lab`. Release `0.1.2` was published by Jenkins build `#5` and reconciled by Argo CD without `kubectl apply`. The follow-up promotion commit build `#6` skipped CI/CD stages (loop prevention). See [jenkins/README.md](jenkins/README.md) and [docs/architecture/ci-cd-flow.md](docs/architecture/ci-cd-flow.md).
 9. **Networking.** Completed for the local lab. Ingress + NetworkPolicy in `kubernetes/base`; local overlay patches `ingress-nginx-controller` to MetalLB **LoadBalancer** (L2). Application Service stays ClusterIP. See [docs/architecture/networking.md](docs/architecture/networking.md).
-10. **Observability.** In progress / implemented in Git for the local lab. `kube-prometheus-stack` is managed by Argo CD Application `platform-lab-observability`. Grafana is MetalLB LoadBalancer; Prometheus is ClusterIP. Application exposes `/metrics` from version `0.1.3`. See [docs/architecture/observability.md](docs/architecture/observability.md).
+10. **Observability.** Completed for the local lab on 24 September 2026. `kube-prometheus-stack` is managed by Argo CD Application `platform-lab-observability`. Grafana is MetalLB LoadBalancer (observed VIP `192.168.56.201`); Prometheus is ClusterIP. Application exposes `/metrics` from version `0.1.3`. ServiceMonitor targets are up. See [docs/architecture/observability.md](docs/architecture/observability.md).
 11. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
 12. **Python automation.** Planned. Repeatable checks and operational helpers.
 
 ## Published container artifact
 
-Version `0.1.2` is the current published image used by the local lab. The tag `latest` is intentionally unused. The digest is the immutable reference for that artifact.
+Version `0.1.3` is the current published image used by the local lab. The tag `latest` is intentionally unused. The digest is the immutable reference for that artifact.
 
 | Field | Value |
 |---|---|
-| Image | `kirandevraaj/platform-lab:0.1.2` |
+| Image | `kirandevraaj/platform-lab:0.1.3` |
 | Docker Hub | https://hub.docker.com/r/kirandevraaj/platform-lab |
-| Digest | `sha256:082e161b0c90d588fe4f045d80a54297881e188a0e6417e71aaa814a66b92c8a` |
+| Digest | `sha256:b2c2d0d5617c05e2fb36ab186e6ebd8bbd1de7c10a928ade922337f7df18f6ba` |
 
 ```text
-docker pull kirandevraaj/platform-lab:0.1.2
-docker pull kirandevraaj/platform-lab@sha256:082e161b0c90d588fe4f045d80a54297881e188a0e6417e71aaa814a66b92c8a
+docker pull kirandevraaj/platform-lab:0.1.3
+docker pull kirandevraaj/platform-lab@sha256:b2c2d0d5617c05e2fb36ab186e6ebd8bbd1de7c10a928ade922337f7df18f6ba
 ```
 ## Safety note
 

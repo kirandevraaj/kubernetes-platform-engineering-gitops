@@ -77,6 +77,22 @@ curl.exe -sS -H "Host: platform-lab.local" http://192.168.56.200/metrics
 
 Grafana EXTERNAL-IP is assigned by MetalLB after sync. Do not hard-code it. Admin password is in Secret `kube-prometheus-stack-grafana` (base64 `admin-password`).
 
+## Observed validation (24 September 2026)
+
+| Check | Result |
+|---|---|
+| Application version | `0.1.3` via `http://platform-lab.local/` |
+| Image | `kirandevraaj/platform-lab:0.1.3` digest `sha256:b2c2d0d5617c05e2fb36ab186e6ebd8bbd1de7c10a928ade922337f7df18f6ba` |
+| Jenkins | Build `#12` SUCCESS (build/push/promote); build `#13` SUCCESS (loop prevention, no app rebuild) |
+| Commits | `1c562fc` (implementation); `75cda8e` (Jenkins GitOps promote) |
+| Argo CD | `platform-lab-local` Synced/Healthy; `platform-lab-observability` Synced/Healthy |
+| Ingress VIP | `192.168.56.200` unchanged |
+| Grafana EXTERNAL-IP | MetalLB assigned `192.168.56.201` (discovered; not reserved in Git) |
+| Grafana UI | `http://192.168.56.201/login` HTTP 200; dashboard uid `platform-lab` (8 panels) loaded |
+| Prometheus Service | ClusterIP only |
+| ServiceMonitor targets | `job=platform-lab` **up** for both pods |
+| Prometheus queries | `http_requests_total`, replica, CPU, and memory series returned data |
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Check |
