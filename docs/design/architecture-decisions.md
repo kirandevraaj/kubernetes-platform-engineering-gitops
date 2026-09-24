@@ -26,6 +26,14 @@ Record a decision here when it is accepted. Until then, items below are open.
 - **Decision:** Jenkins does not run `kubectl apply` and does not talk to Argo CD for deploy. Image publish and cluster reconcile stay separate.
 - **Consequences:** A new image tag becomes live only after Git records that tag in the Kubernetes manifests and Argo CD syncs.
 
+## ADR-007: Observability uses kube-prometheus-stack with Grafana LoadBalancer
+
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** The lab had no Prometheus Operator, Grafana, or ServiceMonitor CRDs. Application metrics needed a scrape path without changing MetalLB pool, ingress-nginx VIP `192.168.56.200`, or the AWS overlay.
+- **Decision:** Install `kube-prometheus-stack` chart `91.5.1` into namespace `monitoring` via Argo CD Application `platform-lab-observability`. Prometheus Service stays ClusterIP. Grafana Service is LoadBalancer so MetalLB allocates another address from existing `lab-pool`. No Grafana Ingress. Application scrape uses ServiceMonitor in the local overlay; NetworkPolicy allows namespace `monitoring`. Alertmanager is disabled for a minimal footprint.
+- **Consequences:** Grafana EXTERNAL-IP is discovered after reconcile and must not be hard-coded. AppProject `platform-lab` gains `ServiceMonitor` permission. Jenkins promotion updates only `newTag` so overlay resources (ingress Service patch, ServiceMonitor, patches) survive promotion.
+
 ## Open decisions
 
 | ID | Question | Notes |

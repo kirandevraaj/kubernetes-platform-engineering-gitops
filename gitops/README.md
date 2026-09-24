@@ -23,7 +23,20 @@ GitHub repository `https://github.com/kirandevraaj/kubernetes-platform-engineeri
 | `gitops/applications/` | Application definitions |
 | `gitops/appsets/` | Reserved for ApplicationSets when a multi-target pattern is introduced |
 
-Workload manifests stay under `kubernetes/`. GitOps objects only describe how Argo CD watches those manifests.
+Workload manifests stay under `kubernetes/`. Observability Helm values and dashboards stay under `observability/`. GitOps objects only describe how Argo CD watches those paths.
+
+## Observability Application
+
+| Field | Value |
+|---|---|
+| Manifest | `gitops/applications/platform-lab-observability.yaml` |
+| Project | `platform-lab-observability` |
+| Sources | Helm `kube-prometheus-stack` `91.5.1` + Git values + `observability/dashboards` |
+| Destination namespace | `monitoring` |
+| Grafana Service | LoadBalancer (MetalLB allocates from `lab-pool`) |
+| Prometheus Service | ClusterIP |
+
+See [docs/architecture/observability.md](../docs/architecture/observability.md) and [observability/README.md](../observability/README.md).
 
 ## Local Application
 
@@ -63,7 +76,9 @@ After Argo CD is Ready:
 kubectl config current-context   # must be ckad-lab
 kubectl --context=ckad-lab apply -f gitops/projects/platform-lab.yaml
 kubectl --context=ckad-lab apply -f gitops/applications/platform-lab-local.yaml
-kubectl --context=ckad-lab get application -n argocd platform-lab-local
+kubectl --context=ckad-lab apply -f gitops/projects/platform-lab-observability.yaml
+kubectl --context=ckad-lab apply -f gitops/applications/platform-lab-observability.yaml
+kubectl --context=ckad-lab get application -n argocd
 ```
 
 ## Validation

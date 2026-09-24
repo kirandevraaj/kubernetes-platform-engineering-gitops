@@ -1,0 +1,104 @@
+# kube-prometheus-stack values for the local VMware lab.
+# Release name expected by Argo CD: kube-prometheus-stack
+# Grafana is exposed via MetalLB LoadBalancer (pool lab-pool).
+# Prometheus stays ClusterIP. No Grafana Ingress.
+
+fullnameOverride: kube-prometheus-stack
+
+# Keep Alertmanager out of the minimal lab footprint.
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: true
+  adminUser: admin
+  # Password is generated into Secret kube-prometheus-stack-grafana.
+  # Retrieve with: kubectl get secret -n monitoring kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | %{ [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) }
+  ingress:
+    enabled: false
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 3000
+    # Do not set loadBalancerIP; MetalLB assigns from lab-pool.
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: local-path
+    size: 2Gi
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+prometheus:
+  enabled: true
+  ingress:
+    enabled: false
+  service:
+    type: ClusterIP
+  prometheusSpec:
+    retention: 3d
+    # Discover ServiceMonitors in any namespace (including platform-lab).
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector: {}
+    podMonitorNamespaceSelector: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1536Mi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 8Gi
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# Lab nodes are Linux; keep defaults but avoid Windows exporter.
+windowsMonitoring:
+  enabled: false

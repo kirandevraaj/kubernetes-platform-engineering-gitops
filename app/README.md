@@ -29,6 +29,7 @@ app/
 | GET | `/health` | 200 | `{"status": "healthy"}` |
 | GET | `/version` | 200 | Application name and version |
 | GET | `/info` | 200 | Name, description, version, environment, Python version, and framework |
+| GET | `/metrics` | 200 | Prometheus text exposition (no secrets) |
 
 ## Local setup
 

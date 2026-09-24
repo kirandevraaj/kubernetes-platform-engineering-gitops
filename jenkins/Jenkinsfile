@@ -287,18 +287,20 @@ PY
                     fi
                     "$PY" - <<PY
 from pathlib import Path
+import re
 
 path = Path("${GITOPS_LOCAL_KUSTOMIZATION}")
 version = "${APP_VERSION}"
-content = f"""apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - ../../base
-images:
-  - name: kirandevraaj/platform-lab
-    newTag: "{version}"
-"""
-path.write_text(content, encoding="utf-8")
+text = path.read_text(encoding="utf-8")
+updated, count = re.subn(
+    r'(newTag:\\s*")[^"]*(")',
+    rf'\\g<1>{version}\\g<2>',
+    text,
+    count=1,
+)
+if count != 1:
+    raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
+path.write_text(updated, encoding="utf-8")
 print(f"Updated {path} to newTag={version}")
 PY
                     git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}"
@@ -312,7 +314,7 @@ PY
                         echo "$other"
                         exit 1
                     fi
-                    echo "Promotion change is limited to ${GITOPS_LOCAL_KUSTOMIZATION}"
+                    echo "Promotion change is limited to ${GITOPS_LOCAL_KUSTOMIZATION} (newTag only)"
                 '''
             }
         }
@@ -361,18 +363,20 @@ EOF
                         fi
                         "$PY" - <<PY
 from pathlib import Path
+import re
 
 path = Path("${GITOPS_LOCAL_KUSTOMIZATION}")
 version = "${APP_VERSION}"
-content = f"""apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - ../../base
-images:
-  - name: kirandevraaj/platform-lab
-    newTag: "{version}"
-"""
-path.write_text(content, encoding="utf-8")
+text = path.read_text(encoding="utf-8")
+updated, count = re.subn(
+    r'(newTag:\\s*")[^"]*(")',
+    rf'\\g<1>{version}\\g<2>',
+    text,
+    count=1,
+)
+if count != 1:
+    raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
+path.write_text(updated, encoding="utf-8")
 PY
                         git add -- "${GITOPS_LOCAL_KUSTOMIZATION}"
                         git diff --cached -- "${GITOPS_LOCAL_KUSTOMIZATION}"

@@ -21,3 +21,20 @@ That command needs an elevated shell. After it, ping and SSH to `.10`, `.11`, an
 **Symptom.** Commands succeed, but nodes or namespaces do not match the lab.
 
 **Check.** `kubectl config current-context`. The lab context observed during bootstrap was `ckad-lab`. `docker-desktop` is also configured and points somewhere else. Confirm the context before any future write.
+
+## Prometheus cannot scrape platform-lab /metrics
+
+**Symptom.** ServiceMonitor exists but the Prometheus target is down, or Grafana request panels stay empty.
+
+**Checks.**
+
+1. Image tag is `0.1.3` or newer (exposes `/metrics`).
+2. Local NetworkPolicy allows namespace `monitoring` to TCP/8000 (local overlay patch).
+3. CRD `servicemonitors.monitoring.coreos.com` exists (Application `platform-lab-observability` Healthy).
+4. Generate traffic: `curl.exe -sS -H "Host: platform-lab.local" http://192.168.56.200/health`.
+
+## Grafana has no browser-reachable address
+
+**Symptom.** Grafana pods are Ready but there is no EXTERNAL-IP, or the browser cannot open Grafana.
+
+**Checks.** Service type must be LoadBalancer (not ClusterIP). MetalLB pool `lab-pool` still has free addresses. Do not point Grafana at VIP `192.168.56.200` (that VIP is ingress-nginx). Discover the assigned address with `kubectl get svc -n monitoring -l app.kubernetes.io/name=grafana -o wide`.

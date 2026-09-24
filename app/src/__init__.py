@@ -1,3 +1,3 @@
 """Sample workload for the Kubernetes Platform Engineering and GitOps Lab."""
 
-APP_VERSION = "0.1.2"
+APP_VERSION = "0.1.3"

@@ -23,7 +23,7 @@ def test_root_returns_application_identity() -> None:
     assert body["name"] == APP_NAME
     assert body["description"] == APP_DESCRIPTION
     assert body["version"] == APP_VERSION
-    assert body["version"] == "0.1.2"
+    assert body["version"] == "0.1.3"
     assert body["environment"] == "local"
     assert body["release"] == APP_RELEASE
     assert body["release"] == "automated-ci-cd"
@@ -41,7 +41,7 @@ def test_version_returns_application_version() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"name": APP_NAME, "version": APP_VERSION}
-    assert response.json()["version"] == "0.1.2"
+    assert response.json()["version"] == "0.1.3"
 
 
 def test_info_returns_non_sensitive_metadata() -> None:
@@ -55,3 +55,18 @@ def test_info_returns_non_sensitive_metadata() -> None:
     assert body["environment"] == "local"
     assert body["framework"] == "fastapi"
     assert body["python"]
+
+
+def test_metrics_exposes_prometheus_text() -> None:
+    # Generate a request so http_* series are present.
+    client.get("/health")
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "text/plain" in response.headers.get("content-type", "")
+    body = response.text
+    assert "http_requests_total" in body or "http_request" in body
+    assert "python_info" in body or "process_" in body
+    assert "password" not in body.lower()
+    assert "token" not in body.lower()
+    assert "secret" not in body.lower()

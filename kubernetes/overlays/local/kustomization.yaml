@@ -3,6 +3,14 @@ kind: Kustomization
 resources:
   - ../../base
   - ingress-nginx-controller-service.yaml
+  - servicemonitor.yaml
 images:
   - name: kirandevraaj/platform-lab
     newTag: "0.1.2"
+patches:
+  - path: networkpolicy-prometheus-patch.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: platform-lab

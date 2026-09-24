@@ -5,6 +5,7 @@ import sys
 from typing import Literal
 
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
 from src import APP_VERSION
@@ -17,6 +18,13 @@ APP_ENVIRONMENT = os.getenv("APP_ENVIRONMENT", "local")
 APP_RELEASE = "automated-ci-cd"
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION, description=APP_DESCRIPTION)
+
+# Expose Prometheus metrics at /metrics without changing application endpoints.
+Instrumentator(
+    should_group_status_codes=False,
+    should_ignore_untemplated=True,
+    excluded_handlers=["/metrics"],
+).instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
 
 class ApplicationResponse(BaseModel):

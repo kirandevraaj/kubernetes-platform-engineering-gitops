@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: platform-lab
+  labels:
+    app.kubernetes.io/name: platform-lab
+    app.kubernetes.io/instance: platform-lab
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: platform-lab
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: platform-lab
+      app.kubernetes.io/instance: platform-lab
+  namespaceSelector:
+    matchNames:
+      - platform-lab
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s

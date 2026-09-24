@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-lab-observability
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-lab-observability
+    app.kubernetes.io/part-of: platform-lab
+spec:
+  description: Observability stack (Prometheus, Grafana) for the local VMware lab
+  sourceRepos:
+    - https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    - https://prometheus-community.github.io/helm-charts
+  destinations:
+    - namespace: monitoring
+      server: https://kubernetes.default.svc
+    # kube-prometheus-stack may create scrape targets / RBAC that touch kube-system.
+    - namespace: kube-system
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: true

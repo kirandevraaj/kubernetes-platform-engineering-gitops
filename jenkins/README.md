@@ -1,6 +1,6 @@
 # Jenkins CI
 
-Status: automated CI/CD is demonstrated end-to-end. Job `platform-lab-ci` polls GitHub (`H/2 * * * *`), builds only when `app/**` changes, published `kirandevraaj/platform-lab:0.1.2` on build `#5`, and promoted the local overlay. Build `#6` confirmed the GitOps commit does not rebuild the image.
+Status: automated CI/CD is demonstrated end-to-end. Job `platform-lab-ci` polls GitHub (`H/2 * * * *`), builds only when `app/**` changes, published `kirandevraaj/platform-lab:0.1.2` on build `#5`, and promoted the local overlay. Build `#6` confirmed the GitOps commit does not rebuild the image. Promotion updates only the `newTag` field in `kubernetes/overlays/local/kustomization.yaml` so other overlay resources (ingress Service patch, ServiceMonitor, patches) are preserved.
 
 ## Local runtime
 
