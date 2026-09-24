@@ -4,4 +4,4 @@ resources:
   - ../../base
 images:
   - name: kirandevraaj/platform-lab
-    newTag: "0.1.1"
+    newTag: "0.1.2"
