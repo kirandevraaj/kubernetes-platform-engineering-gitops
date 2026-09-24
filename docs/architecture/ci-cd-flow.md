@@ -1,12 +1,12 @@
 # CI/CD flow
 
-Status: first CI run completed. Job `platform-lab-ci` on Jenkins 2.568.3 LTS (Docker Desktop, http://127.0.0.1:8080) builds from `main` on node `linux-agent` and publishes `kirandevraaj/platform-lab:<APP_VERSION>` to Docker Hub. CD is not implemented. No Argo CD Application exists yet.
+Status: CI and CD are both live for the local lab. Job `platform-lab-ci` publishes images to Docker Hub. Argo CD Application `platform-lab-local` reconciles `kubernetes/overlays/local` onto `ckad-lab`.
 
 ## CI and CD
 
 CI builds, tests, packages, and publishes an image. It stops at Docker Hub.
 
-CD is a later phase. Argo CD is planned to reconcile Kubernetes from Git. This repository does not claim that Argo CD is installed or that it deploys the application.
+CD is Argo CD on the VMware cluster. It reads Git and syncs Kubernetes manifests. Details are in [gitops-flow.md](gitops-flow.md).
 
 Jenkins does not run `kubectl apply` as the deploy step.
 
@@ -58,10 +58,10 @@ The agent socket mount can control the Docker Desktop engine. That is limited to
 ## What CI does not do
 
 - It does not edit the live cluster.
-- It does not install Argo CD.
-- It does not update GitOps desired state. That remains a later step if a new image tag must be recorded in `kubernetes/`.
+- It does not install or operate Argo CD.
+- It does not change Kubernetes desired state in Git. Recording a new image tag in `kubernetes/` remains a separate commit that Argo CD then syncs.
 - It does not publish one image for the local lab and another for AWS. Both targets use the same versioned image name until an AWS registry is introduced.
 
-## Later CD path
+## CD path
 
-When that phase starts, a commit that changes the desired image reference in Git is the input. Argo CD is planned to render `kubernetes/overlays/local` or `kubernetes/overlays/aws` and converge the matching cluster. Those Applications do not exist yet. The local VMware workload that is already running was applied directly from the local overlay, not by this pipeline and not by Argo CD.
+Argo CD Application `platform-lab-local` renders `kubernetes/overlays/local` and converges namespace `platform-lab` on `ckad-lab`. An AWS Application for `kubernetes/overlays/aws` does not exist yet. The workload was first applied with `kubectl apply -k`; Argo CD now owns ongoing reconciliation from Git.

@@ -6,11 +6,11 @@ A portfolio project that builds a small platform around a containerized applicat
 
 Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
 
-The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.0`. The local overlay is applied on that cluster. Jenkins CI runs on Docker Desktop: job `platform-lab-ci` builds, validates, and publishes that image from `jenkins/Jenkinsfile`. Terraform resources and Argo CD resources are not included yet.
+The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.0`. The local overlay is applied on that cluster and is reconciled by Argo CD from Git. Jenkins CI runs on Docker Desktop and publishes the image; it does not deploy. Terraform resources are not included yet.
 
 ## Architecture overview
 
-The diagram below is the intended shape. The Python application is containerized and version `0.1.0` is published and running on the local lab. Jenkins CI has published that image from `jenkins/Jenkinsfile`. Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
+The diagram below is the intended shape. The Python application is containerized and version `0.1.0` is published and running on the local lab. Jenkins CI publishes that image. Argo CD reconciles the local Kubernetes overlay from Git. Terraform and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
 
 ```text
 Developer
@@ -22,7 +22,7 @@ Git repository
    |
    +--> Jenkins CI (executed) --> image build, test, and Docker Hub push
    |
-   +--> Argo CD / GitOps (planned) --> Kubernetes
+   +--> Argo CD / GitOps (local overlay synced) --> Kubernetes
                                           |
                                           +--> local lab (VMware Workstation, current runtime)
                                           |
@@ -33,6 +33,24 @@ Automation: Python (planned)
 Infrastructure: Terraform / AWS path (planned)
 ```
 
+```mermaid
+flowchart LR
+  developer[Developer]
+  github[GitHub]
+  jenkins[Jenkins CI]
+  hub[Docker Hub]
+  argocd[Argo CD]
+  k8s[Kubernetes]
+  vmware[local VMware cluster]
+
+  developer --> github
+  github --> jenkins
+  jenkins --> hub
+  github --> argocd
+  hub --> k8s
+  argocd --> k8s
+  k8s --> vmware
+```
 Local runtime observed on 24 September 2026 (read-only):
 
 | Node | Role | Address | OS | Kubernetes | Runtime |
@@ -87,7 +105,7 @@ When those overlays exist, they will describe the same application shape with di
 3. **Kubernetes packaging.** Completed. Deployed to the local lab on 24 September 2026. `kubectl apply -k kubernetes/overlays/local` created namespace `platform-lab`, ConfigMap `platform-lab-config`, Deployment `platform-lab` (2/2 ready), and ClusterIP Service `platform-lab`. The AWS overlay has not been applied.
 4. **Jenkins CI pipeline definition.** Completed. `jenkins/Jenkinsfile` checks out the repository, tests `app/tests`, reads `APP_VERSION`, builds and validates `kirandevraaj/platform-lab:<APP_VERSION>`, and pushes that tag. See [jenkins/README.md](jenkins/README.md).
 5. **Jenkins execution and publishing.** Completed. Job `platform-lab-ci` ran on `linux-agent`, built and validated `kirandevraaj/platform-lab:0.1.0`, and pushed that tag with credential `dockerhub-platform-lab`. Image validation reaches the temporary container over the agent Docker network (not a published host loopback port). No `latest` tag. No Kubernetes deploy from CI.
-6. **Argo CD GitOps.** Planned. The cluster reconciles from Git.
+6. **Argo CD GitOps.** Completed. Argo CD `v3.5.3` is installed in namespace `argocd` on `ckad-lab`. Application `platform-lab-local` watches `kubernetes/overlays/local` on `main` and syncs to namespace `platform-lab` on the in-cluster API. Automated sync, prune, and selfHeal are enabled. See [gitops/README.md](gitops/README.md) and [docs/architecture/gitops-flow.md](docs/architecture/gitops-flow.md).
 7. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
 8. **Observability.** Planned. Prometheus, Grafana, and OpenTelemetry for the application.
 9. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.

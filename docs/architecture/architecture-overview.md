@@ -35,7 +35,28 @@ The repository holds the application source under `app/`, including a Dockerfile
 - `kubernetes/overlays/local` for this VMware cluster (applied)
 - `kubernetes/overlays/aws` for a later AWS cluster (not applied)
 
-The local overlay is running on this cluster. The AWS overlay has not been applied. The published image is `kirandevraaj/platform-lab:0.1.0`. Jenkins CI on Docker Desktop runs `jenkins/Jenkinsfile` on node `linux-agent` and publishes that image; it does not deploy to this cluster. Argo CD is planned to deploy from Git and is not implemented. Prometheus, Grafana, and OpenTelemetry are planned to observe the application. Terraform under `terraform/aws` is reserved for the AWS path and does not describe this VMware lab. AWS is a separate future deployment target.
+The local overlay is running on this cluster. The AWS overlay has not been applied. The published image is `kirandevraaj/platform-lab:0.1.0`. Jenkins CI on Docker Desktop runs `jenkins/Jenkinsfile` on node `linux-agent` and publishes that image; it does not deploy to this cluster. Argo CD `v3.5.3` runs in namespace `argocd` on `ckad-lab` and reconciles Application `platform-lab-local` from `kubernetes/overlays/local` on `main`. Prometheus, Grafana, and OpenTelemetry are planned to observe the application. Terraform under `terraform/aws` is reserved for the AWS path and does not describe this VMware lab. AWS is a separate future deployment target.
+
+## Delivery flow
+
+```mermaid
+flowchart TD
+  developer[Developer]
+  github[GitHub repository]
+  jenkins[Jenkins CI]
+  dockerhub[Docker Hub]
+  argocd[Argo CD]
+  vmware[VMware Kubernetes ckad-lab]
+
+  developer -->|push application and manifests| github
+  github -->|CI checkout| jenkins
+  jenkins -->|build test push| dockerhub
+  github -->|CD desired state| argocd
+  dockerhub -->|nodes pull image| vmware
+  argocd -->|sync overlay| vmware
+```
+
+Jenkins is CI only. Argo CD is CD only. Docker Desktop Kubernetes is not a deployment target.
 
 ## Kubernetes packaging
 

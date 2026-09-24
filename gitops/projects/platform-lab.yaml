@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-lab
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-lab
+    app.kubernetes.io/part-of: platform-lab
+spec:
+  description: Platform-lab applications for the local VMware Kubernetes lab
+  sourceRepos:
+    - https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+  destinations:
+    - namespace: platform-lab
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: apps
+      kind: Deployment
+  orphanedResources:
+    warn: true

@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-lab-local
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-lab
+    app.kubernetes.io/instance: platform-lab-local
+    app.kubernetes.io/part-of: platform-lab
+spec:
+  project: platform-lab
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/overlays/local
+  destination:
+    # In-cluster API of the VMware lab where Argo CD itself runs (ckad-lab).
+    # Never point this Application at docker-desktop or an AWS API server.
+    server: https://kubernetes.default.svc
+    namespace: platform-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+  ignoreDifferences: []
