@@ -61,6 +61,12 @@ That policy fits this personal lab: Git remains authoritative, and the self-heal
 
 Manual cluster edits are temporary. With self-heal, Argo CD restores the Git values.
 
+## Observed lab demos (24 September 2026)
+
+**Git-driven change.** Commit `e2b7964` changed ConfigMap `APP_ENVIRONMENT` from `local` to `local-gitops`. After a hard refresh, Application `platform-lab-local` moved to revision `e2b7964`, status Synced/Healthy, and the live ConfigMap showed `local-gitops`. The OutOfSync window was shorter than the five-second poll interval during that refresh.
+
+**Self-heal.** The live ConfigMap was patched to `APP_ENVIRONMENT=manual-drift`. Argo CD reported OutOfSync, then restored `local-gitops` and returned to Synced/Healthy within a few seconds. Deployment stayed 2/2 Ready; replicas were not changed.
+
 ## Repository map
 
 | Path | Contents |

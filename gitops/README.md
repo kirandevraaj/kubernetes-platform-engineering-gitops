@@ -69,6 +69,14 @@ kubectl --context=ckad-lab get application -n argocd platform-lab-local
 ## Validation
 
 ```powershell
-kubectl --context=ckad-lab get application -n argocd platform-lab-local -o jsonpath="{.status.sync.status} {.status.health.status}{.status.sync.revision}{'\n'}"
+kubectl --context=ckad-lab get application -n argocd platform-lab-local -o jsonpath="{.status.sync.status} {.status.health.status} {.status.sync.revision}{'\n'}"
 kubectl --context=ckad-lab get deploy,svc,pods -n platform-lab
+kubectl --context=ckad-lab get configmap -n platform-lab platform-lab-config -o jsonpath="{.data.APP_ENVIRONMENT}{'\n'}"
 ```
+
+## Observed demos
+
+On 24 September 2026:
+
+1. A Git commit changed `APP_ENVIRONMENT` to `local-gitops`. Argo CD synced revision `e2b7964` and the live ConfigMap matched Git.
+2. A live patch set `APP_ENVIRONMENT=manual-drift`. Argo CD went OutOfSync, self-healed back to `local-gitops`, and stayed Healthy with Deployment 2/2.

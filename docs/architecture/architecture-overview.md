@@ -71,7 +71,7 @@ Kustomize keeps one shared description of the workload and small differences per
 | Deployment | `platform-lab` | Runs two replicas of `kirandevraaj/platform-lab:0.1.0` |
 | Service | `platform-lab` | ClusterIP on port 8000 |
 
-`kubernetes/overlays/local` points at that base and leaves the namespace, `APP_ENVIRONMENT=local`, and image tag `0.1.0` unchanged. `kubernetes/overlays/aws` also points at the base. It does not add AWS resources yet.
+`kubernetes/overlays/local` points at that base and sets `APP_ENVIRONMENT=local-gitops` (GitOps demo value; previously `local`). Image tag remains `0.1.0`. `kubernetes/overlays/aws` also points at the base. It does not add AWS resources yet.
 
 ## Actual local deployment
 
