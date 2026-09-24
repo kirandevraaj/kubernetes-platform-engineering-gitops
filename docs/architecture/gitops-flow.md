@@ -1,6 +1,6 @@
 # GitOps flow
 
-Status: Argo CD is installed on the VMware `ckad-lab` cluster and reconciles Application `platform-lab-local` from Git. CD is live for the local overlay, including the `0.1.1` image promotion. The AWS overlay is not managed yet.
+Status: Argo CD is installed on the VMware `ckad-lab` cluster and reconciles Application `platform-lab-local` from Git. CD is live for the local overlay, including automated promotion of `0.1.2`. The AWS overlay is not managed yet.
 
 ## CI versus CD
 
@@ -68,9 +68,7 @@ Manual cluster edits are temporary. With self-heal, Argo CD restores the Git val
 
 **Self-heal.** The live ConfigMap was patched to `APP_ENVIRONMENT=manual-drift`. Argo CD reported OutOfSync, then restored `local-gitops` and returned to Synced/Healthy within a few seconds. Deployment stayed 2/2 Ready; replicas were not changed.
 
-**Image promotion 0.1.1.** After Jenkins published `kirandevraaj/platform-lab:0.1.1`, commit `a8ca030` set the local overlay image tag to `0.1.1`. Argo CD reconciled that Git change automatically. The live Deployment rolled to `0.1.1` without a manual `kubectl apply`. Both pods ran the new image. `GET /` showed version `0.1.1`, environment `local-gitops`, and release `ci-cd-integration-test`.
-
-CI publishing the image and GitOps changing the desired image tag are separate steps. Docker Hub alone does not move the cluster.
+**Image promotion 0.1.2 (automated).** Application commit `d7e0a12` was detected by Jenkins `pollSCM` (build `#5`). Jenkins published `kirandevraaj/platform-lab:0.1.2` and pushed GitOps commit `1eb1428`. Argo CD reached Synced/Healthy on that revision. Deployment rolled to `0.1.2` (2/2). Build `#6` processed the promotion commit and skipped build/push (loop prevention).
 
 ## Repository map
 

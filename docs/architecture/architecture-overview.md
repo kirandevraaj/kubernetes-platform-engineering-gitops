@@ -35,7 +35,7 @@ The repository holds the application source under `app/`, including a Dockerfile
 - `kubernetes/overlays/local` for this VMware cluster (applied)
 - `kubernetes/overlays/aws` for a later AWS cluster (not applied)
 
-The local overlay is running on this cluster. The AWS overlay has not been applied. The published image used by the local lab is `kirandevraaj/platform-lab:0.1.1`. Jenkins CI on Docker Desktop runs `jenkins/Jenkinsfile` on node `linux-agent`: it polls GitHub, publishes images when `app/**` changes, and commits the local overlay image tag; it does not deploy to this cluster. Argo CD `v3.5.3` runs in namespace `argocd` on `ckad-lab` and reconciles Application `platform-lab-local` from `kubernetes/overlays/local` on `main`. Prometheus, Grafana, and OpenTelemetry are planned to observe the application. Terraform under `terraform/aws` is reserved for the AWS path and does not describe this VMware lab. AWS is a separate future deployment target.
+The local overlay is running on this cluster. The AWS overlay has not been applied. The published image used by the local lab is `kirandevraaj/platform-lab:0.1.2`. Jenkins CI on Docker Desktop runs `jenkins/Jenkinsfile` on node `linux-agent`: it polls GitHub, publishes images when `app/**` changes, and commits the local overlay image tag; it does not deploy to this cluster. Argo CD `v3.5.3` runs in namespace `argocd` on `ckad-lab` and reconciles Application `platform-lab-local` from `kubernetes/overlays/local` on `main`. Prometheus, Grafana, and OpenTelemetry are planned to observe the application. Terraform under `terraform/aws` is reserved for the AWS path and does not describe this VMware lab. AWS is a separate future deployment target.
 
 ## Delivery flow
 
@@ -71,20 +71,20 @@ Kustomize keeps one shared description of the workload and small differences per
 | Deployment | `platform-lab` | Runs two replicas; base defaults to `kirandevraaj/platform-lab:0.1.0` |
 | Service | `platform-lab` | ClusterIP on port 8000 |
 
-`kubernetes/overlays/local` points at that base, keeps `APP_ENVIRONMENT=local-gitops`, and uses a Kustomize `images` entry so the Deployment resolves to `kirandevraaj/platform-lab:0.1.1`. `kubernetes/overlays/aws` also points at the base and still resolves to `0.1.0`. It does not add AWS resources yet.
+`kubernetes/overlays/local` points at that base, keeps `APP_ENVIRONMENT=local-gitops`, and uses a Kustomize `images` entry so the Deployment resolves to `kirandevraaj/platform-lab:0.1.2`. `kubernetes/overlays/aws` also points at the base and still resolves to `0.1.0`. It does not add AWS resources yet.
 
 ## Actual local deployment
 
-First applied on 24 September 2026 with `kubectl apply -k kubernetes/overlays/local` on context `ckad-lab`. After the GitOps promotion of `0.1.1`, Argo CD owns ongoing reconciliation. Pod names change across rollouts.
+First applied on 24 September 2026 with `kubectl apply -k kubernetes/overlays/local` on context `ckad-lab`. After automated GitOps promotion of `0.1.2`, Argo CD owns ongoing reconciliation. Pod names change across rollouts.
 
-| Object | Observed value after 0.1.1 GitOps promotion |
+| Object | Observed value after automated 0.1.2 promotion |
 |---|---|
 | Namespace | `platform-lab` |
 | Deployment | `platform-lab`, 2 replicas, Ready |
 | Service | `platform-lab`, ClusterIP, port 8000 |
-| Image | `kirandevraaj/platform-lab:0.1.1` |
+| Image | `kirandevraaj/platform-lab:0.1.2` |
 | ConfigMap `APP_ENVIRONMENT` | `local-gitops` |
-| `GET /` | version `0.1.1`, environment `local-gitops`, release `ci-cd-integration-test` |
+| `GET /` | version `0.1.2`, environment `local-gitops`, release `automated-ci-cd` |
 ```mermaid
 flowchart TD
     deployment[Deployment platform-lab]

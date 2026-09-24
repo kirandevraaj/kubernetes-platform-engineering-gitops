@@ -109,5 +109,22 @@ Before automation, the same path was exercised by hand:
 
 | Item | State |
 |---|---|
-| Jenkinsfile automation | Implemented (pollSCM, app/** gate, promote + push) |
-| Controlled automated release demo | Recorded after the `0.1.2` end-to-end run |
+| Jenkinsfile automation | Implemented and loaded (`pollSCM`, app/** gate, promote + push) |
+| Controlled automated release demo | **Completed** for `0.1.2` on 24 September 2026 |
+
+## Automated integration test: 0.1.2 (24 September 2026)
+
+| Step | Evidence |
+|---|---|
+| Application commit | `d7e0a12` — `feat: release platform-lab 0.1.2 for automated CI/CD test` (`release: automated-ci-cd`) |
+| Seed / non-app build | Jenkins `#4` SUCCESS — CI/CD stages skipped (Jenkinsfile/docs only) |
+| App CI/CD build | Jenkins `#5` — Started by SCM change — SUCCESS on `linux-agent` |
+| Image | `kirandevraaj/platform-lab:0.1.2` |
+| Digest | `sha256:082e161b0c90d588fe4f045d80a54297881e188a0e6417e71aaa814a66b92c8a` |
+| GitOps promotion commit | `1eb1428` — `chore: promote platform-lab 0.1.2 to local GitOps` (only local kustomization) |
+| Loop-prevention build | Jenkins `#6` — SCM change on kustomization only — SUCCESS with stages skipped |
+| Argo CD | Synced / Healthy on revision `1eb1428` (after refresh; Progressing during rollout) |
+| Deployment | `platform-lab` 2/2 Ready, image `0.1.2`; prior `0.1.1` ReplicaSet scaled to 0 |
+| HTTP | `GET /` → version `0.1.2`, environment `local-gitops`, release `automated-ci-cd`; `/health`, `/version`, `/info` → 200 |
+
+No manual `kubectl apply`, `docker build`, or `docker push` was used for the `0.1.2` promotion path.

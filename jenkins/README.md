@@ -1,6 +1,6 @@
 # Jenkins CI
 
-Status: automated CI/CD is implemented in `jenkins/Jenkinsfile`. Job `platform-lab-ci` polls GitHub, builds only when `app/**` changes, publishes `kirandevraaj/platform-lab:<APP_VERSION>`, and promotes that tag in `kubernetes/overlays/local/kustomization.yaml`. Argo CD deploys; Jenkins does not call `kubectl`.
+Status: automated CI/CD is demonstrated end-to-end. Job `platform-lab-ci` polls GitHub (`H/2 * * * *`), builds only when `app/**` changes, published `kirandevraaj/platform-lab:0.1.2` on build `#5`, and promoted the local overlay. Build `#6` confirmed the GitOps commit does not rebuild the image.
 
 ## Local runtime
 
