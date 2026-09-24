@@ -79,6 +79,26 @@ Networking desired state is part of the workload package. Jenkins does not apply
 
 Argo CD AppProject `platform-lab` must allow `networking.k8s.io` `Ingress` and `NetworkPolicy`. That ACL lives in `gitops/projects/platform-lab.yaml` and is applied to the `argocd` namespace as Argo CD control-plane configuration (not by the Application sync of `kubernetes/overlays/local`).
 
-## Validation results
+## Validation results (24 September 2026)
 
-Filled after GitOps reconciliation of this step.
+| Check | Result |
+|---|---|
+| Commit | `99a0f98` — `feat: add ingress and network policy for platform-lab` |
+| Argo CD | Synced / Healthy on `99a0f98` |
+| Ingress | `platform-lab` class `nginx`, host `platform-lab.local`, address `10.98.173.180` |
+| NetworkPolicy | `platform-lab` selects app pods; allows from `ingress-nginx` controller on TCP/8000 |
+| Deployment | Remained **2/2 Ready**, image still `kirandevraaj/platform-lab:0.1.2`, pod restarts **0** |
+| Ingress HTTP | `curl -H "Host: platform-lab.local" http://192.168.56.11:30080/{,/health,/version,/info}` → **200** (also 200 via `.12` and `.10`) |
+| Without Host | `http://192.168.56.11:30080/health` → nginx **404** (vhost required) |
+| Jenkins | Build `#8` Started by SCM change on `99a0f98`; **no** `app/**`; Docker build/push/promote **skipped**; SUCCESS |
+| New image tag | None created |
+
+### NetworkPolicy negative testing
+
+A destructive “curl from a random pod” probe was not created. Validated instead:
+
+1. Policy object matches the intended selectors/rules (read-only `kubectl get`).
+2. The only exercised north-south path (ingress-nginx NodePort → Ingress → Service → Pod) returns 200.
+3. Direct NodePort access without the Ingress Host header does not reach the app (404 from nginx default backend).
+
+Blocked east-west traffic from unrelated namespaces was not proven with an extra test client in this step.
