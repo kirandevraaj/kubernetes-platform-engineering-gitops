@@ -6,7 +6,7 @@ A portfolio project that builds a small platform around a containerized applicat
 
 Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
 
-The current lab cluster is an existing three-node environment used as the local runtime. The sample application lives under `app/`. Kubernetes manifests, Terraform resources, Jenkins pipelines, and Argo CD resources are not included yet.
+The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.0`. Kubernetes manifests, Terraform resources, Jenkins pipelines, and Argo CD resources are not included yet.
 
 ## Architecture overview
 
@@ -18,17 +18,19 @@ Developer
    v
 Git repository
    |
-   +--> Jenkins CI --------> container image
+   +--> container image (published: kirandevraaj/platform-lab:0.1.0)
    |
-   +--> Argo CD (GitOps) --> Kubernetes
-                                |
-                                +--> local lab (VMware Workstation)
-                                |
-                                +--> AWS target (separate)
+   +--> Jenkins CI (planned) --------> image build and test
+   |
+   +--> Argo CD / GitOps (planned) --> Kubernetes
+                                          |
+                                          +--> local lab (VMware Workstation, current runtime)
+                                          |
+                                          +--> AWS target (planned, separate)
 
-Observability: Prometheus, Grafana, OpenTelemetry
-Automation: Python
-Infrastructure: Terraform (AWS path)
+Observability: Prometheus, Grafana, OpenTelemetry (planned)
+Automation: Python (planned)
+Infrastructure: Terraform / AWS path (planned)
 ```
 
 Local runtime observed on 24 September 2026 (read-only):
@@ -77,17 +79,17 @@ Two deployment targets stay separate for the life of this project.
 
 When those overlays exist, they will describe the same application shape with different infrastructure. A change for one target stays in that target. See [environment strategy](docs/design/environment-strategy.md).
 
-## Planned implementation phases
+## Implementation status
 
-1. **Repository baseline.** Project layout, architecture notes, and a read-only record of the current lab. This phase.
-2. **Application and image.** Completed. The service, tests, and Dockerfile are in `app/`. Container image `kirandevraaj/platform-lab:0.1.0` is published. The tag `latest` is not used.
-3. **Kubernetes packaging.** Base manifests and local/AWS overlays, applied only after review.
-4. **Jenkins CI.** Build, test, and publish the image.
-5. **Argo CD GitOps.** The cluster reconciles from Git.
-6. **Networking.** Ingress, service exposure, and NetworkPolicy appropriate to each target.
-7. **Observability.** Prometheus, Grafana, and OpenTelemetry for the application.
-8. **AWS path.** Terraform for the AWS runtime, kept apart from the VMware lab.
-9. **Python automation.** Repeatable checks and operational helpers.
+1. **Repository baseline.** Completed. Project layout, architecture notes, and a read-only record of the current lab.
+2. **Application and container image.** Completed. The service, tests, and Dockerfile are in `app/`. `kirandevraaj/platform-lab:0.1.0` is published. The tag `latest` is not used.
+3. **Kubernetes packaging.** Next. Base manifests and local/AWS overlays, applied only after review.
+4. **Jenkins CI.** Planned. Build, test, and publish the image.
+5. **Argo CD GitOps.** Planned. The cluster reconciles from Git.
+6. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
+7. **Observability.** Planned. Prometheus, Grafana, and OpenTelemetry for the application.
+8. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
+9. **Python automation.** Planned. Repeatable checks and operational helpers.
 
 ## Published container artifact
 
