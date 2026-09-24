@@ -117,3 +117,19 @@ curl.exe -sS -H "Host: platform-lab.local" http://192.168.56.200/version
 1. **Single pod delete.** Delete one Ready pod; Deployment recreates it; Service stays available; other pod should not restart unnecessarily.
 2. **Rolling update.** Applying the reliability pod-template patch (or any template change) creates a new ReplicaSet with `maxUnavailable: 0` / `maxSurge: 1`.
 3. **HPA.** Confirm `kubectl get hpa` shows TARGETS with a real CPU metric (not `<unknown>`). Scale-out may not occur under idle load; document that honestly.
+
+## Observed validation (24 September 2026)
+
+| Check | Result |
+|---|---|
+| Commit | `bc8181f` |
+| Jenkins | Build `#16` SUCCESS; app CI stages skipped (no `app/**` change); no image build/push |
+| Argo CD | `platform-lab-local` Synced/Healthy at `bc8181f` |
+| Rolling update | Old RS `platform-lab-57bc9dcd78` → new RS `platform-lab-58697f7bf4` (pod-template reliability patch; same image `0.1.3`) |
+| HPA | TARGETS `cpu: 4%/70%`; ScalingActive True; replicas stay at 2 under idle load |
+| PDB | `minAvailable: 1`, Allowed disruptions: 1 |
+| Pod delete | Deleted one pod; replacement Ready in ~13s; survivor restarts stayed 0; endpoints updated |
+| Placement after recreate | Pods on `k8s-worker-01` and `k8s-worker-02` |
+| App | `/health` healthy; `/version` `0.1.3` via `platform-lab.local` |
+
+**Note:** Immediately after the RollingUpdate both new pods briefly landed on `k8s-worker-02` (`ScheduleAnyway` preference during surge). After deleting one pod, the replacement scheduled on `k8s-worker-01`, restoring spread.
