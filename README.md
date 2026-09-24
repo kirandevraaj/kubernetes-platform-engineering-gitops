@@ -6,11 +6,11 @@ A portfolio project that builds a small platform around a containerized applicat
 
 Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
 
-The current lab cluster is an existing three-node environment used as the local runtime. This repository starts as design and structure only. No application code, Kubernetes manifests, Terraform resources, Jenkins pipelines, or Argo CD resources are included yet.
+The current lab cluster is an existing three-node environment used as the local runtime. The sample application lives under `app/`. Kubernetes manifests, Terraform resources, Jenkins pipelines, and Argo CD resources are not included yet.
 
 ## Architecture overview
 
-The diagram below is the intended shape. The application, Jenkins, Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only runtime that exists today.
+The diagram below is the intended shape. The Python application exists under `app/` and runs on the workstation. Jenkins, Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
 
 ```text
 Developer
@@ -52,12 +52,12 @@ Present in the local lab now:
 | Orchestration | Kubernetes v1.31.14 |
 | Node runtime | containerd 2.2.1 |
 | Networking | Calico v3.30.7, ingress-nginx, MetalLB |
+| Application | Python FastAPI service under `app/`, version 0.1.0, not yet deployed |
 
 Planned, and not in this repository yet:
 
 | Area | Tool |
 |---|---|
-| Application | A small Python service and its tests |
 | Image build | Docker, on the workstation |
 | CI | Jenkins |
 | CD | Argo CD / GitOps |
@@ -80,7 +80,7 @@ When those overlays exist, they will describe the same application shape with di
 ## Planned implementation phases
 
 1. **Repository baseline.** Project layout, architecture notes, and a read-only record of the current lab. This phase.
-2. **Application and image.** A small Python service, tests, and a container build.
+2. **Application and image.** The Python service and tests are in `app/`. The container build is still ahead.
 3. **Kubernetes packaging.** Base manifests and local/AWS overlays, applied only after review.
 4. **Jenkins CI.** Build, test, and publish the image.
 5. **Argo CD GitOps.** The cluster reconciles from Git.
