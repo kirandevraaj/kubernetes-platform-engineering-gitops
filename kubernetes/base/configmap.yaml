@@ -8,4 +8,4 @@ metadata:
     app.kubernetes.io/component: api
     app.kubernetes.io/version: "0.1.0"
 data:
-  APP_ENVIRONMENT: local
+  APP_ENVIRONMENT: local-gitops
