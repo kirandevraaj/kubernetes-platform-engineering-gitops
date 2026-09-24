@@ -1,20 +1,48 @@
 # CI/CD flow
 
-Status: planned. No Jenkins job exists yet.
+Status: CI pipeline is defined in `jenkins/Jenkinsfile`. Jenkins is not installed or configured, and the pipeline has not run. CD is not implemented. No Argo CD Application exists yet.
 
-## Intended flow
+## CI and CD
 
-1. A change lands on the application branch.
-2. Jenkins checks out the repository.
-3. Jenkins runs the Python test suite.
-4. Jenkins builds a container image and tags it with the commit SHA.
-5. Jenkins publishes the image to the registry chosen for that target.
-6. Jenkins updates the image reference in the GitOps path, or opens a change that does so.
-7. Argo CD reconciles the cluster from Git. Jenkins does not run `kubectl apply` against a live cluster as the steady-state deploy step.
+CI builds, tests, packages, and publishes an image. It stops at Docker Hub.
 
-## Boundaries
+CD is a later phase. Argo CD is planned to reconcile Kubernetes from Git. This repository does not claim that Argo CD is installed or that it deploys the application.
 
-- CI produces an artifact and a Git change.
-- CD is GitOps. The desired state lives in `gitops/` and `kubernetes/`.
-- The local lab and the AWS target use different registries, credentials, and GitOps applications.
-- Pipeline files will be added under `jenkins/` in a later phase.
+Jenkins does not run `kubectl apply` as the deploy step.
+
+## Intended CI path
+
+```text
+Developer
+    |
+    v
+GitHub
+    |
+    v
+Jenkins CI
+    |-- Checkout
+    |-- Unit Test
+    |-- Read Application Version
+    |-- Docker Build
+    |-- Docker Image Validation
+    |-- Docker Hub Push
+            |
+            v
+      Docker Hub
+      kirandevraaj/platform-lab:<APP_VERSION>
+```
+
+`APP_VERSION` is read from `app/src/__init__.py`. The current value is `0.1.0`, so the image name is `kirandevraaj/platform-lab:0.1.0`. The tag `latest` is not used.
+
+The Docker Hub token is a Jenkins credential named `dockerhub-platform-lab`. It is not stored in Git. Creating that credential and running the job are still outstanding.
+
+## What CI does not do
+
+- It does not edit the live cluster.
+- It does not install Argo CD.
+- It does not update GitOps desired state. That remains a later step if a new image tag must be recorded in `kubernetes/`.
+- It does not publish one image for the local lab and another for AWS. Both targets use the same versioned image name until an AWS registry is introduced.
+
+## Later CD path
+
+When that phase starts, a commit that changes the desired image reference in Git is the input. Argo CD is planned to render `kubernetes/overlays/local` or `kubernetes/overlays/aws` and converge the matching cluster. Those Applications do not exist yet. The local VMware workload that is already running was applied directly from the local overlay, not by this pipeline and not by Argo CD.

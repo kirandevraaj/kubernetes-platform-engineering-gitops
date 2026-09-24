@@ -1,0 +1,180 @@
+// CI for platform-lab. This file defines the pipeline only.
+// Jenkins is not configured to run it yet. Do not put registry secrets here.
+// The Docker Hub credential dockerhub-platform-lab is created in Jenkins, not in Git.
+
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_REPO = 'kirandevraaj/platform-lab'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                sh '''
+                    set -eu
+                    if command -v python3 >/dev/null 2>&1; then
+                        PY=python3
+                    else
+                        PY=python
+                    fi
+                    "$PY" -m venv .venv
+                    . .venv/bin/activate
+                    python -m pip install --disable-pip-version-check -r app/requirements-dev.txt
+                    python -m pytest app/tests
+                '''
+            }
+        }
+
+        stage('Read Application Version') {
+            steps {
+                script {
+                    env.APP_VERSION = sh(returnStdout: true, script: '''
+                        set -eu
+                        if command -v python3 >/dev/null 2>&1; then
+                            PY=python3
+                        else
+                            PY=python
+                        fi
+                        "$PY" - <<'PY'
+import ast
+from pathlib import Path
+
+tree = ast.parse(Path("app/src/__init__.py").read_text(encoding="utf-8"))
+found = None
+for node in tree.body:
+    if isinstance(node, ast.Assign):
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id == "APP_VERSION":
+                found = ast.literal_eval(node.value)
+if not isinstance(found, str) or not found:
+    raise SystemExit("APP_VERSION string not found in app/src/__init__.py")
+if found == "latest":
+    raise SystemExit("APP_VERSION must not be latest")
+print(found)
+PY
+                    ''').trim()
+                    if (!env.APP_VERSION?.trim()) {
+                        error('APP_VERSION is empty')
+                    }
+                    if (env.APP_VERSION == 'latest') {
+                        error('APP_VERSION must not be latest')
+                    }
+                    echo "Application version ${env.APP_VERSION}"
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    set -eu
+                    if [ "$APP_VERSION" = "latest" ] || [ -z "$APP_VERSION" ]; then
+                        echo "Refusing to build tag latest or an empty version"
+                        exit 1
+                    fi
+                    docker build -f app/Dockerfile -t "${IMAGE_REPO}:${APP_VERSION}" app
+                '''
+            }
+        }
+
+        stage('Docker Image Validation') {
+            steps {
+                sh '''
+                    set -eu
+                    image="${IMAGE_REPO}:${APP_VERSION}"
+                    if [ "$APP_VERSION" = "latest" ]; then
+                        echo "Refusing to validate tag latest"
+                        exit 1
+                    fi
+
+                    repo_tags="$(docker inspect --format '{{range .RepoTags}}{{.}} {{end}}' "$image")"
+                    echo "$repo_tags" | grep -F -q "${IMAGE_REPO}:${APP_VERSION}"
+                    if echo "$repo_tags" | grep -E -q '(^| )[^ ]+:latest( |$)'; then
+                        echo "Image must not carry the latest tag"
+                        exit 1
+                    fi
+
+                    user="$(docker inspect --format '{{.Config.User}}' "$image")"
+                    if [ "$user" != "app" ]; then
+                        echo "Expected user app, found ${user}"
+                        exit 1
+                    fi
+
+                    exposed="$(docker inspect --format '{{json .Config.ExposedPorts}}' "$image")"
+                    echo "$exposed" | grep -F -q '"8000/tcp"'
+
+                    health="$(docker inspect --format '{{if .Config.Healthcheck}}present{{end}}' "$image")"
+                    if [ "$health" != "present" ]; then
+                        echo "Image has no healthcheck"
+                        exit 1
+                    fi
+
+                    docker run --rm --entrypoint python \
+                        -e EXPECTED_VERSION="$APP_VERSION" \
+                        "$image" \
+                        -c 'import os, pathlib, src; assert pathlib.Path("/app/src/main.py").is_file(); assert pathlib.Path("/app/src/__init__.py").is_file(); assert src.APP_VERSION == os.environ["EXPECTED_VERSION"]'
+
+                    if command -v python3 >/dev/null 2>&1; then
+                        PY=python3
+                    else
+                        PY=python
+                    fi
+                    name="platform-lab-ci-${BUILD_NUMBER}"
+                    cleanup() {
+                        docker rm -f "$name" >/dev/null 2>&1 || true
+                    }
+                    trap cleanup EXIT
+                    docker rm -f "$name" >/dev/null 2>&1 || true
+                    docker run -d --name "$name" -p 127.0.0.1:18000:8000 "$image"
+                    ok=0
+                    for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+                        if "$PY" -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:18000/health", timeout=2).read()'; then
+                            ok=1
+                            break
+                        fi
+                        sleep 2
+                    done
+                    if [ "$ok" != "1" ]; then
+                        echo "Local health check failed"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+
+        stage('Docker Hub Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-platform-lab',
+                    usernameVariable: 'DOCKERHUB_USER',
+                    passwordVariable: 'DOCKERHUB_TOKEN'
+                )]) {
+                    sh '''
+                        set -eu
+                        if [ "$APP_VERSION" = "latest" ] || [ -z "$APP_VERSION" ]; then
+                            echo "Refusing to push tag latest or an empty version"
+                            exit 1
+                        fi
+                        set +x
+                        printf '%s' "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USER" --password-stdin
+                        docker push "${IMAGE_REPO}:${APP_VERSION}"
+                        docker logout
+                    '''
+                }
+            }
+            post {
+                always {
+                    sh 'docker logout >/dev/null 2>&1 || true'
+                }
+            }
+        }
+    }
+}
