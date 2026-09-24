@@ -3,7 +3,7 @@
 // The Docker Hub credential dockerhub-platform-lab is created in Jenkins, not in Git.
 
 pipeline {
-    agent any
+    agent { label 'linux && docker' }
 
     environment {
         IMAGE_REPO = 'kirandevraaj/platform-lab'
