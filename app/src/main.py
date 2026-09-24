@@ -14,6 +14,7 @@ APP_DESCRIPTION = (
     "Sample workload for the Kubernetes Platform Engineering and GitOps Lab."
 )
 APP_ENVIRONMENT = os.getenv("APP_ENVIRONMENT", "local")
+APP_RELEASE = "ci-cd-integration-test"
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION, description=APP_DESCRIPTION)
 
@@ -23,6 +24,7 @@ class ApplicationResponse(BaseModel):
     description: str
     version: str
     environment: str
+    release: str
 
 
 class HealthResponse(BaseModel):
@@ -50,6 +52,7 @@ def read_root() -> ApplicationResponse:
         description=APP_DESCRIPTION,
         version=APP_VERSION,
         environment=APP_ENVIRONMENT,
+        release=APP_RELEASE,
     )
 
 

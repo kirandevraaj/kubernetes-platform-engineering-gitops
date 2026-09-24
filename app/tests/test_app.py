@@ -10,7 +10,7 @@ if str(APP_DIR) not in sys.path:
 from fastapi.testclient import TestClient
 
 from src import APP_VERSION
-from src.main import APP_DESCRIPTION, APP_NAME, app
+from src.main import APP_DESCRIPTION, APP_NAME, APP_RELEASE, app
 
 client = TestClient(app)
 
@@ -23,7 +23,10 @@ def test_root_returns_application_identity() -> None:
     assert body["name"] == APP_NAME
     assert body["description"] == APP_DESCRIPTION
     assert body["version"] == APP_VERSION
+    assert body["version"] == "0.1.1"
     assert body["environment"] == "local"
+    assert body["release"] == APP_RELEASE
+    assert body["release"] == "ci-cd-integration-test"
 
 
 def test_health_returns_healthy() -> None:
@@ -38,6 +41,7 @@ def test_version_returns_application_version() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"name": APP_NAME, "version": APP_VERSION}
+    assert response.json()["version"] == "0.1.1"
 
 
 def test_info_returns_non_sensitive_metadata() -> None:
