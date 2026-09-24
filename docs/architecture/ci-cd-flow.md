@@ -16,7 +16,7 @@ CD is Argo CD on the VMware cluster. It reads Git and syncs Kubernetes manifests
 | Git commit to `kubernetes/overlays/local` | Desired image tag for Argo CD | Docker Hub contents by itself |
 | Argo CD | Live cluster objects until they match Git | Image builds or registry pushes |
 
-Publishing a new image is not the same as deploying it. The cluster moves to a new tag only after Git records that tag and Argo CD reconciles.
+Publishing a new image is not the same as deploying it. The cluster moves to a new tag only after Git records that tag and Argo CD reconciles. Kubernetes networking objects (Ingress, NetworkPolicy) also change only through Git → Argo CD, not through Jenkins.
 
 ## Automated path
 

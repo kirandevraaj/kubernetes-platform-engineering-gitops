@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform-lab
+  labels:
+    app.kubernetes.io/name: platform-lab
+    app.kubernetes.io/instance: platform-lab
+    app.kubernetes.io/component: api
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: platform-lab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: platform-lab
+                port:
+                  number: 8000

@@ -23,5 +23,9 @@ spec:
       kind: Service
     - group: apps
       kind: Deployment
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: NetworkPolicy
   orphanedResources:
     warn: true

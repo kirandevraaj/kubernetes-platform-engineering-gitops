@@ -70,8 +70,10 @@ Kustomize keeps one shared description of the workload and small differences per
 | ConfigMap | `platform-lab-config` | Supplies `APP_ENVIRONMENT` |
 | Deployment | `platform-lab` | Runs two replicas; base defaults to `kirandevraaj/platform-lab:0.1.0` |
 | Service | `platform-lab` | ClusterIP on port 8000 |
+| Ingress | `platform-lab` | Host `platform-lab.local` → Service `:8000` (ingressClass `nginx`) |
+| NetworkPolicy | `platform-lab` | Allows TCP/8000 to app pods only from ingress-nginx controller |
 
-`kubernetes/overlays/local` points at that base, keeps `APP_ENVIRONMENT=local-gitops`, and uses a Kustomize `images` entry so the Deployment resolves to `kirandevraaj/platform-lab:0.1.2`. `kubernetes/overlays/aws` also points at the base and still resolves to `0.1.0`. It does not add AWS resources yet.
+`kubernetes/overlays/local` points at that base, keeps `APP_ENVIRONMENT=local-gitops`, and uses a Kustomize `images` entry so the Deployment resolves to `kirandevraaj/platform-lab:0.1.2`. `kubernetes/overlays/aws` also points at the base and still resolves to `0.1.0`. It does not add AWS-specific networking patches in this step. Details: [networking.md](networking.md).
 
 ## Actual local deployment
 
@@ -84,6 +86,8 @@ First applied on 24 September 2026 with `kubectl apply -k kubernetes/overlays/lo
 | Service | `platform-lab`, ClusterIP, port 8000 |
 | Image | `kirandevraaj/platform-lab:0.1.2` |
 | ConfigMap `APP_ENVIRONMENT` | `local-gitops` |
+| Ingress | `platform-lab.local` via ingress-nginx NodePort 30080 |
+| NetworkPolicy | ingress from `ingress-nginx` controller to TCP/8000 |
 | `GET /` | version `0.1.2`, environment `local-gitops`, release `automated-ci-cd` |
 ```mermaid
 flowchart TD
@@ -101,7 +105,7 @@ flowchart TD
     service --> app
 ```
 
-The Service is ClusterIP only. Ingress and MetalLB are not used for this workload.
+The Service is ClusterIP. External HTTP entry for the local lab is ingress-nginx NodePort **30080** with Host `platform-lab.local`. See [networking.md](networking.md).
 
 ## Windows workstation
 
