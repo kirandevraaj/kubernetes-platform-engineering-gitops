@@ -25,4 +25,10 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ApplyOutOfSyncOnly=true
-  ignoreDifferences: []
+  ignoreDifferences:
+    # HPA owns replica count at runtime; ignore drift vs Git Deployment.spec.replicas.
+    - group: apps
+      kind: Deployment
+      name: platform-lab
+      jsonPointers:
+        - /spec/replicas

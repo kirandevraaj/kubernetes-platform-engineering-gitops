@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: platform-lab
+spec:
+  # Prefer bringing a new pod Ready before removing an old one (2-replica lab).
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    spec:
+      # Soft preference: spread replicas across nodes when possible.
+      # ScheduleAnyway keeps the lab schedulable if a worker is down.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: platform-lab
+              app.kubernetes.io/instance: platform-lab

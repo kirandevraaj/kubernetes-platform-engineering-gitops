@@ -34,6 +34,14 @@ Record a decision here when it is accepted. Until then, items below are open.
 - **Decision:** Install `kube-prometheus-stack` chart `91.5.1` into namespace `monitoring` via Argo CD Application `platform-lab-observability`. Prometheus Service stays ClusterIP. Grafana Service is LoadBalancer so MetalLB allocates another address from existing `lab-pool`. No Grafana Ingress. Application scrape uses ServiceMonitor in the local overlay; NetworkPolicy allows namespace `monitoring`. Alertmanager is disabled for a minimal footprint.
 - **Consequences:** Grafana EXTERNAL-IP is discovered after reconcile and must not be hard-coded. AppProject `platform-lab` gains `ServiceMonitor` permission. Jenkins promotion updates only `newTag` so overlay resources (ingress Service patch, ServiceMonitor, patches) survive promotion.
 
+## ADR-008: Local reliability uses HPA, PDB, and soft topology spread
+
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** The local lab Deployment used implicit RollingUpdate defaults, had no HPA or PDB, and lacked explicit topology preferences. metrics-server is healthy. AWS overlay must stay unchanged.
+- **Decision:** Add local-overlay only resources: HPA (`autoscaling/v2`, CPU 70%, min 2 / max 4), PDB (`minAvailable: 1`), RollingUpdate `maxUnavailable: 0` / `maxSurge: 1`, and `topologySpreadConstraints` with `ScheduleAnyway`. Do not add a startupProbe (FastAPI is fast to Ready). Argo CD ignores Deployment `/spec/replicas` so HPA can scale without sync fights.
+- **Consequences:** Reliability objects live under `kubernetes/overlays/local`. AppProject gains HPA and PDB kinds. Idle CPU may keep HPA at minReplicas; that is an accepted lab limitation.
+
 ## Open decisions
 
 | ID | Question | Notes |

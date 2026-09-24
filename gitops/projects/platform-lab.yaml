@@ -34,5 +34,10 @@ spec:
     # Local-overlay ServiceMonitor for Prometheus Operator scrapes.
     - group: monitoring.coreos.com
       kind: ServiceMonitor
+    # Local reliability: CPU autoscaling and voluntary disruption protection.
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+    - group: policy
+      kind: PodDisruptionBudget
   orphanedResources:
     warn: true

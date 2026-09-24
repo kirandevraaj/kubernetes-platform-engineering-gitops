@@ -110,8 +110,9 @@ When those overlays exist, they will describe the same application shape with di
 8. **Automated CI/CD promotion.** Completed and demonstrated. `jenkins/Jenkinsfile` uses `pollSCM`, runs build/push/promotion only for `app/**` changes, refuses reused Docker Hub tags, updates only `kubernetes/overlays/local/kustomization.yaml`, and pushes with `github-platform-lab`. Release `0.1.2` was published by Jenkins build `#5` and reconciled by Argo CD without `kubectl apply`. The follow-up promotion commit build `#6` skipped CI/CD stages (loop prevention). See [jenkins/README.md](jenkins/README.md) and [docs/architecture/ci-cd-flow.md](docs/architecture/ci-cd-flow.md).
 9. **Networking.** Completed for the local lab. Ingress + NetworkPolicy in `kubernetes/base`; local overlay patches `ingress-nginx-controller` to MetalLB **LoadBalancer** (L2). Application Service stays ClusterIP. See [docs/architecture/networking.md](docs/architecture/networking.md).
 10. **Observability.** Completed for the local lab on 24 September 2026. `kube-prometheus-stack` is managed by Argo CD Application `platform-lab-observability`. Grafana is MetalLB LoadBalancer (observed VIP `192.168.56.201`); Prometheus is ClusterIP. Application exposes `/metrics` from version `0.1.3`. ServiceMonitor targets are up. See [docs/architecture/observability.md](docs/architecture/observability.md).
-11. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
-12. **Python automation.** Planned. Repeatable checks and operational helpers.
+11. **Reliability & production hardening.** Completed for the local lab. Local overlay adds HPA (CPU 70%, 2–4 replicas), PDB (`minAvailable: 1`), RollingUpdate `maxUnavailable: 0` / `maxSurge: 1`, and soft hostname topology spread. See [docs/architecture/reliability.md](docs/architecture/reliability.md).
+12. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
+13. **Python automation.** Planned. Repeatable checks and operational helpers.
 
 ## Published container artifact
 
