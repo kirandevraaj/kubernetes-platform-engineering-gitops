@@ -73,7 +73,15 @@ curl http://127.0.0.1:8000/info
 
 ## Docker
 
-The image packages the runtime service only. Tests stay on the workstation. Build it locally as `kirandevraaj/platform-lab:0.1.0`. That name matches the Docker Hub repository, and this tag has not been pushed.
+The image packages the runtime service only. Tests stay on the workstation. Version `0.1.0` is published and is the current versioned image. The tag `latest` is intentionally not used. The digest is the immutable reference:
+
+`sha256:e6c16fbebf01422a6a0f0c21b3aebb0991ccca4c3a2af190d0b0ad5f264ba788`
+
+| Field | Value |
+|---|---|
+| Image | `kirandevraaj/platform-lab:0.1.0` |
+| Docker Hub | https://hub.docker.com/r/kirandevraaj/platform-lab |
+| Digest | `sha256:e6c16fbebf01422a6a0f0c21b3aebb0991ccca4c3a2af190d0b0ad5f264ba788` |
 
 From the repository root:
 

@@ -10,7 +10,7 @@ The current lab cluster is an existing three-node environment used as the local 
 
 ## Architecture overview
 
-The diagram below is the intended shape. The Python application exists under `app/` and can be built locally as `kirandevraaj/platform-lab:0.1.0`. That image has not been pushed. Jenkins, Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
+The diagram below is the intended shape. The Python application is containerized and version `0.1.0` is published. Jenkins, Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
 
 ```text
 Developer
@@ -52,14 +52,13 @@ Present in the local lab now:
 | Orchestration | Kubernetes v1.31.14 |
 | Node runtime | containerd 2.2.1 |
 | Networking | Calico v3.30.7, ingress-nginx, MetalLB |
-| Application | Python FastAPI service under `app/`, version 0.1.0, not yet deployed |
-| Local image | `kirandevraaj/platform-lab:0.1.0`, built on the workstation and not pushed |
+| Application | Python FastAPI service under `app/`, version 0.1.0, not yet deployed to Kubernetes |
+| Published image | `kirandevraaj/platform-lab:0.1.0` on Docker Hub |
 
 Planned, and not in this repository yet:
 
 | Area | Tool |
 |---|---|
-| Image publish | Docker Hub push of `kirandevraaj/platform-lab` |
 | CI | Jenkins |
 | CD | Argo CD / GitOps |
 | Observability | Prometheus, Grafana, OpenTelemetry |
@@ -81,7 +80,7 @@ When those overlays exist, they will describe the same application shape with di
 ## Planned implementation phases
 
 1. **Repository baseline.** Project layout, architecture notes, and a read-only record of the current lab. This phase.
-2. **Application and image.** The Python service, tests, and local Dockerfile are in `app/`. The image tag `kirandevraaj/platform-lab:0.1.0` is built locally and has not been published.
+2. **Application and image.** Completed. The service, tests, and Dockerfile are in `app/`. Container image `kirandevraaj/platform-lab:0.1.0` is published. The tag `latest` is not used.
 3. **Kubernetes packaging.** Base manifests and local/AWS overlays, applied only after review.
 4. **Jenkins CI.** Build, test, and publish the image.
 5. **Argo CD GitOps.** The cluster reconciles from Git.
@@ -89,6 +88,21 @@ When those overlays exist, they will describe the same application shape with di
 7. **Observability.** Prometheus, Grafana, and OpenTelemetry for the application.
 8. **AWS path.** Terraform for the AWS runtime, kept apart from the VMware lab.
 9. **Python automation.** Repeatable checks and operational helpers.
+
+## Published container artifact
+
+Version `0.1.0` is the current published image. It was pushed successfully. The tag `latest` is intentionally unused, so a pull always names `0.1.0`. The digest is the immutable reference for that artifact.
+
+| Field | Value |
+|---|---|
+| Image | `kirandevraaj/platform-lab:0.1.0` |
+| Docker Hub | https://hub.docker.com/r/kirandevraaj/platform-lab |
+| Digest | `sha256:e6c16fbebf01422a6a0f0c21b3aebb0991ccca4c3a2af190d0b0ad5f264ba788` |
+
+```text
+docker pull kirandevraaj/platform-lab:0.1.0
+docker pull kirandevraaj/platform-lab@sha256:e6c16fbebf01422a6a0f0c21b3aebb0991ccca4c3a2af190d0b0ad5f264ba788
+```
 
 ## Safety note
 
