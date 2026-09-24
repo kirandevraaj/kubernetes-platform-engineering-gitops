@@ -75,8 +75,8 @@ Manual cluster edits are temporary. With self-heal, Argo CD restores the Git val
 | Path | Contents |
 |---|---|
 | `kubernetes/base` | Shared workload manifests (Deployment, Service, Ingress, NetworkPolicy, …) |
-| `kubernetes/overlays/local` | Local lab overlay watched by Argo CD |
-| `kubernetes/overlays/aws` | AWS overlay (not applied; same base networking objects today, no AWS patches yet) |
+| `kubernetes/overlays/local` | Local lab overlay watched by Argo CD (image tag + ingress-nginx LoadBalancer Service) |
+| `kubernetes/overlays/aws` | AWS overlay (not applied; no MetalLB / ingress-nginx Service patch) |
 | `gitops/projects` | AppProject definitions |
 | `gitops/applications` | Application definitions |
 | `gitops/appsets` | Reserved for ApplicationSets |

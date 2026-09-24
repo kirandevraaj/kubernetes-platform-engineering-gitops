@@ -49,7 +49,7 @@ Automated sync with prune and self-heal is intentional for this personal lab:
 - **selfHeal** restores Git state when someone edits the cluster directly, which is how drift detection is demonstrated.
 - **prune** removes objects that Git no longer declares under the Application path, so the overlay stays authoritative.
 
-The AppProject limits sources to this repository and destinations to namespace `platform-lab` on the in-cluster server. Allowed kinds include ConfigMap, Service, Deployment, Ingress, and NetworkPolicy.
+The AppProject limits sources to this repository and destinations to namespaces `platform-lab` and `ingress-nginx` on the in-cluster server. Allowed kinds include ConfigMap, Service, Deployment, Ingress, and NetworkPolicy. The `ingress-nginx` destination exists so the local overlay can patch the existing controller Service to MetalLB LoadBalancer without managing the full ingress-nginx Helm release.
 
 ## Install note
 

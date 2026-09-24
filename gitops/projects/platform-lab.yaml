@@ -13,6 +13,10 @@ spec:
   destinations:
     - namespace: platform-lab
       server: https://kubernetes.default.svc
+    # Local lab only: allow GitOps to patch the existing ingress-nginx controller Service
+    # to type LoadBalancer (MetalLB). AWS overlay does not include this resource.
+    - namespace: ingress-nginx
+      server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: ""
       kind: Namespace

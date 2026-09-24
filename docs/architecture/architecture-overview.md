@@ -22,8 +22,8 @@ Kubernetes v1.31.14. Container runtime is containerd 2.2.1. Control-plane compon
 | DNS | CoreDNS |
 | Node proxy | kube-proxy |
 | Metrics | metrics-server |
-| Ingress | ingress-nginx, Service type NodePort `80:30080` and `443:30443` |
-| Load balancer addresses | MetalLB (`controller` plus `speaker` on each node) |
+| Ingress | ingress-nginx; controller Service exposed as MetalLB LoadBalancer on the local overlay (was NodePort before Step 7.5) |
+| Load balancer addresses | MetalLB v0.16.1 L2, pool `lab-pool` `192.168.56.200-192.168.56.210` |
 | Storage | local-path provisioner (`local-path-storage`) |
 
 Namespace `platform-lab` holds the application deployed from `kubernetes/overlays/local` on 24 September 2026. Other namespaces in use: `calico-apiserver`, `calico-system`, `default`, `ingress-nginx`, `kube-node-lease`, `kube-public`, `kube-system`, `local-path-storage`, `metallb-system`, `tigera-operator`.
@@ -86,7 +86,7 @@ First applied on 24 September 2026 with `kubectl apply -k kubernetes/overlays/lo
 | Service | `platform-lab`, ClusterIP, port 8000 |
 | Image | `kirandevraaj/platform-lab:0.1.2` |
 | ConfigMap `APP_ENVIRONMENT` | `local-gitops` |
-| Ingress | `platform-lab.local` via ingress-nginx NodePort 30080 |
+| Ingress | `platform-lab.local` via MetalLB VIP → ingress-nginx → Ingress |
 | NetworkPolicy | ingress from `ingress-nginx` controller to TCP/8000 |
 | `GET /` | version `0.1.2`, environment `local-gitops`, release `automated-ci-cd` |
 ```mermaid
@@ -105,7 +105,7 @@ flowchart TD
     service --> app
 ```
 
-The Service is ClusterIP. External HTTP entry for the local lab is ingress-nginx NodePort **30080** with Host `platform-lab.local`. See [networking.md](networking.md).
+The application Service is ClusterIP. External HTTP entry for the local lab is the MetalLB LoadBalancer IP on port **80** with Host `platform-lab.local` (see [networking.md](networking.md)). The AWS overlay does not patch ingress-nginx.
 
 ## Windows workstation
 
