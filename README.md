@@ -6,7 +6,7 @@ A portfolio project that builds a small platform around a containerized applicat
 
 Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
 
-The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.0`. Kubernetes manifests, Terraform resources, Jenkins pipelines, and Argo CD resources are not included yet.
+The current lab cluster is an existing three-node environment used as the local runtime. The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.0`. The local overlay is applied on that cluster. Terraform resources, Jenkins pipelines, and Argo CD resources are not included yet.
 
 ## Architecture overview
 
@@ -41,7 +41,7 @@ Local runtime observed on 24 September 2026 (read-only):
 | k8s-worker-01 | worker | 192.168.56.11 | Ubuntu 24.04.4 LTS | v1.31.14 | containerd 2.2.1 |
 | k8s-worker-02 | worker | 192.168.56.12 | Ubuntu 24.04.4 LTS | v1.31.14 | containerd 2.2.1 |
 
-Platform components already running in the local cluster: Calico v3.30.7 (CNI), CoreDNS, kube-proxy, metrics-server, ingress-nginx (NodePort 30080/30443), MetalLB, and the local-path provisioner. Application workloads are not deployed yet.
+Platform components already running in the local cluster: Calico v3.30.7 (CNI), CoreDNS, kube-proxy, metrics-server, ingress-nginx (NodePort 30080/30443), MetalLB, and the local-path provisioner. The application workload `platform-lab` is deployed in namespace `platform-lab` from `kubernetes/overlays/local`: two replicas of `kirandevraaj/platform-lab:0.1.0` and a ClusterIP Service on port 8000. The AWS overlay is not applied.
 
 ## Technology stack
 
@@ -54,7 +54,7 @@ Present in the local lab now:
 | Orchestration | Kubernetes v1.31.14 |
 | Node runtime | containerd 2.2.1 |
 | Networking | Calico v3.30.7, ingress-nginx, MetalLB |
-| Application | Python FastAPI service under `app/`, version 0.1.0, not yet deployed to Kubernetes |
+| Application | Python FastAPI service under `app/`, version 0.1.0, running in namespace `platform-lab` on the local cluster |
 | Published image | `kirandevraaj/platform-lab:0.1.0` on Docker Hub |
 
 Planned, and not in this repository yet:
@@ -83,7 +83,7 @@ When those overlays exist, they will describe the same application shape with di
 
 1. **Repository baseline.** Completed. Project layout, architecture notes, and a read-only record of the current lab.
 2. **Application and container image.** Completed. The service, tests, and Dockerfile are in `app/`. `kirandevraaj/platform-lab:0.1.0` is published. The tag `latest` is not used.
-3. **Kubernetes packaging.** Implemented locally and not deployed. Base manifests and the local and AWS overlays are in `kubernetes/`. `kubectl kustomize` validation passed. A server-side dry-run did not reach the cluster API, and the manifests have not been applied.
+3. **Kubernetes packaging.** Deployed to the local lab on 24 September 2026. `kubectl apply -k kubernetes/overlays/local` created namespace `platform-lab`, ConfigMap `platform-lab-config`, Deployment `platform-lab` (2/2 ready), and ClusterIP Service `platform-lab`. The AWS overlay has not been applied.
 4. **Jenkins CI.** Planned. Build, test, and publish the image.
 5. **Argo CD GitOps.** Planned. The cluster reconciles from Git.
 6. **Networking.** Planned. Ingress, service exposure, and NetworkPolicy appropriate to each target.
