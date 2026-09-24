@@ -108,7 +108,7 @@ A failing test or a failed image check stops the pipeline before the push.
 | Unit Test | Creates `.venv`, installs `app/requirements-dev.txt`, runs `python -m pytest app/tests` |
 | Read Application Version | Parses the `APP_VERSION` assignment in `app/src/__init__.py` |
 | Docker Build | `docker build -f app/Dockerfile -t kirandevraaj/platform-lab:<APP_VERSION> app` |
-| Docker Image Validation | Checks repository and tag, user `app`, port 8000, healthcheck, and `/app/src` files, then curls `/health` on `127.0.0.1:18000` and removes the temporary container |
+| Docker Image Validation | Checks repository and tag, user `app`, port 8000, healthcheck, and `/app/src` files, then requests `/health` on the temporary container over the agent Docker network and removes it |
 | Docker Hub Push | Logs in with the Jenkins credential and pushes `kirandevraaj/platform-lab:<APP_VERSION>` |
 
 ## Docker Hub credential

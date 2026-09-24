@@ -128,15 +128,20 @@ PY
                         PY=python
                     fi
                     name="platform-lab-ci-${BUILD_NUMBER}"
+                    network="$(docker inspect --format '{{range $k, $v := .NetworkSettings.Networks}}{{println $k}}{{end}}' "$(hostname)" | head -n 1)"
+                    if [ -z "$network" ]; then
+                        echo "Could not find the agent container network"
+                        exit 1
+                    fi
                     cleanup() {
                         docker rm -f "$name" >/dev/null 2>&1 || true
                     }
                     trap cleanup EXIT
                     docker rm -f "$name" >/dev/null 2>&1 || true
-                    docker run -d --name "$name" -p 127.0.0.1:18000:8000 "$image"
+                    docker run -d --name "$name" --network "$network" "$image"
                     ok=0
                     for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
-                        if "$PY" -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:18000/health", timeout=2).read()'; then
+                        if "$PY" -c "import urllib.request; urllib.request.urlopen('http://${name}:8000/health', timeout=2).read()"; then
                             ok=1
                             break
                         fi
