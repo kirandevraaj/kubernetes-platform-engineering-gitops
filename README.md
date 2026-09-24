@@ -10,7 +10,7 @@ The current lab cluster is an existing three-node environment used as the local 
 
 ## Architecture overview
 
-The diagram below is the intended shape. The Python application exists under `app/` and runs on the workstation. Jenkins, Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
+The diagram below is the intended shape. The Python application exists under `app/` and can be built locally as `kirandevraaj/platform-lab:0.1.0`. That image has not been pushed. Jenkins, Argo CD, Terraform, and the AWS target are not implemented. The local VMware lab is the only Kubernetes runtime that exists today.
 
 ```text
 Developer
@@ -53,18 +53,19 @@ Present in the local lab now:
 | Node runtime | containerd 2.2.1 |
 | Networking | Calico v3.30.7, ingress-nginx, MetalLB |
 | Application | Python FastAPI service under `app/`, version 0.1.0, not yet deployed |
+| Local image | `kirandevraaj/platform-lab:0.1.0`, built on the workstation and not pushed |
 
 Planned, and not in this repository yet:
 
 | Area | Tool |
 |---|---|
-| Image build | Docker, on the workstation |
+| Image publish | Docker Hub push of `kirandevraaj/platform-lab` |
 | CI | Jenkins |
 | CD | Argo CD / GitOps |
 | Observability | Prometheus, Grafana, OpenTelemetry |
 | AWS path | Terraform |
 
-Docker Desktop client 29.6.1 is installed on the workstation. Its engine was not running during the assessment, and it is not the cluster runtime. Terraform is not installed.
+Docker Desktop client 29.6.1 builds the local image. It is not the cluster runtime. Terraform is not installed.
 
 ## Environment strategy
 
@@ -80,7 +81,7 @@ When those overlays exist, they will describe the same application shape with di
 ## Planned implementation phases
 
 1. **Repository baseline.** Project layout, architecture notes, and a read-only record of the current lab. This phase.
-2. **Application and image.** The Python service and tests are in `app/`. The container build is still ahead.
+2. **Application and image.** The Python service, tests, and local Dockerfile are in `app/`. The image tag `kirandevraaj/platform-lab:0.1.0` is built locally and has not been published.
 3. **Kubernetes packaging.** Base manifests and local/AWS overlays, applied only after review.
 4. **Jenkins CI.** Build, test, and publish the image.
 5. **Argo CD GitOps.** The cluster reconciles from Git.

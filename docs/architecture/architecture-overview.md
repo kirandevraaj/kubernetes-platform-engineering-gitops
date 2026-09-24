@@ -30,12 +30,12 @@ No application namespace or application workload was present during the read-onl
 
 ## Planned platform shape
 
-The repository holds the application source under `app/`. It will be packaged once and deployed through two overlays:
+The repository holds the application source under `app/`, including a Dockerfile for a local image. It will be packaged once and deployed through two overlays:
 
 - `kubernetes/overlays/local` for this VMware cluster
 - `kubernetes/overlays/aws` for a later AWS cluster
 
-Those overlays are not built yet. Jenkins is planned to build and test the image. Argo CD is planned to deploy from Git. Prometheus, Grafana, and OpenTelemetry are planned to observe the application after it exists. Terraform under `terraform/aws` is reserved for the AWS path and does not describe this VMware lab. AWS is a separate future deployment target.
+Those overlays are not built yet, and the local image has not been pushed to Docker Hub. Jenkins is planned to build and test the image. Argo CD is planned to deploy from Git. Prometheus, Grafana, and OpenTelemetry are planned to observe the application after it exists. Terraform under `terraform/aws` is reserved for the AWS path and does not describe this VMware lab. AWS is a separate future deployment target.
 
 ## Windows workstation
 
