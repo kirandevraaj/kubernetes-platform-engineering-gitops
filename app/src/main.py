@@ -14,7 +14,7 @@ APP_DESCRIPTION = (
     "Sample workload for the Kubernetes Platform Engineering and GitOps Lab."
 )
 APP_ENVIRONMENT = os.getenv("APP_ENVIRONMENT", "local")
-APP_RELEASE = "ci-cd-integration-test"
+APP_RELEASE = "automated-ci-cd"
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION, description=APP_DESCRIPTION)
 

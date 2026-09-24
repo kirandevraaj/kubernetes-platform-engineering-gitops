@@ -23,10 +23,10 @@ def test_root_returns_application_identity() -> None:
     assert body["name"] == APP_NAME
     assert body["description"] == APP_DESCRIPTION
     assert body["version"] == APP_VERSION
-    assert body["version"] == "0.1.1"
+    assert body["version"] == "0.1.2"
     assert body["environment"] == "local"
     assert body["release"] == APP_RELEASE
-    assert body["release"] == "ci-cd-integration-test"
+    assert body["release"] == "automated-ci-cd"
 
 
 def test_health_returns_healthy() -> None:
@@ -41,7 +41,7 @@ def test_version_returns_application_version() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"name": APP_NAME, "version": APP_VERSION}
-    assert response.json()["version"] == "0.1.1"
+    assert response.json()["version"] == "0.1.2"
 
 
 def test_info_returns_non_sensitive_metadata() -> None:
