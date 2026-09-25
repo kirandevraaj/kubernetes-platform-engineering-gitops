@@ -21,9 +21,11 @@ resource "aws_security_group" "nodes" {
   description = "EKS managed node group security group for ${var.cluster_name}"
   vpc_id      = data.aws_subnet.first.vpc_id
 
+  # Do not set kubernetes.io/cluster/<name>=owned here.
+  # That tag must remain only on the EKS primary/cluster SG so the AWS Load
+  # Balancer Controller can uniquely identify the cluster security group.
   tags = merge(var.tags, {
-    Name                                        = "${var.name_prefix}-eks-nodes-sg"
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    Name = "${var.name_prefix}-eks-nodes-sg"
   })
 }
 
