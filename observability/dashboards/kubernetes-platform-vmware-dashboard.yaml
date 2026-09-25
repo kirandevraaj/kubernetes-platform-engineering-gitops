@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kubernetes-platform-aws-grafana-dashboard
-  namespace: observability
+  name: kubernetes-platform-vmware-grafana-dashboard
+  namespace: monitoring
   labels:
-    app.kubernetes.io/name: "kubernetes-platform-aws"
+    app.kubernetes.io/name: "kubernetes-platform-vmware"
     app.kubernetes.io/part-of: "platform-lab"
-    platform-lab.io/target: "aws"
+    platform-lab.io/target: "local"
     grafana_dashboard: "1"
   annotations:
     grafana_folder: "Kubernetes Platform"
 data:
-  kubernetes-platform-aws.json: |
+  kubernetes-platform-vmware.json: |
     {
       "annotations": {
         "list": []
@@ -452,7 +452,7 @@ data:
           },
           "targets": [
             {
-              "expr": "max(up{job=\"prometheus\"})",
+              "expr": "max(up{job=\"kube-prometheus-stack-prometheus\"})",
               "legendFormat": "prom",
               "refId": "A"
             }
@@ -508,8 +508,8 @@ data:
           },
           "targets": [
             {
-              "expr": "1 - avg by (instance, node) (rate(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\",instance=~\"$node\"}[5m]))",
-              "legendFormat": "{{node}} ({{instance}})",
+              "expr": "1 - avg by (instance) (rate(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\",instance=~\"$node\"}[5m]))",
+              "legendFormat": "{{instance}}",
               "refId": "A"
             }
           ]
@@ -553,7 +553,7 @@ data:
           "targets": [
             {
               "expr": "1 - (node_memory_MemAvailable_bytes{job=\"node-exporter\",instance=~\"$node\"} / node_memory_MemTotal_bytes{job=\"node-exporter\",instance=~\"$node\"})",
-              "legendFormat": "{{node}} ({{instance}})",
+              "legendFormat": "{{instance}}",
               "refId": "A"
             }
           ]
@@ -597,7 +597,7 @@ data:
           "targets": [
             {
               "expr": "1 - (node_filesystem_avail_bytes{job=\"node-exporter\",fstype!~\"tmpfs|overlay\",mountpoint=\"/\",instance=~\"$node\"} / node_filesystem_size_bytes{job=\"node-exporter\",fstype!~\"tmpfs|overlay\",mountpoint=\"/\",instance=~\"$node\"})",
-              "legendFormat": "{{node}} ({{instance}})",
+              "legendFormat": "{{instance}}",
               "refId": "A"
             }
           ]
@@ -1647,7 +1647,7 @@ data:
           ]
         },
         {
-          "title": "prometheus self",
+          "title": "kube-prometheus-stack-prometheus self",
           "type": "stat",
           "gridPos": {
             "h": 4,
@@ -1701,7 +1701,7 @@ data:
           },
           "targets": [
             {
-              "expr": "max(up{job=\"prometheus\"})",
+              "expr": "max(up{job=\"kube-prometheus-stack-prometheus\"})",
               "legendFormat": "self",
               "refId": "A"
             }
@@ -1837,7 +1837,7 @@ data:
       "tags": [
         "platform",
         "sre",
-        "aws",
+        "vmware",
         "kubernetes"
       ],
       "templating": {
@@ -1910,8 +1910,8 @@ data:
         "to": "now"
       },
       "timezone": "browser",
-      "title": "Kubernetes Platform AWS",
-      "uid": "kubernetes-platform-aws",
+      "title": "Kubernetes Platform VMware",
+      "uid": "kubernetes-platform-vmware",
       "version": 2,
       "description": "Platform/SRE operational dashboard. Metrics Server drives HPA; Prometheus scrapes application /metrics, kube-state-metrics, and node-exporter."
     }
