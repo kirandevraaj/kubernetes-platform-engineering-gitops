@@ -7,7 +7,7 @@ resources:
   - pdb.yaml
 images:
   - name: kirandevraaj/platform-lab
-    newTag: "0.1.3"
+    newTag: "0.1.4"
 patches:
   - path: configmap-patch.yaml
     target:
