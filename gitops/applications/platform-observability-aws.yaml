@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-observability-aws
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-observability-aws
+    app.kubernetes.io/instance: platform-observability-aws
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-observability-aws
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: prometheus
+      targetRevision: 29.33.0
+      helm:
+        releaseName: prometheus
+        valueFiles:
+          - $values/observability/aws/values-prometheus.yaml
+    - repoURL: https://grafana.github.io/helm-charts
+      chart: grafana
+      targetRevision: 10.5.15
+      helm:
+        releaseName: grafana
+        valueFiles:
+          - $values/observability/aws/values-grafana.yaml
+    - repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+      targetRevision: main
+      path: observability/aws/dashboards
+  destination:
+    # In-cluster API of the AWS EKS Argo CD instance (Terraform-installed).
+    server: https://kubernetes.default.svc
+    namespace: observability
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ApplyOutOfSyncOnly=true
+  ignoreDifferences:
+    # Grafana chart generates a runtime admin Secret; do not commit or thrash on it.
+    - group: ""
+      kind: Secret
+      name: grafana
+      jsonPointers:
+        - /data

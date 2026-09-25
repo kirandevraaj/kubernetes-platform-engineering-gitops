@@ -1,0 +1,91 @@
+# Lightweight AWS observability (Prometheus + Grafana only).
+# Disable all default cluster-wide scrape jobs and sub-charts.
+# Scrape only Prometheus itself and platform-lab /metrics.
+
+alertmanager:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: false
+
+prometheus-pushgateway:
+  enabled: false
+
+server:
+  replicaCount: 1
+  retention: "6h"
+  persistentVolume:
+    enabled: false
+  emptyDir:
+    sizeLimit: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 384Mi
+    limits:
+      memory: 512Mi
+  service:
+    type: ClusterIP
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 50
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: grafana
+            topologyKey: kubernetes.io/hostname
+
+# Keep only self-scrape; disable broad Kubernetes discovery jobs.
+scrapeConfigs:
+  prometheus:
+    enabled: true
+  kubernetes-api-servers:
+    enabled: false
+  kubernetes-nodes:
+    enabled: false
+  kubernetes-nodes-cadvisor:
+    enabled: false
+  kubernetes-service-endpoints:
+    enabled: false
+  kubernetes-service-endpoints-slow:
+    enabled: false
+  kubernetes-services:
+    enabled: false
+  kubernetes-pods:
+    enabled: false
+  kubernetes-pods-slow:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
+
+# Targeted scrape of platform-lab application metrics only.
+extraScrapeConfigs: |
+  - job_name: platform-lab
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - platform-lab
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: platform-lab
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: http
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: service

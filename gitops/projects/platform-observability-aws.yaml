@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-observability-aws
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-observability-aws
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+spec:
+  description: Lightweight Prometheus + Grafana for AWS EKS (no kube-prometheus-stack)
+  sourceRepos:
+    - https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    - https://prometheus-community.github.io/helm-charts
+    - https://grafana.github.io/helm-charts
+  destinations:
+    - namespace: observability
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: true

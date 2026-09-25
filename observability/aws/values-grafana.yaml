@@ -1,0 +1,72 @@
+# Lightweight AWS Grafana — ClusterIP + anonymous Viewer (port-forward only).
+# No LoadBalancer, NodePort, Ingress, or ALB.
+# Admin password is NOT committed; chart creates a runtime Secret (ignored by Argo).
+
+replicas: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+persistence:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+# Prefer spreading away from Prometheus when both nodes are available.
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+              app.kubernetes.io/component: server
+          topologyKey: kubernetes.io/hostname
+
+# No plaintext password in Git. Anonymous Viewer for localhost port-forward access.
+admin:
+  existingSecret: ""
+
+grafana.ini:
+  auth:
+    disable_login_form: true
+  auth.anonymous:
+    enabled: true
+    org_name: Main Org.
+    org_role: Viewer
+  users:
+    viewers_can_edit: false
+  server:
+    root_url: "%(protocol)s://%(domain)s:%(http_port)s/"
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        access: proxy
+        url: http://prometheus-server.observability.svc.cluster.local
+        isDefault: true
+        editable: false
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: observability
+    folderAnnotation: grafana_folder
+    provider:
+      foldersFromFilesStructure: false
+
+testFramework:
+  enabled: false
