@@ -1,0 +1,5 @@
+# Keep shell/Terraform scripts LF so Linux local-exec provisioners work on Windows checkouts.
+*.sh text eol=lf
+*.tf text eol=lf
+*.tftpl text eol=lf
+*.bash text eol=lf

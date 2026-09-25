@@ -36,7 +36,8 @@ resource "null_resource" "bootstrap" {
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
-    command     = <<-EOT
+    # replace() strips Windows CRLF so bash does not see "pipefail\r".
+    command = replace(<<-EOT
       set -euo pipefail
       aws eks update-kubeconfig --name "${var.cluster_name}" --region "${var.aws_region}" >/dev/null
       kubectl wait --for=condition=Established crd/applications.argoproj.io --timeout=300s
@@ -48,16 +49,18 @@ EOF
 ${local.application_manifest}
 EOF
     EOT
+    , "\r", "")
   }
 
   provisioner "local-exec" {
     when        = destroy
     interpreter = ["/bin/bash", "-c"]
-    command     = <<-EOT
+    command = replace(<<-EOT
       set -euo pipefail
       aws eks update-kubeconfig --name "${self.triggers.cluster_name}" --region "${self.triggers.aws_region}" >/dev/null || exit 0
       kubectl -n argocd delete application "${self.triggers.application_name}" --wait=true --timeout=10m || true
       kubectl -n argocd delete appproject "${self.triggers.app_project_name}" --wait=true --timeout=5m || true
     EOT
+    , "\r", "")
   }
 }
