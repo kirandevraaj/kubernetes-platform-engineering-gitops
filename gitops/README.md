@@ -8,7 +8,7 @@ Status: Argo CD reconciles `platform-lab` independently on VMware (`platform-lab
 
 | Layer | Owner | Responsibility |
 |---|---|---|
-| CI | Jenkins on Docker Desktop | Checkout, unit test, build, validate, push `kirandevraaj/platform-lab:<APP_VERSION>` to Docker Hub, promote overlay `newTag` values |
+| CI | Jenkins on Docker Desktop | Checkout, unit test, build, validate, push `kirandevraaj/platform-lab:<APP_VERSION>` to Docker Hub, capture digest, promote overlay `digest` + version label values |
 | CD (local) | Argo CD on `ckad-lab` | Read Git, render `kubernetes/overlays/local`, sync the VMware workload |
 | CD (AWS) | Argo CD on EKS | Read Git, render `kubernetes/overlays/aws`, sync the EKS workload |
 

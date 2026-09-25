@@ -4,8 +4,9 @@
 //   github-platform-lab     — GitOps promotion push to origin/main
 //
 // Flow: app/** change → test → build → validate → push image →
-//       update local + aws Kustomize newTag + app.kubernetes.io/version →
-//       commit/push GitOps → Argo CD reconciles each environment (VMware + EKS).
+//       capture published digest → update local + aws Kustomize digest +
+//       app.kubernetes.io/version → commit/push GitOps →
+//       Argo CD reconciles each environment (VMware + EKS).
 // Non-app commits skip build/push/promotion so the GitOps commit cannot loop CI.
 //
 // Jenkins performs CI and GitOps promotion.
@@ -262,14 +263,64 @@ PY
                         docker push "${IMAGE_REPO}:${APP_VERSION}"
                         docker logout
                         set -x
-                        digest="$(docker image inspect --format '{{index .RepoDigests 0}}' "${IMAGE_REPO}:${APP_VERSION}")"
-                        echo "Published image digest: ${digest}"
+                        echo "Pushed ${IMAGE_REPO}:${APP_VERSION}"
                     '''
                 }
             }
             post {
                 always {
                     sh 'docker logout >/dev/null 2>&1 || true'
+                }
+            }
+        }
+
+        stage('Capture Published Digest') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
+            steps {
+                script {
+                    env.IMAGE_DIGEST = sh(returnStdout: true, script: '''
+                        set -eu
+                        if [ "$APP_VERSION" = "latest" ] || [ -z "$APP_VERSION" ]; then
+                            echo "Refusing to capture digest for latest or empty version" >&2
+                            exit 1
+                        fi
+                        # RepoDigests is populated by the registry after push (name@sha256:...).
+                        # Do not fall back to local image Id — that is not the published digest.
+                        full="$(docker image inspect --format '{{index .RepoDigests 0}}' "${IMAGE_REPO}:${APP_VERSION}" 2>/dev/null || true)"
+                        if [ -z "$full" ] || [ "$full" = "<no value>" ]; then
+                            echo "Published digest missing after push (empty RepoDigests)" >&2
+                            exit 1
+                        fi
+                        case "$full" in
+                            *@sha256:*)
+                                digest="${full##*@}"
+                                ;;
+                            *)
+                                echo "Unexpected RepoDigests value (expected name@sha256:...)" >&2
+                                exit 1
+                                ;;
+                        esac
+                        if ! printf '%s' "$digest" | grep -E -q '^sha256:[a-f0-9]{64}$'; then
+                            echo "Published digest failed format check" >&2
+                            exit 1
+                        fi
+                        # Confirm the digest is bound to this repository (allow docker.io/ prefix).
+                        case "$full" in
+                            *"${IMAGE_REPO}@${digest}")
+                                ;;
+                            *)
+                                echo "RepoDigests repository does not match IMAGE_REPO" >&2
+                                exit 1
+                                ;;
+                        esac
+                        printf '%s' "$digest"
+                    ''').trim()
+                    if (!(env.IMAGE_DIGEST ==~ /^sha256:[a-f0-9]{64}$/)) {
+                        error('IMAGE_DIGEST is missing or invalid after Docker Hub push; refusing GitOps promotion')
+                    }
+                    echo "Published image digest: ${env.IMAGE_DIGEST}"
                 }
             }
         }
@@ -285,6 +336,14 @@ PY
                         echo "Refusing to promote latest or an empty version"
                         exit 1
                     fi
+                    if [ -z "${IMAGE_DIGEST:-}" ]; then
+                        echo "IMAGE_DIGEST is required before GitOps promotion"
+                        exit 1
+                    fi
+                    if ! printf '%s' "$IMAGE_DIGEST" | grep -E -q '^sha256:[a-f0-9]{64}$'; then
+                        echo "IMAGE_DIGEST failed format check; refusing promotion"
+                        exit 1
+                    fi
                     if command -v python3 >/dev/null 2>&1; then
                         PY=python3
                     else
@@ -296,15 +355,16 @@ import re
 
 path = Path("${GITOPS_LOCAL_KUSTOMIZATION}")
 version = "${APP_VERSION}"
+digest = "${IMAGE_DIGEST}"
 text = path.read_text(encoding="utf-8")
 text, count = re.subn(
-    r'(newTag:\\s*")[^"]*(")',
-    rf'\\g<1>{version}\\g<2>',
+    r'(digest:\\s*)sha256:[a-fA-F0-9]+',
+    rf'\\g<1>{digest}',
     text,
     count=1,
 )
 if count != 1:
-    raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
+    raise SystemExit(f"Expected exactly one digest in {path}, found {count}")
 text, count = re.subn(
     r'(app\\.kubernetes\\.io/version:\\s*")[^"]*(")',
     rf'\\g<1>{version}\\g<2>',
@@ -314,10 +374,10 @@ text, count = re.subn(
 if count != 1:
     raise SystemExit(f"Expected exactly one app.kubernetes.io/version in {path}, found {count}")
 path.write_text(text, encoding="utf-8")
-print(f"Updated {path} to newTag={version} and app.kubernetes.io/version={version}")
+print(f"Updated {path} to digest={digest} and app.kubernetes.io/version={version}")
 PY
                     git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}" || true
-                    echo "Local overlay promotion prepared for ${APP_VERSION}"
+                    echo "Local overlay promotion prepared for ${APP_VERSION} @ ${IMAGE_DIGEST}"
                 '''
             }
         }
@@ -333,6 +393,14 @@ PY
                         echo "Refusing to promote latest or an empty version"
                         exit 1
                     fi
+                    if [ -z "${IMAGE_DIGEST:-}" ]; then
+                        echo "IMAGE_DIGEST is required before GitOps promotion"
+                        exit 1
+                    fi
+                    if ! printf '%s' "$IMAGE_DIGEST" | grep -E -q '^sha256:[a-f0-9]{64}$'; then
+                        echo "IMAGE_DIGEST failed format check; refusing promotion"
+                        exit 1
+                    fi
                     if command -v python3 >/dev/null 2>&1; then
                         PY=python3
                     else
@@ -344,15 +412,16 @@ import re
 
 path = Path("${GITOPS_AWS_KUSTOMIZATION}")
 version = "${APP_VERSION}"
+digest = "${IMAGE_DIGEST}"
 text = path.read_text(encoding="utf-8")
 text, count = re.subn(
-    r'(newTag:\\s*")[^"]*(")',
-    rf'\\g<1>{version}\\g<2>',
+    r'(digest:\\s*)sha256:[a-fA-F0-9]+',
+    rf'\\g<1>{digest}',
     text,
     count=1,
 )
 if count != 1:
-    raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
+    raise SystemExit(f"Expected exactly one digest in {path}, found {count}")
 text, count = re.subn(
     r'(app\\.kubernetes\\.io/version:\\s*")[^"]*(")',
     rf'\\g<1>{version}\\g<2>',
@@ -362,11 +431,11 @@ text, count = re.subn(
 if count != 1:
     raise SystemExit(f"Expected exactly one app.kubernetes.io/version in {path}, found {count}")
 path.write_text(text, encoding="utf-8")
-print(f"Updated {path} to newTag={version} and app.kubernetes.io/version={version}")
+print(f"Updated {path} to digest={digest} and app.kubernetes.io/version={version}")
 PY
                     git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"
                     if git diff --quiet -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"; then
-                        echo "Both overlays already point at ${APP_VERSION}; nothing to promote"
+                        echo "Both overlays already point at ${APP_VERSION} @ ${IMAGE_DIGEST}; nothing to promote"
                         exit 1
                     fi
                     other="$(git diff --name-only | grep -v -E "^(${GITOPS_LOCAL_KUSTOMIZATION}|${GITOPS_AWS_KUSTOMIZATION})\$" || true)"
@@ -375,7 +444,18 @@ PY
                         echo "$other"
                         exit 1
                     fi
-                    echo "Promotion change is limited to local + aws overlay newTag and version labels"
+                    # Same digest must appear in both overlays.
+                    for f in "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"; do
+                        grep -F -q "digest: ${IMAGE_DIGEST}" "$f" || {
+                            echo "Overlay $f does not contain IMAGE_DIGEST"
+                            exit 1
+                        }
+                        grep -F -q "app.kubernetes.io/version: \"${APP_VERSION}\"" "$f" || {
+                            echo "Overlay $f does not contain APP_VERSION label"
+                            exit 1
+                        }
+                    done
+                    echo "Promotion change is limited to local + aws overlay digest and version labels"
                 '''
             }
         }
@@ -392,6 +472,14 @@ PY
                 )]) {
                     sh '''
                         set -eu
+                        if [ -z "${IMAGE_DIGEST:-}" ]; then
+                            echo "IMAGE_DIGEST is required before GitOps commit"
+                            exit 1
+                        fi
+                        if ! printf '%s' "$IMAGE_DIGEST" | grep -E -q '^sha256:[a-f0-9]{64}$'; then
+                            echo "IMAGE_DIGEST failed format check; refusing commit"
+                            exit 1
+                        fi
                         ASKPASS="$(mktemp)"
                         cleanup() {
                             rm -f "$ASKPASS"
@@ -430,20 +518,34 @@ from pathlib import Path
 import re
 
 version = "${APP_VERSION}"
+digest = "${IMAGE_DIGEST}"
 paths = [
     Path("${GITOPS_LOCAL_KUSTOMIZATION}"),
     Path("${GITOPS_AWS_KUSTOMIZATION}"),
 ]
 for path in paths:
     text = path.read_text(encoding="utf-8")
-    text, count = re.subn(
-        r'(newTag:\\s*")[^"]*(")',
-        rf'\\g<1>{version}\\g<2>',
-        text,
-        count=1,
-    )
-    if count != 1:
-        raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
+    # origin/main may still use newTag until the first digest-pinning commit lands.
+    if re.search(r'^\\s*digest:\\s*sha256:', text, re.M):
+        text, count = re.subn(
+            r'(digest:\\s*)sha256:[a-fA-F0-9]+',
+            rf'\\g<1>{digest}',
+            text,
+            count=1,
+        )
+        if count != 1:
+            raise SystemExit(f"Expected exactly one digest in {path}, found {count}")
+    elif re.search(r'^\\s*newTag:\\s*"', text, re.M):
+        text, count = re.subn(
+            r'(newTag:\\s*")[^"]*(")',
+            rf'digest: {digest}',
+            text,
+            count=1,
+        )
+        if count != 1:
+            raise SystemExit(f"Expected exactly one newTag to convert in {path}, found {count}")
+    else:
+        raise SystemExit(f"Neither digest nor newTag found in {path}")
     text, count = re.subn(
         r'(app\\.kubernetes\\.io/version:\\s*")[^"]*(")',
         rf'\\g<1>{version}\\g<2>',
@@ -453,12 +555,22 @@ for path in paths:
     if count != 1:
         raise SystemExit(f"Expected exactly one app.kubernetes.io/version in {path}, found {count}")
     path.write_text(text, encoding="utf-8")
-    print(f"Updated {path} to newTag={version} and app.kubernetes.io/version={version}")
+    print(f"Updated {path} to digest={digest} and app.kubernetes.io/version={version}")
 PY
+                        for f in "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"; do
+                            grep -F -q "digest: ${IMAGE_DIGEST}" "$f" || {
+                                echo "Staged overlay $f missing IMAGE_DIGEST"
+                                exit 1
+                            }
+                            grep -F -q "app.kubernetes.io/version: \"${APP_VERSION}\"" "$f" || {
+                                echo "Staged overlay $f missing APP_VERSION label"
+                                exit 1
+                            }
+                        done
                         git add -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"
                         git diff --cached -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"
                         cached_files="$(git diff --cached --name-only)"
-                        # Allow one or both overlays when the other already matched APP_VERSION.
+                        # Allow one or both overlays when the other already matched.
                         allowed="${GITOPS_LOCAL_KUSTOMIZATION}
 ${GITOPS_AWS_KUSTOMIZATION}"
                         while IFS= read -r f; do
@@ -477,11 +589,11 @@ EOF
                             echo "No staged promotion change after aligning with origin/main"
                             exit 1
                         fi
-                        git commit -m "chore: promote platform-lab ${APP_VERSION} to local and aws GitOps"
+                        git commit -m "chore: promote platform-lab ${APP_VERSION} digest to local and aws GitOps"
                         set +x
                         git push origin HEAD:main
                         set -x
-                        echo "Pushed GitOps promotion for ${IMAGE_REPO}:${APP_VERSION} (local + aws overlays)"
+                        echo "Pushed GitOps promotion for ${IMAGE_REPO}@${IMAGE_DIGEST} (version ${APP_VERSION}; local + aws overlays)"
                     '''
                 }
             }

@@ -6,7 +6,7 @@ Status: automated CI → Docker Hub → **multi-environment** GitOps promotion i
 
 ## CI and CD
 
-CI builds, tests, packages, publishes an image, and commits the image tag into **both** overlays (`kubernetes/overlays/local` and `kubernetes/overlays/aws`). It does not call `kubectl`.
+CI builds, tests, packages, publishes an image, captures the registry digest, and commits that **immutable digest** plus `app.kubernetes.io/version` into **both** overlays (`kubernetes/overlays/local` and `kubernetes/overlays/aws`). It does not call `kubectl`.
 
 CD is Argo CD on each target cluster. It reads Git and syncs Kubernetes manifests. Details are in [gitops-flow.md](gitops-flow.md) and [gitops/README.md](../../gitops/README.md).
 
@@ -14,12 +14,20 @@ CD is Argo CD on each target cluster. It reads Git and syncs Kubernetes manifest
 
 | Layer | Changes | Does not change |
 |---|---|---|
-| Jenkins CI (app/** only) | Tests, image build/validation, Docker Hub tag, Git commit to local + aws overlay `newTag` | Live Kubernetes objects directly; Terraform; environment-specific patches |
-| Git commit to overlays | Desired image tag for both Argo CD Applications | Docker Hub contents by itself |
+| Jenkins CI (app/** only) | Tests, image build/validation, Docker Hub tag, capture digest, Git commit to local + aws overlay `digest` + version label | Live Kubernetes objects directly; Terraform; environment-specific patches |
+| Git commit to overlays | Desired image digest + version label for both Argo CD Applications | Docker Hub contents by itself |
 | Argo CD (`platform-lab-local`) | Live objects on VMware until they match Git | Image builds |
 | Argo CD (`platform-lab-aws`) | Live objects on EKS until they match Git | Image builds |
 
-Publishing a new image is not the same as deploying it. Each cluster moves to a new tag only after Git records that tag **and** the matching `app.kubernetes.io/version` label, then that cluster's Argo CD reconciles. Kubernetes networking objects (Ingress, NetworkPolicy) also change only through Git → Argo CD, not through Jenkins.
+Publishing a new image is not the same as deploying it. Each cluster moves to a new artifact only after Git records the **same** digest **and** the matching `app.kubernetes.io/version` label, then that cluster's Argo CD reconciles. Kubernetes networking objects (Ingress, NetworkPolicy) also change only through Git → Argo CD, not through Jenkins.
+
+The release version identifies the logical release.
+The container digest identifies the immutable artifact.
+
+| Kind | Example |
+|---|---|
+| Tag-based release | `kirandevraaj/platform-lab:0.1.4` |
+| Immutable artifact | `kirandevraaj/platform-lab@sha256:<digest>` |
 
 ## Automated path
 
@@ -38,8 +46,10 @@ Detect Application Change
                    Read APP_VERSION from app/src/__init__.py
                    Refuse if Docker Hub already has that tag
                    Docker Build / Validate / Push
+                   Capture published digest (mandatory)
                    Update kubernetes/overlays/local/kustomization.yaml
                    Update kubernetes/overlays/aws/kustomization.yaml
+                   (same digest + APP_VERSION label in both)
                    git commit + push (github-platform-lab)
                         |
                         v
@@ -52,7 +62,7 @@ Detect Application Change
 
 ### Loop prevention
 
-The GitOps promotion commit touches only overlay `kustomization.yaml` image `newTag` fields (local and/or aws). The next poll still starts a build, but Detect Application Change finds no `app/**` files, so Docker and promotion stages are skipped. Concurrent promotions are blocked with `disableConcurrentBuilds()`.
+The GitOps promotion commit touches only overlay `kustomization.yaml` image `digest` fields and `app.kubernetes.io/version` labels (local and/or aws). The next poll still starts a build, but Detect Application Change finds no `app/**` files, so Docker and promotion stages are skipped. Concurrent promotions are blocked with `disableConcurrentBuilds()`.
 
 ### Triggers
 
@@ -60,7 +70,7 @@ This lab uses `pollSCM('H/2 * * * *')` on purpose. No GitHub webhook is configur
 
 ## Version and image
 
-`APP_VERSION` is read from `app/src/__init__.py` only. The image is always `kirandevraaj/platform-lab:<APP_VERSION>`. The tag `latest` is never built or pushed. An already-published version tag fails the build.
+`APP_VERSION` is read from `app/src/__init__.py` only. Jenkins pushes `kirandevraaj/platform-lab:<APP_VERSION>`, then captures the registry-published digest from `RepoDigests`. GitOps overlays pin `digest: sha256:...` so rendered manifests use `kirandevraaj/platform-lab@sha256:...`. The human-readable release remains on `app.kubernetes.io/version`. The tag `latest` is never built or pushed. An already-published version tag fails the build. If the digest cannot be captured, promotion fails and GitOps is left unchanged.
 
 Credentials (Jenkins only, not in Git):
 
@@ -104,9 +114,9 @@ Details are in [jenkins/README.md](../../jenkins/README.md).
 | `platform-lab-local` | `kubernetes/overlays/local` | VMware `ckad-lab` (in-cluster API) |
 | `platform-lab-aws` | `kubernetes/overlays/aws` | EKS `platform-lab-aws-lab-eks` (in-cluster API; Terraform-bootstrapped) |
 
-## Next release milestone
+## Next digest-pinned application release
 
-Bump `APP_VERSION` to `0.1.4` in `app/src/__init__.py`, push an `app/**` commit to `main`, and verify Jenkins publishes `:0.1.4` then promotes both overlays. Do not bump the version until that release milestone starts.
+After digest promotion lands on `main`, bump `APP_VERSION` under `app/` (for example to `0.1.5`), push an `app/**` commit, and verify Jenkins publishes the new tag, captures the digest, and promotes both overlays to that digest. This hardening milestone does not publish a new application version.
 
 ## Manual integration test: 0.1.1 (24 September 2026)
 

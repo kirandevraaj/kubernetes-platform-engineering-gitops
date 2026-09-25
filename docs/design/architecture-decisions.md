@@ -18,13 +18,21 @@ Record a decision here when it is accepted. Until then, items below are open.
 - **Decision:** Install Argo CD `v3.5.3` into namespace `argocd` on context `ckad-lab`. Application destinations use the in-cluster server `https://kubernetes.default.svc` and namespace `platform-lab`. Sync policy is automated with prune and selfHeal.
 - **Consequences:** Git is the desired-state source for the local overlay. Jenkins remains CI-only. A later AWS Application would be a separate object with a different destination.
 
+## ADR-005: One build, one digest, dual-environment promotion
+
+- **Status:** Accepted
+- **Date:** 2026-09-25
+- **Context:** Local (VMware) and AWS (EKS) both consume `kirandevraaj/platform-lab`. Tag-only GitOps pins are mutable if a tag is retagged. Separate per-environment builds would diverge.
+- **Decision:** Build and push once as `kirandevraaj/platform-lab:<APP_VERSION>`. Capture the registry-published digest. Promote that same `digest` into both `kubernetes/overlays/local` and `kubernetes/overlays/aws`, while keeping `app.kubernetes.io/version` equal to `APP_VERSION`.
+- **Consequences:** Rendered image is `kirandevraaj/platform-lab@sha256:...`. Missing digest fails the pipeline before any GitOps commit. Tag refuse protection remains.
+
 ## ADR-006: Jenkins stays off the deploy path
 
 - **Status:** Accepted
 - **Date:** 2026-09-24
 - **Context:** The Jenkins pipeline already publishes `kirandevraaj/platform-lab:<APP_VERSION>` to Docker Hub.
 - **Decision:** Jenkins does not run `kubectl apply` and does not talk to Argo CD for deploy. Image publish and cluster reconcile stay separate.
-- **Consequences:** A new image tag becomes live only after Git records that tag in the Kubernetes manifests and Argo CD syncs.
+- **Consequences:** A new image becomes live only after Git records its digest (and version label) in the Kubernetes manifests and Argo CD syncs.
 
 ## ADR-007: Observability uses kube-prometheus-stack with Grafana LoadBalancer
 
@@ -32,7 +40,7 @@ Record a decision here when it is accepted. Until then, items below are open.
 - **Date:** 2026-09-24
 - **Context:** The lab had no Prometheus Operator, Grafana, or ServiceMonitor CRDs. Application metrics needed a scrape path without changing MetalLB pool, ingress-nginx VIP `192.168.56.200`, or the AWS overlay.
 - **Decision:** Install `kube-prometheus-stack` chart `91.5.1` into namespace `monitoring` via Argo CD Application `platform-lab-observability`. Prometheus Service stays ClusterIP. Grafana Service is LoadBalancer so MetalLB allocates another address from existing `lab-pool`. No Grafana Ingress. Application scrape uses ServiceMonitor in the local overlay; NetworkPolicy allows namespace `monitoring`. Alertmanager is disabled for a minimal footprint.
-- **Consequences:** Grafana EXTERNAL-IP is discovered after reconcile and must not be hard-coded. AppProject `platform-lab` gains `ServiceMonitor` permission. Jenkins promotion updates only `newTag` so overlay resources (ingress Service patch, ServiceMonitor, patches) survive promotion.
+- **Consequences:** Grafana EXTERNAL-IP is discovered after reconcile and must not be hard-coded. AppProject `platform-lab` gains `ServiceMonitor` permission. Jenkins promotion updates only overlay `digest` + version label so overlay resources (ingress Service patch, ServiceMonitor, patches) survive promotion.
 
 ## ADR-008: Local reliability uses HPA, PDB, and soft topology spread
 
@@ -49,4 +57,4 @@ Record a decision here when it is accepted. Until then, items below are open.
 | ADR-001 | Which container registry serves the local lab, and which serves AWS? | Local lab uses Docker Hub `kirandevraaj/platform-lab`. AWS registry undecided. |
 | ADR-002 | Where does Jenkins run? | Accepted in practice: Docker Desktop on the workstation. Formal ADR can close later. |
 | ADR-004 | AWS footprint | **Accepted:** EKS 1.36 in `ap-south-1`, VPC `10.50.0.0/16`, 2 AZ public/private, private nodes, single NAT; Terraform under `terraform/aws` implements VPC/IAM/EKS/LB Controller/Argo CD bootstrap (apply still gated). |
-| ADR-005 | Image promotion | One image digest promoted between targets, or separate builds. Undecided. |
+| ADR-005 | Image promotion | **Accepted:** one image is built once; the same registry digest is promoted to local and aws overlays. |

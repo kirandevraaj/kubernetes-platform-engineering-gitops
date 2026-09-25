@@ -7,8 +7,8 @@ resources:
   - pdb.yaml
 images:
   - name: kirandevraaj/platform-lab
-    newTag: "0.1.4"
-# Keep app.kubernetes.io/version aligned with newTag (Jenkins updates both).
+    digest: sha256:1cca2b5964043fe6c9c09f17d7f86a3572a46699602919d15c45c9a069b872ff
+# Version label = logical release; digest = immutable artifact (Jenkins updates both).
 labels:
   - pairs:
       app.kubernetes.io/version: "0.1.4"
