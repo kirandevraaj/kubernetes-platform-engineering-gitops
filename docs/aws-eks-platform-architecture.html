@@ -727,6 +727,31 @@
         kube-prometheus-stack, extra ALB, or public Grafana. Details:
         <span class="mono">docs/aws-lightweight-observability.md</span>.
       </div>
+      <p class="lede" style="margin-top:1rem">
+        Autoscaling uses a <strong>separate</strong> path from dashboards:
+      </p>
+      <div class="diagram-frame" role="img" aria-label="Metrics Server drives HPA; Prometheus drives Grafana">
+        <svg viewBox="0 0 1100 280" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+          <rect x="380" y="20" width="340" height="50" rx="8" fill="#f0f7ff" stroke="#326ce5" stroke-width="2"/>
+          <text x="550" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#326ce5">platform-lab</text>
+          <path d="M450 70 L280 110" stroke="#5a6a7a" stroke-width="2"/>
+          <path d="M650 70 L820 110" stroke="#5a6a7a" stroke-width="2"/>
+          <rect x="140" y="110" width="280" height="50" rx="8" fill="#fff" stroke="#232f3e" stroke-width="2"/>
+          <text x="280" y="140" text-anchor="middle" font-size="13" font-weight="700">Metrics Server</text>
+          <rect x="680" y="110" width="280" height="50" rx="8" fill="#fff" stroke="#e6522c" stroke-width="2"/>
+          <text x="820" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#e6522c">/metrics → Prometheus</text>
+          <path d="M280 160 L280 200" stroke="#5a6a7a" stroke-width="2"/>
+          <path d="M820 160 L820 200" stroke="#5a6a7a" stroke-width="2"/>
+          <rect x="140" y="200" width="280" height="50" rx="8" fill="#fff" stroke="#232f3e" stroke-width="2"/>
+          <text x="280" y="230" text-anchor="middle" font-size="13" font-weight="700">HPA → replica scaling</text>
+          <rect x="680" y="200" width="280" height="50" rx="8" fill="#fff" stroke="#f46800" stroke-width="2"/>
+          <text x="820" y="230" text-anchor="middle" font-size="13" font-weight="700" fill="#f46800">Grafana dashboards</text>
+        </svg>
+      </div>
+      <div class="callout">
+        <strong>Do not conflate paths:</strong> Prometheus does <em>not</em> feed the HPA.
+        Controlled load-test evidence: <span class="mono">docs/aws-hpa-observability-load-test.md</span>.
+      </div>
     </section>
 
     <section id="traffic">
