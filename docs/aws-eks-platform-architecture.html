@@ -684,14 +684,16 @@
     </section>
 
     <section id="aws-observability">
-      <h2>Lightweight observability (AWS)</h2>
+      <h2>Kubernetes platform observability (AWS)</h2>
       <p class="lede">
-        GitOps Application <span class="mono">platform-observability-aws</span> deploys Prometheus + Grafana only
-        into namespace <span class="mono">observability</span>. This is separate from application traffic through the ALB.
+        Application <span class="mono">platform-observability-aws</span> owns Prometheus + Grafana.
+        Application <span class="mono">platform-k8s-metrics-aws</span> adds
+        <span class="mono">kube-state-metrics</span> and <span class="mono">node-exporter</span>
+        into the same <span class="mono">observability</span> namespace. All scrape traffic stays ClusterIP-only (no ALB).
       </p>
-      <div class="diagram-frame" role="img" aria-label="Application traffic versus observability scrape path">
-        <svg viewBox="0 0 1100 420" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
-          <rect x="40" y="30" width="480" height="360" rx="10" fill="#fff" stroke="#232f3e" stroke-width="2"/>
+      <div class="diagram-frame" role="img" aria-label="Prometheus scrapes application, kube-state-metrics, and node-exporter">
+        <svg viewBox="0 0 1100 480" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+          <rect x="40" y="30" width="480" height="420" rx="10" fill="#fff" stroke="#232f3e" stroke-width="2"/>
           <text x="60" y="58" font-size="14" font-weight="800" fill="#232f3e">Application traffic</text>
           <text x="60" y="78" font-size="11" fill="#5a6a7a">Internet → ALB → platform-lab</text>
           <rect x="120" y="110" width="320" height="50" rx="8" fill="#232f3e" stroke="#ff9900" stroke-width="2"/>
@@ -704,52 +706,71 @@
           <rect x="120" y="275" width="320" height="70" rx="8" fill="#f0f7ff" stroke="#326ce5" stroke-width="2"/>
           <text x="280" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#326ce5">platform-lab</text>
           <text x="280" y="325" text-anchor="middle" font-size="11">:8000 · /health · /version · /metrics</text>
+          <text x="280" y="400" text-anchor="middle" font-size="11" fill="#5a6a7a">HPA path is separate (Metrics Server)</text>
 
-          <rect x="560" y="30" width="500" height="360" rx="10" fill="#fff" stroke="#326ce5" stroke-width="2"/>
+          <rect x="560" y="30" width="500" height="420" rx="10" fill="#fff" stroke="#326ce5" stroke-width="2"/>
           <text x="580" y="58" font-size="14" font-weight="800" fill="#326ce5">Observability path</text>
-          <text x="580" y="78" font-size="11" fill="#5a6a7a">platform-lab → Prometheus → Grafana (no ALB)</text>
-          <rect x="640" y="110" width="340" height="55" rx="8" fill="#f0f7ff" stroke="#326ce5" stroke-width="2"/>
-          <text x="810" y="135" text-anchor="middle" font-size="13" font-weight="700" fill="#326ce5">platform-lab /metrics</text>
-          <text x="810" y="153" text-anchor="middle" font-size="11" fill="#5a6a7a">scraped every 30s</text>
-          <path d="M810 165 L810 195" stroke="#5a6a7a" stroke-width="2"/>
-          <rect x="640" y="195" width="340" height="55" rx="8" fill="#fff" stroke="#e6522c" stroke-width="2"/>
-          <text x="810" y="220" text-anchor="middle" font-size="13" font-weight="700" fill="#e6522c">Prometheus</text>
-          <text x="810" y="238" text-anchor="middle" font-size="11" fill="#5a6a7a">observability · ClusterIP · emptyDir</text>
-          <path d="M810 250 L810 280" stroke="#5a6a7a" stroke-width="2"/>
-          <rect x="640" y="280" width="340" height="70" rx="8" fill="#fff" stroke="#f46800" stroke-width="2"/>
-          <text x="810" y="310" text-anchor="middle" font-size="13" font-weight="700" fill="#f46800">Grafana</text>
-          <text x="810" y="328" text-anchor="middle" font-size="11" fill="#5a6a7a">observability · ClusterIP only</text>
-          <text x="810" y="345" text-anchor="middle" font-size="11" fill="#5a6a7a">kubectl port-forward · anonymous Viewer</text>
+          <text x="580" y="78" font-size="11" fill="#5a6a7a">exporters + /metrics → Prometheus → Grafana</text>
+
+          <rect x="590" y="100" width="200" height="48" rx="8" fill="#f0f7ff" stroke="#326ce5" stroke-width="2"/>
+          <text x="690" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#326ce5">platform-lab /metrics</text>
+          <text x="690" y="138" text-anchor="middle" font-size="10" fill="#5a6a7a">job=platform-lab</text>
+
+          <rect x="820" y="100" width="210" height="48" rx="8" fill="#fff" stroke="#0f766e" stroke-width="2"/>
+          <text x="925" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">kube-state-metrics</text>
+          <text x="925" y="138" text-anchor="middle" font-size="10" fill="#5a6a7a">K8s API object state</text>
+
+          <rect x="705" y="170" width="210" height="48" rx="8" fill="#fff" stroke="#0f766e" stroke-width="2"/>
+          <text x="810" y="192" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">node-exporter</text>
+          <text x="810" y="208" text-anchor="middle" font-size="10" fill="#5a6a7a">DaemonSet · 1 per node</text>
+
+          <path d="M690 148 L690 230" stroke="#5a6a7a" stroke-width="2"/>
+          <path d="M925 148 L860 230" stroke="#5a6a7a" stroke-width="2"/>
+          <path d="M810 218 L810 240" stroke="#5a6a7a" stroke-width="2"/>
+
+          <rect x="640" y="240" width="340" height="55" rx="8" fill="#fff" stroke="#e6522c" stroke-width="2"/>
+          <text x="810" y="265" text-anchor="middle" font-size="13" font-weight="700" fill="#e6522c">Prometheus</text>
+          <text x="810" y="283" text-anchor="middle" font-size="11" fill="#5a6a7a">observability · ClusterIP · emptyDir</text>
+          <path d="M810 295 L810 325" stroke="#5a6a7a" stroke-width="2"/>
+          <rect x="640" y="325" width="340" height="70" rx="8" fill="#fff" stroke="#f46800" stroke-width="2"/>
+          <text x="810" y="355" text-anchor="middle" font-size="13" font-weight="700" fill="#f46800">Grafana</text>
+          <text x="810" y="373" text-anchor="middle" font-size="11" fill="#5a6a7a">app dashboard + Kubernetes Platform AWS</text>
+          <text x="810" y="390" text-anchor="middle" font-size="11" fill="#5a6a7a">kubectl port-forward · anonymous Viewer</text>
         </svg>
       </div>
       <div class="callout">
-        <strong>Not in this layer:</strong> node-exporter, kube-state-metrics, Alertmanager, OpenTelemetry, Loki/Tempo/Jaeger,
-        kube-prometheus-stack, extra ALB, or public Grafana. Details:
-        <span class="mono">docs/aws-lightweight-observability.md</span>.
+        <strong>Still not installed:</strong> Alertmanager, OpenTelemetry, Loki, Tempo, Jaeger,
+        kube-prometheus-stack (AWS), or public Grafana. Details:
+        <span class="mono">docs/kubernetes-platform-observability.md</span>.
       </div>
       <p class="lede" style="margin-top:1rem">
-        Autoscaling uses a <strong>separate</strong> path from dashboards:
+        Keep responsibilities explicit — Metrics Server is not a Prometheus scrape source in this lab:
       </p>
-      <div class="diagram-frame" role="img" aria-label="Metrics Server drives HPA; Prometheus drives Grafana">
-        <svg viewBox="0 0 1100 280" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+      <div class="diagram-frame" role="img" aria-label="Metrics Server drives HPA; exporters and app metrics feed Prometheus">
+        <svg viewBox="0 0 1100 320" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
           <rect x="380" y="20" width="340" height="50" rx="8" fill="#f0f7ff" stroke="#326ce5" stroke-width="2"/>
           <text x="550" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#326ce5">platform-lab</text>
           <path d="M450 70 L280 110" stroke="#5a6a7a" stroke-width="2"/>
-          <path d="M650 70 L820 110" stroke="#5a6a7a" stroke-width="2"/>
+          <path d="M650 70 L820 100" stroke="#5a6a7a" stroke-width="2"/>
           <rect x="140" y="110" width="280" height="50" rx="8" fill="#fff" stroke="#232f3e" stroke-width="2"/>
           <text x="280" y="140" text-anchor="middle" font-size="13" font-weight="700">Metrics Server</text>
-          <rect x="680" y="110" width="280" height="50" rx="8" fill="#fff" stroke="#e6522c" stroke-width="2"/>
-          <text x="820" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#e6522c">/metrics → Prometheus</text>
+          <rect x="680" y="90" width="280" height="70" rx="8" fill="#fff" stroke="#e6522c" stroke-width="2"/>
+          <text x="820" y="118" text-anchor="middle" font-size="12" font-weight="700" fill="#e6522c">/metrics</text>
+          <text x="820" y="138" text-anchor="middle" font-size="11" fill="#5a6a7a">+ kube-state-metrics + node-exporter</text>
           <path d="M280 160 L280 200" stroke="#5a6a7a" stroke-width="2"/>
           <path d="M820 160 L820 200" stroke="#5a6a7a" stroke-width="2"/>
           <rect x="140" y="200" width="280" height="50" rx="8" fill="#fff" stroke="#232f3e" stroke-width="2"/>
           <text x="280" y="230" text-anchor="middle" font-size="13" font-weight="700">HPA → replica scaling</text>
-          <rect x="680" y="200" width="280" height="50" rx="8" fill="#fff" stroke="#f46800" stroke-width="2"/>
-          <text x="820" y="230" text-anchor="middle" font-size="13" font-weight="700" fill="#f46800">Grafana dashboards</text>
+          <rect x="680" y="200" width="280" height="50" rx="8" fill="#fff" stroke="#e6522c" stroke-width="2"/>
+          <text x="820" y="230" text-anchor="middle" font-size="13" font-weight="700" fill="#e6522c">Prometheus</text>
+          <path d="M820 250 L820 280" stroke="#5a6a7a" stroke-width="2"/>
+          <rect x="680" y="280" width="280" height="30" rx="6" fill="#fff" stroke="#f46800" stroke-width="2"/>
+          <text x="820" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="#f46800">Grafana</text>
         </svg>
       </div>
       <div class="callout">
         <strong>Do not conflate paths:</strong> Prometheus does <em>not</em> feed the HPA.
+        <span class="mono">kube-state-metrics</span> and <span class="mono">node-exporter</span> are not replacements for Metrics Server.
         Controlled load-test evidence: <span class="mono">docs/aws-hpa-observability-load-test.md</span>.
       </div>
     </section>

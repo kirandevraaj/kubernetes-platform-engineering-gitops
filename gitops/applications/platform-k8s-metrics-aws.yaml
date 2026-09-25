@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-k8s-metrics-aws
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-k8s-metrics-aws
+    app.kubernetes.io/instance: platform-k8s-metrics-aws
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-k8s-metrics-aws
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-state-metrics
+      targetRevision: 8.5.0
+      helm:
+        releaseName: kube-state-metrics
+        valueFiles:
+          - $values/observability/aws/values-kube-state-metrics.yaml
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: prometheus-node-exporter
+      targetRevision: 4.57.0
+      helm:
+        releaseName: prometheus-node-exporter
+        valueFiles:
+          - $values/observability/aws/values-prometheus-node-exporter.yaml
+    - repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ApplyOutOfSyncOnly=true

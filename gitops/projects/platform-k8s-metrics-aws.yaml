@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-k8s-metrics-aws
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-k8s-metrics-aws
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+spec:
+  description: kube-state-metrics + node-exporter for AWS EKS (Prometheus scrape targets; not Metrics Server)
+  sourceRepos:
+    - https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    - https://prometheus-community.github.io/helm-charts
+  destinations:
+    - namespace: observability
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: true

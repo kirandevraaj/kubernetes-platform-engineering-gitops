@@ -1,0 +1,48 @@
+# prometheus-node-exporter — AWS EKS DaemonSet (standalone chart).
+# One pod per Kubernetes node. ClusterIP metrics service only.
+# Does NOT replace Metrics Server (HPA still uses Metrics Server).
+#
+# Host access (chart defaults; minimum required for node metrics):
+# - hostNetwork: true  — bind host network namespace for accurate iface metrics
+# - hostPID: true      — read host process / load metrics
+# - hostRootFsMount / proc / sys — read host filesystem + kernel stats
+# - NOT privileged; runAsNonRoot uid 65534; readOnlyRootFilesystem
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 9100
+  portName: metrics
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
+
+securityContext:
+  fsGroup: 65534
+  runAsGroup: 65534
+  runAsNonRoot: true
+  runAsUser: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+rbac:
+  create: true
+
+# Required for correct node-level metrics (official chart defaults).
+hostNetwork: true
+hostPID: true
+hostIPC: false
+
+hostRootFsMount:
+  enabled: true
+  mountPropagation: HostToContainer
+
+prometheus:
+  monitor:
+    enabled: false

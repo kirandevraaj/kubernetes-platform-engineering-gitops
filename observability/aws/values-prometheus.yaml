@@ -1,6 +1,7 @@
-# Lightweight AWS observability (Prometheus + Grafana only).
+# Lightweight AWS observability (Prometheus + Grafana).
 # Disable all default cluster-wide scrape jobs and sub-charts.
-# Scrape only Prometheus itself and platform-lab /metrics.
+# Scrape: Prometheus self, platform-lab /metrics, kube-state-metrics, node-exporter.
+# kube-state-metrics and node-exporter are owned by Application platform-k8s-metrics-aws.
 
 alertmanager:
   enabled: false
@@ -62,7 +63,10 @@ scrapeConfigs:
   prometheus-pushgateway:
     enabled: false
 
-# Targeted scrape of platform-lab application metrics only.
+# Targeted scrapes only (no broad kubernetes-pods / kubernetes-nodes discovery).
+# - platform-lab application /metrics
+# - kube-state-metrics (single replica → one target)
+# - node-exporter via endpoints SD (one target per DaemonSet pod / node)
 extraScrapeConfigs: |
   - job_name: platform-lab
     metrics_path: /metrics
@@ -86,6 +90,61 @@ extraScrapeConfigs: |
       - source_labels: [__meta_kubernetes_pod_name]
         action: replace
         target_label: pod
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: service
+
+  - job_name: kube-state-metrics
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - observability
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: kube-state-metrics
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: http
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: service
+
+  - job_name: node-exporter
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - observability
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: prometheus-node-exporter
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: metrics
+      - source_labels: [__meta_kubernetes_endpoint_node_name]
+        action: replace
+        target_label: node
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
       - source_labels: [__meta_kubernetes_service_name]
         action: replace
         target_label: service

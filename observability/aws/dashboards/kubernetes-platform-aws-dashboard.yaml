@@ -1,0 +1,288 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-platform-aws-grafana-dashboard
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: kubernetes-platform-aws
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: Kubernetes Platform
+data:
+  kubernetes-platform-aws.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "title": "CLUSTER OVERVIEW",
+          "type": "row"
+        },
+        {
+          "title": "Node count",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            { "expr": "count(up{job=\"node-exporter\"} == 1)", "legendFormat": "nodes", "refId": "A" }
+          ]
+        },
+        {
+          "title": "node-exporter targets up",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+              ]
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            { "expr": "min(up{job=\"node-exporter\"})", "legendFormat": "min up", "refId": "A" }
+          ]
+        },
+        {
+          "title": "kube-state-metrics up",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+              ]
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            { "expr": "up{job=\"kube-state-metrics\"}", "legendFormat": "ksm", "refId": "A" }
+          ]
+        },
+        {
+          "title": "Node CPU utilization",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1,
+              "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": true }
+            }
+          },
+          "targets": [
+            {
+              "expr": "1 - avg by (instance) (rate(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}[5m]))",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "Node memory utilization",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1,
+              "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": true }
+            }
+          },
+          "targets": [
+            {
+              "expr": "1 - (node_memory_MemAvailable_bytes{job=\"node-exporter\"} / node_memory_MemTotal_bytes{job=\"node-exporter\"})",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "Node filesystem usage",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1,
+              "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": true }
+            }
+          },
+          "targets": [
+            {
+              "expr": "1 - (node_filesystem_avail_bytes{job=\"node-exporter\",fstype!~\"tmpfs|overlay\",mountpoint=\"/\"} / node_filesystem_size_bytes{job=\"node-exporter\",fstype!~\"tmpfs|overlay\",mountpoint=\"/\"})",
+              "legendFormat": "{{instance}} {{mountpoint}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+          "id": 200,
+          "title": "KUBERNETES STATE",
+          "type": "row"
+        },
+        {
+          "title": "platform-lab desired replicas",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 18 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            {
+              "expr": "kube_deployment_spec_replicas{job=\"kube-state-metrics\",namespace=\"platform-lab\",deployment=\"platform-lab\"}",
+              "legendFormat": "desired",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "platform-lab available replicas",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 18 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            {
+              "expr": "kube_deployment_status_replicas_available{job=\"kube-state-metrics\",namespace=\"platform-lab\",deployment=\"platform-lab\"}",
+              "legendFormat": "available",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "HPA current replicas",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 18 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            {
+              "expr": "kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=\"platform-lab\",horizontalpodautoscaler=\"platform-lab\"}",
+              "legendFormat": "current",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "HPA desired replicas",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 18 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            {
+              "expr": "kube_horizontalpodautoscaler_status_desired_replicas{job=\"kube-state-metrics\",namespace=\"platform-lab\",horizontalpodautoscaler=\"platform-lab\"}",
+              "legendFormat": "desired",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "HPA min / max",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 18 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "value_and_name" },
+          "targets": [
+            {
+              "expr": "kube_horizontalpodautoscaler_spec_min_replicas{job=\"kube-state-metrics\",namespace=\"platform-lab\",horizontalpodautoscaler=\"platform-lab\"}",
+              "legendFormat": "min",
+              "refId": "A"
+            },
+            {
+              "expr": "kube_horizontalpodautoscaler_spec_max_replicas{job=\"kube-state-metrics\",namespace=\"platform-lab\",horizontalpodautoscaler=\"platform-lab\"}",
+              "legendFormat": "max",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "title": "Pod count (Running)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 20, "y": 18 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            {
+              "expr": "count(kube_pod_status_phase{job=\"kube-state-metrics\",phase=\"Running\"} == 1)",
+              "legendFormat": "running pods",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "Deployment desired vs available (platform-lab)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": true }
+            }
+          },
+          "targets": [
+            {
+              "expr": "kube_deployment_spec_replicas{job=\"kube-state-metrics\",namespace=\"platform-lab\",deployment=\"platform-lab\"}",
+              "legendFormat": "desired",
+              "refId": "A"
+            },
+            {
+              "expr": "kube_deployment_status_replicas_available{job=\"kube-state-metrics\",namespace=\"platform-lab\",deployment=\"platform-lab\"}",
+              "legendFormat": "available",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "title": "HPA current vs desired replicas",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": true }
+            }
+          },
+          "targets": [
+            {
+              "expr": "kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=\"platform-lab\",horizontalpodautoscaler=\"platform-lab\"}",
+              "legendFormat": "current",
+              "refId": "A"
+            },
+            {
+              "expr": "kube_horizontalpodautoscaler_status_desired_replicas{job=\"kube-state-metrics\",namespace=\"platform-lab\",horizontalpodautoscaler=\"platform-lab\"}",
+              "legendFormat": "desired",
+              "refId": "B"
+            }
+          ]
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": ["kubernetes", "aws", "platform", "kube-state-metrics", "node-exporter"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "timezone": "browser",
+      "title": "Kubernetes Platform AWS",
+      "uid": "kubernetes-platform-aws",
+      "version": 1
+    }

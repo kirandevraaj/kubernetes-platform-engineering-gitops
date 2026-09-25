@@ -43,7 +43,7 @@ Prometheus and Grafana are **not** installed under the `platform-lab-local` Appl
 | `kubernetes/overlays/local/servicemonitor.yaml` | Application ServiceMonitor |
 | `kubernetes/overlays/local/networkpolicy-prometheus-patch.yaml` | Allow scrapes from namespace `monitoring` |
 
-AWS overlay is unchanged.
+AWS overlay is unchanged for the application path. AWS observability lives under `observability/aws/` and is owned by Applications `platform-observability-aws` (Prometheus + Grafana) and `platform-k8s-metrics-aws` (kube-state-metrics + node-exporter). See `docs/kubernetes-platform-observability.md`.
 
 ## Apply GitOps objects
 
