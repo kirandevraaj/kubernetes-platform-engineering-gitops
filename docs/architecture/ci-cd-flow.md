@@ -1,22 +1,25 @@
 # CI/CD flow
 
-Status: automated CI → Docker Hub → GitOps promotion is implemented in `jenkins/Jenkinsfile`. Argo CD Application `platform-lab-local` remains the only deploy path onto `ckad-lab`. The manual `0.1.1` path was demonstrated first; full automation is loaded by Jenkins after the Jenkinsfile reaches `main`.
+Status: automated CI → Docker Hub → **multi-environment** GitOps promotion is implemented in `jenkins/Jenkinsfile`. Argo CD Application `platform-lab-local` deploys to VMware (`ckad-lab`). Argo CD Application `platform-lab-aws` (Terraform-bootstrapped on EKS) deploys to AWS. Jenkins never deploys with `kubectl`.
+
+**Jenkins performs CI and GitOps promotion. Argo CD performs Kubernetes deployment and reconciliation.**
 
 ## CI and CD
 
-CI builds, tests, packages, publishes an image, and commits the local overlay image tag. It does not call `kubectl`.
+CI builds, tests, packages, publishes an image, and commits the image tag into **both** overlays (`kubernetes/overlays/local` and `kubernetes/overlays/aws`). It does not call `kubectl`.
 
-CD is Argo CD on the VMware cluster. It reads Git and syncs Kubernetes manifests. Details are in [gitops-flow.md](gitops-flow.md).
+CD is Argo CD on each target cluster. It reads Git and syncs Kubernetes manifests. Details are in [gitops-flow.md](gitops-flow.md) and [gitops/README.md](../../gitops/README.md).
 
 ### What each layer changes
 
 | Layer | Changes | Does not change |
 |---|---|---|
-| Jenkins CI (app/** only) | Tests, image build/validation, Docker Hub tag, Git commit to local overlay `newTag` | Live Kubernetes objects directly; AWS overlay |
-| Git commit to `kubernetes/overlays/local` | Desired image tag for Argo CD | Docker Hub contents by itself |
-| Argo CD | Live cluster objects until they match Git | Image builds or registry pushes |
+| Jenkins CI (app/** only) | Tests, image build/validation, Docker Hub tag, Git commit to local + aws overlay `newTag` | Live Kubernetes objects directly; Terraform; environment-specific patches |
+| Git commit to overlays | Desired image tag for both Argo CD Applications | Docker Hub contents by itself |
+| Argo CD (`platform-lab-local`) | Live objects on VMware until they match Git | Image builds |
+| Argo CD (`platform-lab-aws`) | Live objects on EKS until they match Git | Image builds |
 
-Publishing a new image is not the same as deploying it. The cluster moves to a new tag only after Git records that tag and Argo CD reconciles. Kubernetes networking objects (Ingress, NetworkPolicy) also change only through Git → Argo CD, not through Jenkins.
+Publishing a new image is not the same as deploying it. Each cluster moves to a new tag only after Git records that tag and that cluster's Argo CD reconciles. Kubernetes networking objects (Ingress, NetworkPolicy) also change only through Git → Argo CD, not through Jenkins.
 
 ## Automated path
 
@@ -29,24 +32,27 @@ Jenkins pollSCM (H/2 * * * *)
     v
 Detect Application Change
     |-- no app/** --> SUCCESS (skip build/push/promote)
+    |     docs / terraform / GitOps-only / jenkins-only / etc.
     |
     +-- app/** --> Unit Test
                    Read APP_VERSION from app/src/__init__.py
                    Refuse if Docker Hub already has that tag
                    Docker Build / Validate / Push
                    Update kubernetes/overlays/local/kustomization.yaml
+                   Update kubernetes/overlays/aws/kustomization.yaml
                    git commit + push (github-platform-lab)
                         |
                         v
                    GitHub main
                         |
-                        v
-                   Argo CD sync on ckad-lab
+                        +--> Argo CD platform-lab-local → VMware
+                        |
+                        +--> Argo CD platform-lab-aws   → EKS
 ```
 
 ### Loop prevention
 
-The GitOps promotion commit touches only `kubernetes/overlays/local/kustomization.yaml`. The next poll still starts a build, but Detect Application Change finds no `app/**` files, so Docker and promotion stages are skipped. Concurrent promotions are blocked with `disableConcurrentBuilds()`.
+The GitOps promotion commit touches only overlay `kustomization.yaml` image `newTag` fields (local and/or aws). The next poll still starts a build, but Detect Application Change finds no `app/**` files, so Docker and promotion stages are skipped. Concurrent promotions are blocked with `disableConcurrentBuilds()`.
 
 ### Triggers
 
@@ -88,16 +94,23 @@ Details are in [jenkins/README.md](../../jenkins/README.md).
 
 - It does not edit the live cluster with `kubectl`.
 - It does not install or operate Argo CD.
-- It does not promote `kubernetes/overlays/aws`.
+- It does not modify Terraform, AWS infrastructure, or environment-specific overlay patches.
 - It does not reuse or overwrite an existing Docker Hub version tag.
 
 ## CD path
 
-Argo CD Application `platform-lab-local` renders `kubernetes/overlays/local` and converges namespace `platform-lab` on `ckad-lab`. An AWS Application does not exist yet.
+| Application | Overlay | Destination |
+|---|---|---|
+| `platform-lab-local` | `kubernetes/overlays/local` | VMware `ckad-lab` (in-cluster API) |
+| `platform-lab-aws` | `kubernetes/overlays/aws` | EKS `platform-lab-aws-lab-eks` (in-cluster API; Terraform-bootstrapped) |
+
+## Next release milestone
+
+Bump `APP_VERSION` to `0.1.4` in `app/src/__init__.py`, push an `app/**` commit to `main`, and verify Jenkins publishes `:0.1.4` then promotes both overlays. Do not bump the version until that release milestone starts.
 
 ## Manual integration test: 0.1.1 (24 September 2026)
 
-Before automation, the same path was exercised by hand:
+Before automation, the same path was exercised by hand (local overlay only at that time):
 
 1. Application release commit `7557521` (`0.1.1`, release `ci-cd-integration-test`).
 2. Jenkins published `kirandevraaj/platform-lab:0.1.1` (digest `sha256:820a90907dbd09e650acaea652dd48741ef36849b34c581bc2732dc7cb8eba8c`).
@@ -109,8 +122,9 @@ Before automation, the same path was exercised by hand:
 
 | Item | State |
 |---|---|
-| Jenkinsfile automation | Implemented and loaded (`pollSCM`, app/** gate, promote + push) |
-| Controlled automated release demo | **Completed** for `0.1.2` on 24 September 2026 |
+| Jenkinsfile automation | Implemented (`pollSCM`, app/** gate, dual-overlay promote + push) |
+| Local automated release demo | **Completed** for `0.1.2` / `0.1.3` on the VMware path |
+| Multi-environment promotion | **Implemented** in Jenkinsfile; first dual release demo deferred to `0.1.4` |
 
 ## Automated integration test: 0.1.2 (24 September 2026)
 

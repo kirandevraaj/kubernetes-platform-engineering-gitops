@@ -4,8 +4,12 @@
 //   github-platform-lab     — GitOps promotion push to origin/main
 //
 // Flow: app/** change → test → build → validate → push image →
-//       update local Kustomize tag → commit/push GitOps → Argo CD syncs.
+//       update local + aws Kustomize tags → commit/push GitOps →
+//       Argo CD reconciles each environment (VMware + EKS).
 // Non-app commits skip build/push/promotion so the GitOps commit cannot loop CI.
+//
+// Jenkins performs CI and GitOps promotion.
+// Argo CD performs Kubernetes deployment and reconciliation.
 
 pipeline {
     agent { label 'linux && docker' }
@@ -23,6 +27,7 @@ pipeline {
     environment {
         IMAGE_REPO = 'kirandevraaj/platform-lab'
         GITOPS_LOCAL_KUSTOMIZATION = 'kubernetes/overlays/local/kustomization.yaml'
+        GITOPS_AWS_KUSTOMIZATION = 'kubernetes/overlays/aws/kustomization.yaml'
         GIT_AUTHOR_NAME = 'Jenkins CI'
         GIT_AUTHOR_EMAIL = 'jenkins-ci@local'
     }
@@ -269,7 +274,7 @@ PY
             }
         }
 
-        stage('Promote GitOps') {
+        stage('Promote Local GitOps') {
             when {
                 expression { return env.APP_CHANGED == 'true' }
             }
@@ -303,23 +308,63 @@ if count != 1:
 path.write_text(updated, encoding="utf-8")
 print(f"Updated {path} to newTag={version}")
 PY
-                    git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}"
-                    if git diff --quiet -- "${GITOPS_LOCAL_KUSTOMIZATION}"; then
-                        echo "Local overlay already points at ${APP_VERSION}; nothing to promote"
+                    git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}" || true
+                    echo "Local overlay promotion prepared for ${APP_VERSION}"
+                '''
+            }
+        }
+
+        stage('Promote AWS GitOps') {
+            when {
+                expression { return env.APP_CHANGED == 'true' }
+            }
+            steps {
+                sh '''
+                    set -eu
+                    if [ "$APP_VERSION" = "latest" ] || [ -z "$APP_VERSION" ]; then
+                        echo "Refusing to promote latest or an empty version"
                         exit 1
                     fi
-                    other="$(git diff --name-only | grep -v "^${GITOPS_LOCAL_KUSTOMIZATION}\$" || true)"
+                    if command -v python3 >/dev/null 2>&1; then
+                        PY=python3
+                    else
+                        PY=python
+                    fi
+                    "$PY" - <<PY
+from pathlib import Path
+import re
+
+path = Path("${GITOPS_AWS_KUSTOMIZATION}")
+version = "${APP_VERSION}"
+text = path.read_text(encoding="utf-8")
+updated, count = re.subn(
+    r'(newTag:\\s*")[^"]*(")',
+    rf'\\g<1>{version}\\g<2>',
+    text,
+    count=1,
+)
+if count != 1:
+    raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
+path.write_text(updated, encoding="utf-8")
+print(f"Updated {path} to newTag={version}")
+PY
+                    git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"
+                    if git diff --quiet -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"; then
+                        echo "Both overlays already point at ${APP_VERSION}; nothing to promote"
+                        exit 1
+                    fi
+                    other="$(git diff --name-only | grep -v -E "^(${GITOPS_LOCAL_KUSTOMIZATION}|${GITOPS_AWS_KUSTOMIZATION})\$" || true)"
                     if [ -n "$other" ]; then
                         echo "Unexpected tracked modifications before promotion commit:"
                         echo "$other"
                         exit 1
                     fi
-                    echo "Promotion change is limited to ${GITOPS_LOCAL_KUSTOMIZATION} (newTag only)"
+                    echo "Promotion change is limited to local + aws overlay newTag fields"
                 '''
             }
         }
 
-        stage('Git Push') {
+        stage('Commit and Push GitOps') {
             when {
                 expression { return env.APP_CHANGED == 'true' }
             }
@@ -354,7 +399,10 @@ EOF
                         git config user.email "${GIT_AUTHOR_EMAIL}"
 
                         git fetch origin main
-                        git reset --hard origin/main
+                        # Align promotion files with origin/main without git reset --hard.
+                        git checkout origin/main -- \
+                            "${GITOPS_LOCAL_KUSTOMIZATION}" \
+                            "${GITOPS_AWS_KUSTOMIZATION}"
 
                         if command -v python3 >/dev/null 2>&1; then
                             PY=python3
@@ -365,37 +413,51 @@ EOF
 from pathlib import Path
 import re
 
-path = Path("${GITOPS_LOCAL_KUSTOMIZATION}")
 version = "${APP_VERSION}"
-text = path.read_text(encoding="utf-8")
-updated, count = re.subn(
-    r'(newTag:\\s*")[^"]*(")',
-    rf'\\g<1>{version}\\g<2>',
-    text,
-    count=1,
-)
-if count != 1:
-    raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
-path.write_text(updated, encoding="utf-8")
+paths = [
+    Path("${GITOPS_LOCAL_KUSTOMIZATION}"),
+    Path("${GITOPS_AWS_KUSTOMIZATION}"),
+]
+for path in paths:
+    text = path.read_text(encoding="utf-8")
+    updated, count = re.subn(
+        r'(newTag:\\s*")[^"]*(")',
+        rf'\\g<1>{version}\\g<2>',
+        text,
+        count=1,
+    )
+    if count != 1:
+        raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
+    path.write_text(updated, encoding="utf-8")
+    print(f"Updated {path} to newTag={version}")
 PY
-                        git add -- "${GITOPS_LOCAL_KUSTOMIZATION}"
-                        git diff --cached -- "${GITOPS_LOCAL_KUSTOMIZATION}"
+                        git add -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"
+                        git diff --cached -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"
                         cached_files="$(git diff --cached --name-only)"
-                        if [ "$cached_files" != "${GITOPS_LOCAL_KUSTOMIZATION}" ]; then
-                            echo "Promotion commit must contain only ${GITOPS_LOCAL_KUSTOMIZATION}"
-                            echo "Cached files:"
-                            echo "$cached_files"
-                            exit 1
-                        fi
+                        # Allow one or both overlays when the other already matched APP_VERSION.
+                        allowed="${GITOPS_LOCAL_KUSTOMIZATION}
+${GITOPS_AWS_KUSTOMIZATION}"
+                        while IFS= read -r f; do
+                            [ -z "$f" ] && continue
+                            echo "$allowed" | grep -F -x -q "$f" || {
+                                echo "Promotion commit must contain only overlay kustomization files"
+                                echo "Unexpected cached file: $f"
+                                echo "Cached files:"
+                                echo "$cached_files"
+                                exit 1
+                            }
+                        done <<EOF
+$cached_files
+EOF
                         if git diff --cached --quiet; then
                             echo "No staged promotion change after aligning with origin/main"
                             exit 1
                         fi
-                        git commit -m "chore: promote platform-lab ${APP_VERSION} to local GitOps"
+                        git commit -m "chore: promote platform-lab ${APP_VERSION} to local and aws GitOps"
                         set +x
                         git push origin HEAD:main
                         set -x
-                        echo "Pushed GitOps promotion for ${IMAGE_REPO}:${APP_VERSION}"
+                        echo "Pushed GitOps promotion for ${IMAGE_REPO}:${APP_VERSION} (local + aws overlays)"
                     '''
                 }
             }

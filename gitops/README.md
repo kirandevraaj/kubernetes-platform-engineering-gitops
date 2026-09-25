@@ -1,19 +1,22 @@
 # GitOps (Argo CD)
 
-Status: Argo CD runs in the VMware `ckad-lab` cluster and reconciles `platform-lab` from Git. Jenkins does not deploy.
+Status: Argo CD reconciles `platform-lab` independently on VMware (`platform-lab-local`) and on EKS (`platform-lab-aws`). Jenkins does not deploy.
+
+**Jenkins performs CI and GitOps promotion. Argo CD performs Kubernetes deployment and reconciliation.**
 
 ## CI versus CD
 
 | Layer | Owner | Responsibility |
 |---|---|---|
-| CI | Jenkins on Docker Desktop | Checkout, unit test, build, validate, push `kirandevraaj/platform-lab:<APP_VERSION>` to Docker Hub |
-| CD | Argo CD on `ckad-lab` | Read Git, render `kubernetes/overlays/local`, sync the live workload |
+| CI | Jenkins on Docker Desktop | Checkout, unit test, build, validate, push `kirandevraaj/platform-lab:<APP_VERSION>` to Docker Hub, promote overlay `newTag` values |
+| CD (local) | Argo CD on `ckad-lab` | Read Git, render `kubernetes/overlays/local`, sync the VMware workload |
+| CD (AWS) | Argo CD on EKS | Read Git, render `kubernetes/overlays/aws`, sync the EKS workload |
 
 Jenkins never runs `kubectl apply`. Argo CD never builds images.
 
 ## Source of truth
 
-GitHub repository `https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git`, branch `main`, is the desired state for the local overlay. Argo CD compares the live cluster to that path and converges.
+GitHub repository `https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git`, branch `main`, is the desired state for both overlays. Each Argo CD Application watches its own path and converges its own cluster.
 
 ## Layout
 

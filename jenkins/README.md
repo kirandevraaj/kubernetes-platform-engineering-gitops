@@ -1,6 +1,8 @@
 # Jenkins CI
 
-Status: automated CI/CD is demonstrated end-to-end. Job `platform-lab-ci` polls GitHub (`H/2 * * * *`), builds only when `app/**` changes, published `kirandevraaj/platform-lab:0.1.2` on build `#5`, and promoted the local overlay. Build `#6` confirmed the GitOps commit does not rebuild the image. Promotion updates only the `newTag` field in `kubernetes/overlays/local/kustomization.yaml` so other overlay resources (ingress Service patch, ServiceMonitor, patches) are preserved.
+Status: automated multi-environment CI/CD promotion is implemented. Job `platform-lab-ci` polls GitHub (`H/2 * * * *`), builds only when `app/**` changes, publishes `kirandevraaj/platform-lab:<APP_VERSION>`, and promotes **both** GitOps overlays (`kubernetes/overlays/local` and `kubernetes/overlays/aws`). GitOps-only promotion commits skip rebuild (loop prevention).
+
+**Jenkins performs CI and GitOps promotion. Argo CD performs Kubernetes deployment and reconciliation.**
 
 ## Local runtime
 
@@ -90,7 +92,12 @@ Credentials created in Jenkins (not in Git):
 
 ## Purpose
 
-Jenkins is the continuous integration system for `platform-lab`. It builds, tests, and publishes the container image, then writes the new tag into the local GitOps overlay. It does not deploy to Kubernetes. Desired cluster state is reconciled by Argo CD after the promotion commit lands on `main`.
+Jenkins is the continuous integration system for `platform-lab`. It builds, tests, and publishes the container image, then writes the new tag into **both** GitOps overlays. It does not deploy to Kubernetes (`kubectl apply` / `kubectl set image` / `helm upgrade` are not used against the application). Desired cluster state is reconciled by Argo CD after the promotion commit lands on `main`.
+
+| Environment | Overlay | Argo CD Application | Cluster |
+|---|---|---|---|
+| Local / VMware | `kubernetes/overlays/local` | `platform-lab-local` | `ckad-lab` |
+| AWS / EKS | `kubernetes/overlays/aws` | `platform-lab-aws` | `platform-lab-aws-lab-eks` |
 
 ## Automated flow
 
@@ -101,6 +108,7 @@ pollSCM (H/2 * * * *)
 Detect Application Change  (app/** only)
         |
         +-- no app/** --> SUCCESS, skip remaining CI/CD stages
+        |     (docs-only, terraform-only, GitOps-only, jenkins-only, etc.)
         |
         +-- app/** --> Unit Test
                        Read APP_VERSION
@@ -108,15 +116,23 @@ Detect Application Change  (app/** only)
                        Docker Build
                        Docker Image Validation
                        Docker Hub Push
-                       Promote GitOps (local kustomization only)
-                       Git Push (github-platform-lab)
+                       Promote Local GitOps  (local kustomization newTag)
+                       Promote AWS GitOps    (aws kustomization newTag)
+                       Commit and Push GitOps (github-platform-lab)
+                                |
+                                v
+                       Argo CD
+                        ├── platform-lab-local → VMware
+                        └── platform-lab-aws   → EKS
 ```
 
 Polling is intentional for this lab. No GitHub webhook is configured.
 
 ### Loop prevention
 
-The promotion commit changes only `kubernetes/overlays/local/kustomization.yaml`. The next poll still runs the job, but **Detect Application Change** sees no `app/**` path in the SCM change set, so build/push/promotion stages are skipped. The build remains SUCCESS.
+The promotion commit changes only overlay `kustomization.yaml` files under `kubernetes/overlays/{local,aws}/` (image `newTag` only). The next poll still runs the job, but **Detect Application Change** sees no `app/**` path in the SCM change set, so build/push/promotion stages are skipped. The build remains SUCCESS.
+
+The same skip applies to documentation-only, Terraform-only, and other non-`app/**` commits.
 
 `disableConcurrentBuilds()` prevents two promotions from racing.
 
@@ -129,17 +145,21 @@ The promotion commit changes only `kubernetes/overlays/local/kustomization.yaml`
 | `latest` | Never built or pushed |
 | Existing Hub tag | Build fails rather than overwriting |
 
+Future hardening (not in this milestone): pin overlays to immutable image digests in addition to version tags.
+
 ### GitOps promotion
 
-Jenkins rewrites `kubernetes/overlays/local/kustomization.yaml` to:
+Jenkins rewrites both:
 
 ```yaml
+# kubernetes/overlays/local/kustomization.yaml
+# kubernetes/overlays/aws/kustomization.yaml
 images:
   - name: kirandevraaj/platform-lab
     newTag: "<APP_VERSION>"
 ```
 
-It does not edit `kubernetes/base/**`, `kubernetes/overlays/aws/**`, or `gitops/**`. The commit author is `Jenkins CI <jenkins-ci@local>`. Push uses credential `github-platform-lab` through a temporary `GIT_ASKPASS` helper (token not written into remotes or files).
+It does not edit `kubernetes/base/**`, environment-specific patches (MetalLB, ALB, NetworkPolicy, HPA/PDB), Terraform, or `gitops/**` Application definitions. The commit author is `Jenkins CI <jenkins-ci@local>`. Push uses credential `github-platform-lab` through a temporary `GIT_ASKPASS` helper (token not written into remotes or files). Promotion aligns the two overlay files with `origin/main` via `git checkout origin/main -- <files>` (no `git reset --hard`, no force push).
 
 ## Pipeline stages
 
@@ -153,8 +173,9 @@ It does not edit `kubernetes/base/**`, `kubernetes/overlays/aws/**`, or `gitops/
 | Docker Build | `docker build -f app/Dockerfile -t kirandevraaj/platform-lab:<APP_VERSION> app` |
 | Docker Image Validation | Inspects image metadata, runs a one-shot import check, then `/health` over the agent Docker network; removes the temporary container |
 | Docker Hub Push | Logs in with `dockerhub-platform-lab`, pushes the version tag, prints the image digest |
-| Promote GitOps | Updates only the local overlay image tag |
-| Git Push | Fast-forwards to `origin/main`, commits, pushes with `github-platform-lab` |
+| Promote Local GitOps | Updates local overlay `newTag` |
+| Promote AWS GitOps | Updates aws overlay `newTag`; verifies only overlay kustomizations changed |
+| Commit and Push GitOps | Commits both overlay tags and pushes with `github-platform-lab` |
 
 ### Image validation networking
 
@@ -176,10 +197,13 @@ Jenkins unit tests + image build
 Docker Hub kirandevraaj/platform-lab:<APP_VERSION>
         |
         v
-Git commit: local overlay newTag=<APP_VERSION>
+Git commit: local + aws overlay newTag=<APP_VERSION>
         |
-        v
-Argo CD sync on ckad-lab
+        +--> Argo CD platform-lab-local  → VMware / ckad-lab
+        |
+        +--> Argo CD platform-lab-aws    → EKS
 ```
 
-AWS is intentionally outside this automation. The AWS overlay keeps its own image tag until a separate promotion path exists.
+## Next release (planned)
+
+The next application release milestone should bump `APP_VERSION` to `0.1.4` under `app/`, push to `main`, and let Jenkins publish + promote both environments. Do not bump the version until that release milestone starts.
