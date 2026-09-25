@@ -98,6 +98,9 @@ extraScrapeConfigs: |
     metrics_path: /metrics
     scrape_interval: 30s
     scrape_timeout: 10s
+    # Preserve metric labels from kube-state-metrics (namespace, pod, deployment, …).
+    # Without this, Prometheus renames them to exported_* after scrape-target relabeling.
+    honor_labels: true
     kubernetes_sd_configs:
       - role: endpoints
         namespaces:
@@ -110,15 +113,12 @@ extraScrapeConfigs: |
       - source_labels: [__meta_kubernetes_endpoint_port_name]
         action: keep
         regex: http
-      - source_labels: [__meta_kubernetes_namespace]
-        action: replace
-        target_label: namespace
-      - source_labels: [__meta_kubernetes_pod_name]
-        action: replace
-        target_label: pod
       - source_labels: [__meta_kubernetes_service_name]
         action: replace
         target_label: service
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: ksm_pod
 
   - job_name: node-exporter
     metrics_path: /metrics

@@ -161,23 +161,34 @@ Measured on context `platform-lab-aws` (2 × t3.medium).
 ### After exporters
 
 | Metric | Value |
-|---|---|---|
-| Node memory | *(filled after sync)* |
-| Node CPU | *(filled after sync)* |
-| Pod count | *(filled after sync)* |
-| kube-state-metrics | *(filled after sync)* |
-| node-exporter (×2) | *(filled after sync)* |
-| Prometheus targets | *(filled after sync)* |
+|---|---|
+| Node memory | ~1595 Mi + ~576 Mi ≈ **2171 Mi** (~**+124 Mi** cluster-wide) |
+| Node CPU | ~52m + ~40m ≈ **92m** (within noise; no meaningful CPU pressure) |
+| Pod count | **23** (+1 kube-state-metrics + 2 node-exporter) |
+| kube-state-metrics | ~1m / **12–13 Mi** |
+| node-exporter (×2) | ~1m / **3–7 Mi** each |
+| Prometheus | ~9m / **47 Mi** (slight rise after additional series) |
+| Grafana | ~3m / **171 Mi** |
+| Prometheus targets | **6** (all UP) |
+
+Observability exporter footprint is small relative to t3.medium headroom. node-exporter runs once per node as expected.
 
 ## 10. Validation Results
 
-*(Filled after Argo CD sync — see final execution report in commit follow-up if needed.)*
+| Check | Result |
+|---|---|
+| Targets before | **3** |
+| Targets after | **6** |
+| `kube-state-metrics` | **UP** (1 target) |
+| `node-exporter` | **UP** on both workers (`ip-10-50-41-156`, `ip-10-50-52-64`) |
+| `platform-lab` / Prometheus self | remain **UP** |
+| Sample KSM metrics | `kube_deployment_spec_replicas{deployment="platform-lab"}=2`, `kube_deployment_status_replicas_available=2`, HPA current/desired=2, min=2, max=4, `count(kube_pod_info)=23` |
+| Sample node metrics | `node_memory_MemTotal_bytes`, `node_memory_MemAvailable_bytes`, `node_cpu_seconds_total`, `node_filesystem_avail_bytes{mountpoint="/"}` present per node |
+| Grafana dashboards | **platform-lab AWS (lightweight)** + **Kubernetes Platform AWS** (`uid: kubernetes-platform-aws`) |
+| Argo CD | `platform-k8s-metrics-aws`, `platform-observability-aws`, `platform-lab-aws` → Synced/Healthy |
+| ALB | `/health` 200, `/version` 0.1.4, digest unchanged |
 
-- Target count before / after
-- kube-state-metrics target UP
-- node-exporter UP on both nodes
-- Sample PromQL results for deployment/HPA and node CPU/memory/filesystem
-- Grafana dashboard **Kubernetes Platform AWS** (`uid: kubernetes-platform-aws`) provisioned via Git
+Note: kube-state-metrics scrape uses `honor_labels: true` so object `namespace` / `pod` labels are preserved (not rewritten to `exported_*`).
 
 ## 11. VMware vs AWS Comparison
 
