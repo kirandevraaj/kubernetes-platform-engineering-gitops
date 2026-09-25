@@ -41,6 +41,19 @@ Workload manifests stay under `kubernetes/`. Observability Helm values and dashb
 
 See [docs/architecture/observability.md](../docs/architecture/observability.md) and [observability/README.md](../observability/README.md).
 
+## AWS Lightweight Observability Application
+
+| Field | Value |
+|---|---|
+| Manifest | `gitops/applications/platform-observability-aws.yaml` |
+| Project | `platform-observability-aws` |
+| Charts | `prometheus` `29.33.0` + `grafana` `10.5.15` |
+| Values / dashboards | `observability/aws/` |
+| Destination namespace | `observability` |
+| Grafana / Prometheus Services | ClusterIP only (port-forward access) |
+
+See [docs/aws-lightweight-observability.md](../docs/aws-lightweight-observability.md).
+
 ## Local Application
 
 | Field | Value |

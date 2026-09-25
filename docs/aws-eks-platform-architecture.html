@@ -327,6 +327,7 @@
       <a href="#network">Network</a>
       <a href="#eks">EKS</a>
       <a href="#traffic">Traffic</a>
+      <a href="#aws-observability">Observability</a>
       <a href="#gitops">GitOps</a>
       <a href="#iam">IAM</a>
       <a href="#ownership">Ownership</a>
@@ -679,6 +680,52 @@
         <span class="mono">node_instance_type=t3.medium</span> ·
         <span class="mono">root_volume_size=20</span>.
         Workers use private subnet IDs only (<span class="mono">node_subnet_ids = module.vpc.private_subnet_ids</span>).
+      </div>
+    </section>
+
+    <section id="aws-observability">
+      <h2>Lightweight observability (AWS)</h2>
+      <p class="lede">
+        GitOps Application <span class="mono">platform-observability-aws</span> deploys Prometheus + Grafana only
+        into namespace <span class="mono">observability</span>. This is separate from application traffic through the ALB.
+      </p>
+      <div class="diagram-frame" role="img" aria-label="Application traffic versus observability scrape path">
+        <svg viewBox="0 0 1100 420" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, system-ui, sans-serif">
+          <rect x="40" y="30" width="480" height="360" rx="10" fill="#fff" stroke="#232f3e" stroke-width="2"/>
+          <text x="60" y="58" font-size="14" font-weight="800" fill="#232f3e">Application traffic</text>
+          <text x="60" y="78" font-size="11" fill="#5a6a7a">Internet → ALB → platform-lab</text>
+          <rect x="120" y="110" width="320" height="50" rx="8" fill="#232f3e" stroke="#ff9900" stroke-width="2"/>
+          <text x="280" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Internet clients</text>
+          <path d="M280 160 L280 190" stroke="#5a6a7a" stroke-width="2" marker-end="url(#arr)"/>
+          <rect x="120" y="190" width="320" height="55" rx="8" fill="#fff" stroke="#ff9900" stroke-width="2"/>
+          <text x="280" y="215" text-anchor="middle" font-size="13" font-weight="700">AWS ALB (existing)</text>
+          <text x="280" y="233" text-anchor="middle" font-size="11" fill="#5a6a7a">target-type=ip · internet-facing</text>
+          <path d="M280 245 L280 275" stroke="#5a6a7a" stroke-width="2"/>
+          <rect x="120" y="275" width="320" height="70" rx="8" fill="#f0f7ff" stroke="#326ce5" stroke-width="2"/>
+          <text x="280" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#326ce5">platform-lab</text>
+          <text x="280" y="325" text-anchor="middle" font-size="11">:8000 · /health · /version · /metrics</text>
+
+          <rect x="560" y="30" width="500" height="360" rx="10" fill="#fff" stroke="#326ce5" stroke-width="2"/>
+          <text x="580" y="58" font-size="14" font-weight="800" fill="#326ce5">Observability path</text>
+          <text x="580" y="78" font-size="11" fill="#5a6a7a">platform-lab → Prometheus → Grafana (no ALB)</text>
+          <rect x="640" y="110" width="340" height="55" rx="8" fill="#f0f7ff" stroke="#326ce5" stroke-width="2"/>
+          <text x="810" y="135" text-anchor="middle" font-size="13" font-weight="700" fill="#326ce5">platform-lab /metrics</text>
+          <text x="810" y="153" text-anchor="middle" font-size="11" fill="#5a6a7a">scraped every 30s</text>
+          <path d="M810 165 L810 195" stroke="#5a6a7a" stroke-width="2"/>
+          <rect x="640" y="195" width="340" height="55" rx="8" fill="#fff" stroke="#e6522c" stroke-width="2"/>
+          <text x="810" y="220" text-anchor="middle" font-size="13" font-weight="700" fill="#e6522c">Prometheus</text>
+          <text x="810" y="238" text-anchor="middle" font-size="11" fill="#5a6a7a">observability · ClusterIP · emptyDir</text>
+          <path d="M810 250 L810 280" stroke="#5a6a7a" stroke-width="2"/>
+          <rect x="640" y="280" width="340" height="70" rx="8" fill="#fff" stroke="#f46800" stroke-width="2"/>
+          <text x="810" y="310" text-anchor="middle" font-size="13" font-weight="700" fill="#f46800">Grafana</text>
+          <text x="810" y="328" text-anchor="middle" font-size="11" fill="#5a6a7a">observability · ClusterIP only</text>
+          <text x="810" y="345" text-anchor="middle" font-size="11" fill="#5a6a7a">kubectl port-forward · anonymous Viewer</text>
+        </svg>
+      </div>
+      <div class="callout">
+        <strong>Not in this layer:</strong> node-exporter, kube-state-metrics, Alertmanager, OpenTelemetry, Loki/Tempo/Jaeger,
+        kube-prometheus-stack, extra ALB, or public Grafana. Details:
+        <span class="mono">docs/aws-lightweight-observability.md</span>.
       </div>
     </section>
 
