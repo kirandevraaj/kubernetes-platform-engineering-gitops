@@ -355,7 +355,7 @@
           <ul>
             <li>Dedicated VPC, IGW, public/private subnets, one NAT + EIP</li>
             <li>Project-scoped IAM roles (cluster, node, LB Controller)</li>
-            <li>EKS 1.36 + managed node group (2 × t3.small desired)</li>
+            <li>EKS 1.36 + managed node group (2 × t3.medium desired)</li>
             <li>Add-ons: vpc-cni, kube-proxy, coredns, eks-pod-identity-agent</li>
             <li>Helm: AWS Load Balancer Controller + Argo CD</li>
             <li>GitOps bootstrap (AppProject + Application)</li>
@@ -494,7 +494,7 @@
           <text x="745" y="344" text-anchor="middle" font-size="10">10.50.32.0/20</text>
           <rect x="655" y="358" width="180" height="90" rx="5" fill="#fff" stroke="#7b42bc" stroke-width="1.5"/>
           <text x="745" y="378" text-anchor="middle" font-size="11" font-weight="700">Worker Node 1</text>
-          <text x="745" y="396" text-anchor="middle" font-size="10">t3.small · On-Demand</text>
+          <text x="745" y="396" text-anchor="middle" font-size="10">t3.medium · On-Demand</text>
           <text x="745" y="412" text-anchor="middle" font-size="10">20 GiB gp3 encrypted</text>
           <text x="745" y="428" text-anchor="middle" font-size="10">IMDSv2 required</text>
 
@@ -503,7 +503,7 @@
           <text x="985" y="344" text-anchor="middle" font-size="10">10.50.48.0/20</text>
           <rect x="895" y="358" width="180" height="90" rx="5" fill="#fff" stroke="#7b42bc" stroke-width="1.5"/>
           <text x="985" y="378" text-anchor="middle" font-size="11" font-weight="700">Worker Node 2</text>
-          <text x="985" y="396" text-anchor="middle" font-size="10">t3.small · On-Demand</text>
+          <text x="985" y="396" text-anchor="middle" font-size="10">t3.medium · On-Demand</text>
           <text x="985" y="412" text-anchor="middle" font-size="10">20 GiB gp3 encrypted</text>
           <text x="985" y="428" text-anchor="middle" font-size="10">IMDSv2 required</text>
 
@@ -657,11 +657,11 @@
           <text x="80" y="268" font-size="13" font-weight="700" fill="#7b42bc">Managed Node Group (Terraform)</text>
           <text x="80" y="288" font-size="11" fill="#5a6a7a">platform-lab-aws-lab-managed · AL2023_x86_64_STANDARD · On-Demand</text>
           <rect x="80" y="305" width="200" height="85" rx="6" fill="#fff" stroke="#1a2332" stroke-width="1.5"/>
-          <text x="180" y="330" text-anchor="middle" font-size="12" font-weight="700">Node 1 · t3.small</text>
+          <text x="180" y="330" text-anchor="middle" font-size="12" font-weight="700">Node 1 · t3.medium</text>
           <text x="180" y="350" text-anchor="middle" font-size="11">20 GiB encrypted gp3</text>
           <text x="180" y="370" text-anchor="middle" font-size="11">IMDSv2 required</text>
           <rect x="310" y="305" width="200" height="85" rx="6" fill="#fff" stroke="#1a2332" stroke-width="1.5"/>
-          <text x="410" y="330" text-anchor="middle" font-size="12" font-weight="700">Node 2 · t3.small</text>
+          <text x="410" y="330" text-anchor="middle" font-size="12" font-weight="700">Node 2 · t3.medium</text>
           <text x="410" y="350" text-anchor="middle" font-size="11">20 GiB encrypted gp3</text>
           <text x="410" y="370" text-anchor="middle" font-size="11">IMDSv2 required</text>
 
@@ -676,7 +676,7 @@
       </div>
       <div class="callout">
         <strong>Scaling defaults:</strong> desired 2 · min 1 · max 3 ·
-        <span class="mono">node_instance_type=t3.small</span> ·
+        <span class="mono">node_instance_type=t3.medium</span> ·
         <span class="mono">root_volume_size=20</span>.
         Workers use private subnet IDs only (<span class="mono">node_subnet_ids = module.vpc.private_subnet_ids</span>).
       </div>
@@ -1079,7 +1079,7 @@
           <h4>Major fixed cost drivers (approved design)</h4>
           <ul>
             <li>EKS control plane</li>
-            <li>2 × t3.small workers</li>
+            <li>2 × t3.medium workers</li>
             <li>40 GiB gp3 (2 × 20 GiB roots)</li>
             <li>1 NAT Gateway</li>
             <li>NAT public IPv4</li>

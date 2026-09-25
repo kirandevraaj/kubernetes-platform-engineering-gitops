@@ -314,11 +314,67 @@ Collected **2026-09-25** via read-only commands against context `platform-lab-aw
 - `kubectl get hpa -A`, `kubectl describe hpa -n platform-lab`  
 - `kubectl get deploy -A -o json` (requests/limits)
 
-No `terraform apply/destroy`, Helm install/upgrade, or mutating kubectl verbs were used.
+No `terraform apply/destroy`, Helm install/upgrade, or mutating kubectl verbs were used for the original analysis above.
+
+---
+
+## Post-Compute-Upgrade Capacity
+
+**Recorded:** 2026-09-25 (after Terraform applied `node_instance_type = t3.medium`)  
+**Mechanism:** Terraform `aws_eks_node_group` **replacement** (`t3.small` → `t3.medium`) via plan artifact `tfplan-node-medium`. EKS cluster, VPC, IAM, ALB Controller, Argo CD, and application manifests were **not** redesigned.
+
+> Sections **1–14** above remain the **original** `2 × t3.small` capacity analysis. Values in this section are **new measurements** after the worker-node instance-type change. This section does **not** re-decide observability deployment; that remains a later milestone.
+
+### Scaling identity (unchanged by this upgrade)
+
+| Setting | Value |
+|---|---|
+| Node group | `platform-lab-aws-lab-managed` |
+| Status | ACTIVE |
+| Instance type | **t3.medium** |
+| Desired / min / max | **2 / 1 / 3** (unchanged; matches Terraform) |
+| Kubernetes | 1.36 |
+
+### Measured capacity after upgrade
+
+| Metric | Before (`t3.small`, prior analysis) | After (`t3.medium`, measured) | Change |
+|---|---:|---:|---|
+| Worker node count | 2 | 2 | unchanged |
+| CPU capacity (cluster) | 4.0 | **4.0** | unchanged |
+| CPU allocatable (cluster) | ~3.86 | **~3.86** | unchanged |
+| Memory capacity (cluster) | ~3819 Mi | **~7672 Mi** | **~2.0×** |
+| Memory allocatable (cluster) | ~2867 Mi | **~6588 Mi** | **~2.3×** |
+| Pod capacity (cluster) | 22 | **34** (17 per node) | **+12 slots** |
+| Actual CPU usage (`kubectl top`) | ~73m (~1.9%) | **~72m (~1.9%)** | similar (idle) |
+| Actual memory usage (`kubectl top`) | ~1829 Mi (~63.8%) | **~1258 Mi (~19%)** | utilization dropped sharply |
+| Node memory utilization | ~58–69% | **~11–26%** | much healthier |
+| Allocatable memory headroom (vs usage) | ~1038 Mi | **~5330 Mi** | large increase |
+
+Per-node after upgrade (measured):
+
+| Node | Type | CPU alloc | Mem capacity | Mem allocatable | Pods |
+|---|---|---:|---:|---:|---:|
+| `ip-10-50-41-156…` | t3.medium | 1930m | ~3836 Mi | ~3294 Mi | 17 |
+| `ip-10-50-52-64…` | t3.medium | 1930m | ~3836 Mi | ~3294 Mi | 17 |
+
+### Workload health after upgrade
+
+Transient FailedScheduling / CNI IP assignment warnings occurred during the replace (destroy-then-create of the node group). After nodes became Ready:
+
+- `platform-lab` **2/2** Ready; image still digest `sha256:1cca2b…872ff`; `/health` **200**; `/version` **0.1.4**
+- Argo CD Application `platform-lab-aws` **Synced / Healthy**
+- AWS Load Balancer Controller **2/2**, Metrics Server **1/1**, CoreDNS **2/2**, VPC CNI / kube-proxy / pod-identity DaemonSets healthy
+- No lasting MemoryPressure / OOMKilled / Evicted condition on the new nodes
+
+### Observability decision note
+
+Increased memory and pod-slot headroom **improves** feasibility for a future lightweight observability install, but component selection (Prometheus/Grafana vs exporters) is **deferred** to the next milestone and must re-measure live capacity then. No observability components were deployed in this upgrade.
 
 ---
 
 ## 14. Conclusion
+
+> Historical conclusion for the **original `2 × t3.small`** measurement window (before the Terraform node-type upgrade). See **Post-Compute-Upgrade Capacity** for after values.
 
 | Question | Explicit answer |
 |---|---|

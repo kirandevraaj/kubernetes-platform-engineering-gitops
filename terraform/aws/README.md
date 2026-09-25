@@ -86,7 +86,7 @@ Set `enable_single_nat_gateway=false` later for one NAT per AZ without redesigni
 
 - Version **1.36** (standard support)
 - API: private + public endpoints; public restricted by `cluster_endpoint_public_access_cidrs` (**no `0.0.0.0/0`**)
-- Managed node group: default **t3.small**, desired 2 / min 1 / max 3
+- Managed node group: default **t3.medium**, desired 2 / min 1 / max 3
 - Root volume: **20 GiB gp3**, encrypted, IMDSv2 required
 - Add-ons: VPC CNI, kube-proxy, CoreDNS, eks-pod-identity-agent (versions from `most_recent` for the cluster version)
 - EBS CSI: not installed (no PVC dependency in this lab)
@@ -143,7 +143,7 @@ With the approved lab defaults (24×7): EKS control plane, 2× workers, 1 NAT + 
 | `environment` | `aws-lab` |
 | `vpc_cidr` / subnet CIDRs / AZs | as approved |
 | `kubernetes_version` | `1.36` |
-| `node_instance_type` | `t3.small` |
+| `node_instance_type` | `t3.medium` |
 | `desired/min/max_node_count` | `2` / `1` / `3` |
 | `root_volume_size` | `20` |
 | `enable_single_nat_gateway` | `true` |
