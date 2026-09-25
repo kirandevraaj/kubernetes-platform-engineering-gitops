@@ -68,7 +68,7 @@ data:
           },
           "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
           "targets": [
-            { "expr": "up{job=\"kube-state-metrics\"}", "legendFormat": "ksm", "refId": "A" }
+            { "expr": "max(up{job=\"kube-state-metrics\"})", "legendFormat": "ksm", "refId": "A" }
           ]
         },
         {
