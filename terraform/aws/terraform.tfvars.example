@@ -31,5 +31,6 @@ git_repo_url        = "https://github.com/kirandevraaj/kubernetes-platform-engin
 git_target_revision = "main"
 
 install_aws_load_balancer_controller = true
+install_metrics_server               = true
 install_argocd                       = true
 bootstrap_gitops                     = true

@@ -4,8 +4,8 @@
 //   github-platform-lab     — GitOps promotion push to origin/main
 //
 // Flow: app/** change → test → build → validate → push image →
-//       update local + aws Kustomize tags → commit/push GitOps →
-//       Argo CD reconciles each environment (VMware + EKS).
+//       update local + aws Kustomize newTag + app.kubernetes.io/version →
+//       commit/push GitOps → Argo CD reconciles each environment (VMware + EKS).
 // Non-app commits skip build/push/promotion so the GitOps commit cannot loop CI.
 //
 // Jenkins performs CI and GitOps promotion.
@@ -297,7 +297,7 @@ import re
 path = Path("${GITOPS_LOCAL_KUSTOMIZATION}")
 version = "${APP_VERSION}"
 text = path.read_text(encoding="utf-8")
-updated, count = re.subn(
+text, count = re.subn(
     r'(newTag:\\s*")[^"]*(")',
     rf'\\g<1>{version}\\g<2>',
     text,
@@ -305,8 +305,16 @@ updated, count = re.subn(
 )
 if count != 1:
     raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
-path.write_text(updated, encoding="utf-8")
-print(f"Updated {path} to newTag={version}")
+text, count = re.subn(
+    r'(app\\.kubernetes\\.io/version:\\s*")[^"]*(")',
+    rf'\\g<1>{version}\\g<2>',
+    text,
+    count=1,
+)
+if count != 1:
+    raise SystemExit(f"Expected exactly one app.kubernetes.io/version in {path}, found {count}")
+path.write_text(text, encoding="utf-8")
+print(f"Updated {path} to newTag={version} and app.kubernetes.io/version={version}")
 PY
                     git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}" || true
                     echo "Local overlay promotion prepared for ${APP_VERSION}"
@@ -337,7 +345,7 @@ import re
 path = Path("${GITOPS_AWS_KUSTOMIZATION}")
 version = "${APP_VERSION}"
 text = path.read_text(encoding="utf-8")
-updated, count = re.subn(
+text, count = re.subn(
     r'(newTag:\\s*")[^"]*(")',
     rf'\\g<1>{version}\\g<2>',
     text,
@@ -345,8 +353,16 @@ updated, count = re.subn(
 )
 if count != 1:
     raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
-path.write_text(updated, encoding="utf-8")
-print(f"Updated {path} to newTag={version}")
+text, count = re.subn(
+    r'(app\\.kubernetes\\.io/version:\\s*")[^"]*(")',
+    rf'\\g<1>{version}\\g<2>',
+    text,
+    count=1,
+)
+if count != 1:
+    raise SystemExit(f"Expected exactly one app.kubernetes.io/version in {path}, found {count}")
+path.write_text(text, encoding="utf-8")
+print(f"Updated {path} to newTag={version} and app.kubernetes.io/version={version}")
 PY
                     git diff -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"
                     if git diff --quiet -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"; then
@@ -359,7 +375,7 @@ PY
                         echo "$other"
                         exit 1
                     fi
-                    echo "Promotion change is limited to local + aws overlay newTag fields"
+                    echo "Promotion change is limited to local + aws overlay newTag and version labels"
                 '''
             }
         }
@@ -420,7 +436,7 @@ paths = [
 ]
 for path in paths:
     text = path.read_text(encoding="utf-8")
-    updated, count = re.subn(
+    text, count = re.subn(
         r'(newTag:\\s*")[^"]*(")',
         rf'\\g<1>{version}\\g<2>',
         text,
@@ -428,8 +444,16 @@ for path in paths:
     )
     if count != 1:
         raise SystemExit(f"Expected exactly one newTag in {path}, found {count}")
-    path.write_text(updated, encoding="utf-8")
-    print(f"Updated {path} to newTag={version}")
+    text, count = re.subn(
+        r'(app\\.kubernetes\\.io/version:\\s*")[^"]*(")',
+        rf'\\g<1>{version}\\g<2>',
+        text,
+        count=1,
+    )
+    if count != 1:
+        raise SystemExit(f"Expected exactly one app.kubernetes.io/version in {path}, found {count}")
+    path.write_text(text, encoding="utf-8")
+    print(f"Updated {path} to newTag={version} and app.kubernetes.io/version={version}")
 PY
                         git add -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"
                         git diff --cached -- "${GITOPS_LOCAL_KUSTOMIZATION}" "${GITOPS_AWS_KUSTOMIZATION}"

@@ -68,6 +68,11 @@ output "argocd_namespace" {
   value       = try(module.argocd[0].namespace, null)
 }
 
+output "metrics_server_release" {
+  description = "Metrics Server Helm release name when installed."
+  value       = try(module.metrics_server[0].release_name, null)
+}
+
 output "gitops_application_name" {
   description = "Bootstrapped Argo CD Application name."
   value       = try(module.gitops_bootstrap[0].application_name, null)

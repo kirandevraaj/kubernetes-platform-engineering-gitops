@@ -188,6 +188,12 @@ variable "install_aws_load_balancer_controller" {
   default     = true
 }
 
+variable "install_metrics_server" {
+  description = "Install Metrics Server via Helm (required for HPA CPU/memory metrics on EKS)."
+  type        = bool
+  default     = true
+}
+
 variable "install_argocd" {
   description = "Install Argo CD via Helm into the EKS cluster."
   type        = bool

@@ -59,6 +59,15 @@ module "aws_load_balancer_controller" {
   ]
 }
 
+module "metrics_server" {
+  count  = var.install_metrics_server ? 1 : 0
+  source = "./modules/metrics_server"
+
+  depends_on = [
+    module.eks,
+  ]
+}
+
 module "argocd" {
   count  = var.install_argocd ? 1 : 0
   source = "./modules/argocd"
@@ -66,6 +75,7 @@ module "argocd" {
   depends_on = [
     module.eks,
     module.aws_load_balancer_controller,
+    module.metrics_server,
   ]
 }
 
@@ -108,6 +118,7 @@ resource "null_resource" "destroy_safety" {
     module.gitops_bootstrap,
     module.argocd,
     module.aws_load_balancer_controller,
+    module.metrics_server,
     module.eks,
   ]
 }

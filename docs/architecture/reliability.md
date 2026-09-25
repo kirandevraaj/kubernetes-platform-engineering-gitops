@@ -1,14 +1,14 @@
-# Reliability & production hardening (local lab)
+# Reliability & production hardening
 
-Status: local overlay adds HPA, PDB, explicit RollingUpdate, and soft topology spread for `platform-lab`. AWS overlay is unchanged.
+Status: local and AWS overlays include HPA, PDB, RollingUpdate, and soft topology spread for `platform-lab`.
 
 ## Architecture
 
 ```text
-                    Argo CD (platform-lab-local)
+                    Argo CD (platform-lab-local | platform-lab-aws)
                               |
                               v
-                 kubernetes/overlays/local
+                 kubernetes/overlays/{local|aws}
                               |
           +-------------------+-------------------+
           |                   |                   |
@@ -22,11 +22,29 @@ Status: local overlay adds HPA, PDB, explicit RollingUpdate, and soft topology s
      hostname, ScheduleAnyway
           |
           v
-     Pods (prefer different workers)
-          |
-          +--> readiness (/health) --> Service endpoints
-          +--> liveness  (/health) --> restart if stuck
+     Pods
 ```
+
+### AWS Metrics Server (Terraform)
+
+On EKS, HPA needs the Metrics API. Metrics Server is installed by Terraform Helm (`modules/metrics_server`, chart `3.14.0`), not by the application overlay.
+
+```text
+Application CPU utilization
+  → Metrics Server
+  → Kubernetes Metrics API (metrics.k8s.io)
+  → HPA
+  → Deployment replica adjustment
+```
+
+| Concern | Owner |
+|---|---|
+| Metrics collection | Metrics Server (Terraform) |
+| Autoscaling policy | HPA (Argo CD / GitOps) |
+| App Deployment reconcile | Argo CD |
+| Platform install | Terraform |
+
+Configuration uses `--kubelet-preferred-address-types=InternalIP` for private workers. `kubelet-insecure-tls` is **not** enabled.
 
 | Concept | Who owns it | Meaning |
 |---|---|---|

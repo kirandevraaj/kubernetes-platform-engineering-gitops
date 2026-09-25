@@ -19,7 +19,7 @@ CD is Argo CD on each target cluster. It reads Git and syncs Kubernetes manifest
 | Argo CD (`platform-lab-local`) | Live objects on VMware until they match Git | Image builds |
 | Argo CD (`platform-lab-aws`) | Live objects on EKS until they match Git | Image builds |
 
-Publishing a new image is not the same as deploying it. Each cluster moves to a new tag only after Git records that tag and that cluster's Argo CD reconciles. Kubernetes networking objects (Ingress, NetworkPolicy) also change only through Git → Argo CD, not through Jenkins.
+Publishing a new image is not the same as deploying it. Each cluster moves to a new tag only after Git records that tag **and** the matching `app.kubernetes.io/version` label, then that cluster's Argo CD reconciles. Kubernetes networking objects (Ingress, NetworkPolicy) also change only through Git → Argo CD, not through Jenkins.
 
 ## Automated path
 

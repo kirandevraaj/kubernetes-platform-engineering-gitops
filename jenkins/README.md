@@ -149,15 +149,20 @@ Future hardening (not in this milestone): pin overlays to immutable image digest
 
 ### GitOps promotion
 
-Jenkins rewrites both:
+Jenkins rewrites both overlays so image tag and Kubernetes version metadata stay aligned with `APP_VERSION` from `app/src/__init__.py`:
 
 ```yaml
-# kubernetes/overlays/local/kustomization.yaml
-# kubernetes/overlays/aws/kustomization.yaml
 images:
   - name: kirandevraaj/platform-lab
     newTag: "<APP_VERSION>"
+labels:
+  - pairs:
+      app.kubernetes.io/version: "<APP_VERSION>"
+    includeSelectors: false
+    includeTemplates: true
 ```
+
+There is no second application version source. Base manifests may still contain scaffold `0.1.0` values; overlays override them during render.
 
 It does not edit `kubernetes/base/**`, environment-specific patches (MetalLB, ALB, NetworkPolicy, HPA/PDB), Terraform, or `gitops/**` Application definitions. The commit author is `Jenkins CI <jenkins-ci@local>`. Push uses credential `github-platform-lab` through a temporary `GIT_ASKPASS` helper (token not written into remotes or files). Promotion aligns the two overlay files with `origin/main` via `git checkout origin/main -- <files>` (no `git reset --hard`, no force push).
 

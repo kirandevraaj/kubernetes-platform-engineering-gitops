@@ -1,7 +1,7 @@
 # Terraform — AWS platform (EKS + GitOps)
 
-Status: **implemented, not applied**. This directory defines the full AWS platform.
-`terraform plan` is allowed. **`terraform apply` / `destroy` require explicit approval.**
+Status: **applied for the AWS lab**. This directory defines the AWS platform.
+`terraform plan` is allowed. **`terraform destroy` requires explicit approval.**
 
 ## Architecture
 
@@ -12,6 +12,7 @@ Terraform (this root)
   → EKS 1.36 + managed node group (private workers)
   → EKS add-ons (vpc-cni, kube-proxy, coredns, pod-identity-agent)
   → Helm: AWS Load Balancer Controller
+  → Helm: Metrics Server (HPA CPU/memory metrics)
   → Helm: Argo CD
   → Bootstrap: AppProject + Application → kubernetes/overlays/aws
 
@@ -23,8 +24,7 @@ Traffic path after apply:
 
 ```text
 Internet → AWS ALB (created by AWS LB Controller from Ingress)
-        → Service platform-lab :8000
-        → Pods (private subnets, VPC CNI)
+        → Pod IP (target-type=ip, VPC CNI)
 ```
 
 ## Module structure
@@ -35,6 +35,7 @@ Internet → AWS ALB (created by AWS LB Controller from Ingress)
 | IAM | `modules/iam` | Cluster / node / LB Controller roles + policies |
 | EKS | `modules/eks` | Cluster, managed node group, add-ons, SGs, launch template |
 | AWS LB Controller | `modules/aws_load_balancer_controller` | Pod Identity association + Helm release |
+| Metrics Server | `modules/metrics_server` | Helm release (kube-system) for Metrics API / HPA |
 | Argo CD | `modules/argocd` | Helm release in namespace `argocd` |
 | GitOps bootstrap | `modules/gitops_bootstrap` | Temporary kubectl apply of AppProject/Application |
 
@@ -44,10 +45,27 @@ Single entry point: this directory (`terraform/aws`).
 
 | Layer | Owner |
 |---|---|
-| AWS network + EKS + controller + Argo CD install | Terraform |
+| AWS network + EKS + LB Controller + Metrics Server + Argo CD install | Terraform |
 | Kubernetes application objects (`kubernetes/overlays/aws`) | Argo CD |
-| Container image | Jenkins → Docker Hub |
+| Container image + overlay image/version promotion | Jenkins → Docker Hub / Git |
 | VMware local lab Argo CD apps | Untouched (separate cluster) |
+
+### Metrics Server vs HPA
+
+| Concern | Owner |
+|---|---|
+| Metrics collection (Metrics API) | Metrics Server (Terraform/Helm) |
+| Autoscaling policy | HPA in GitOps overlay (Argo CD) |
+| Replica count at runtime | HPA (Argo ignores Deployment `/spec/replicas`) |
+| App desired state | Argo CD |
+
+```text
+Application CPU
+  → Metrics Server
+  → Kubernetes Metrics API
+  → HPA
+  → Deployment replica adjustment
+```
 
 Terraform and Argo CD must not manage the same application objects.
 
