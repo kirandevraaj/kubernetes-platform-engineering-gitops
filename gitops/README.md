@@ -54,6 +54,18 @@ See [docs/architecture/observability.md](../docs/architecture/observability.md) 
 
 The destination server is the in-cluster Kubernetes API of the same cluster that hosts Argo CD (`ckad-lab` → `https://192.168.56.10:6443`). The Application does not reference `docker-desktop` and does not target AWS.
 
+## AWS Application (EKS — Terraform-bootstrapped)
+
+| Field | Value |
+|---|---|
+| Manifest (docs mirror) | `gitops/applications/platform-lab-aws.yaml` |
+| Project | `platform-lab-aws` |
+| Path | `kubernetes/overlays/aws` |
+| Destination | in-cluster API of the **EKS** cluster where Terraform installs Argo CD |
+| Applied by | Terraform `modules/gitops_bootstrap` (not by VMware Argo CD) |
+
+**Do not** `kubectl apply` the AWS Application/Project onto `ckad-lab`. That would point a local Argo CD app at AWS overlay semantics on the wrong cluster. Terraform owns bootstrap on EKS only; the VMware lab remains unchanged.
+
 ## Sync policy choices
 
 Automated sync with prune and self-heal is intentional for this personal lab:

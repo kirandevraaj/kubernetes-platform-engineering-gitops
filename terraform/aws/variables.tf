@@ -5,7 +5,7 @@ variable "aws_region" {
 }
 
 variable "project_name" {
-  description = "Short project name used in resource naming and tags."
+  description = "Short project name used in resource naming."
   type        = string
   default     = "platform-lab"
 
@@ -16,9 +16,9 @@ variable "project_name" {
 }
 
 variable "environment" {
-  description = "Environment name (for example aws)."
+  description = "Environment name used in naming and the Environment tag (aws-lab)."
   type        = string
-  default     = "aws"
+  default     = "aws-lab"
 
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.environment))
@@ -71,7 +71,7 @@ variable "private_subnet_cidrs" {
 }
 
 variable "kubernetes_version" {
-  description = "EKS Kubernetes version."
+  description = "EKS Kubernetes version (standard support)."
   type        = string
   default     = "1.36"
 
@@ -84,7 +84,7 @@ variable "kubernetes_version" {
 variable "node_instance_type" {
   description = "EC2 instance type for the EKS managed node group."
   type        = string
-  default     = "t3.medium"
+  default     = "t3.small"
 }
 
 variable "desired_node_count" {
@@ -120,8 +120,82 @@ variable "max_node_count" {
   }
 }
 
+variable "root_volume_size" {
+  description = "Root EBS volume size (GiB) for worker nodes."
+  type        = number
+  default     = 20
+
+  validation {
+    condition     = var.root_volume_size >= 20 && var.root_volume_size <= 100
+    error_message = "root_volume_size must be between 20 and 100 GiB."
+  }
+}
+
 variable "enable_single_nat_gateway" {
-  description = "Use one NAT Gateway for private subnets (cost-conscious lab default)."
+  description = "Use one NAT Gateway for private subnets (cost-conscious lab default). Set false for one NAT per AZ."
+  type        = bool
+  default     = true
+}
+
+variable "cluster_endpoint_private_access" {
+  description = "Enable the private EKS API endpoint."
+  type        = bool
+  default     = true
+}
+
+variable "cluster_endpoint_public_access" {
+  description = "Enable the public EKS API endpoint (must be paired with restricted CIDRs)."
+  type        = bool
+  default     = true
+}
+
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "CIDRs allowed to reach the public EKS API. Required when public access is enabled. Must not include 0.0.0.0/0."
+  type        = list(string)
+
+  validation {
+    condition     = length(var.cluster_endpoint_public_access_cidrs) > 0
+    error_message = "cluster_endpoint_public_access_cidrs must list at least one CIDR (your public IP/32)."
+  }
+
+  validation {
+    condition     = !contains(var.cluster_endpoint_public_access_cidrs, "0.0.0.0/0")
+    error_message = "cluster_endpoint_public_access_cidrs must not include 0.0.0.0/0."
+  }
+}
+
+variable "enable_cluster_logging" {
+  description = "Enable EKS control plane logs to CloudWatch (cost driver; off by default for the lab)."
+  type        = bool
+  default     = false
+}
+
+variable "git_repo_url" {
+  description = "Git repository URL used by Argo CD for the AWS overlay."
+  type        = string
+  default     = "https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git"
+}
+
+variable "git_target_revision" {
+  description = "Git revision for the AWS Argo CD Application."
+  type        = string
+  default     = "main"
+}
+
+variable "install_aws_load_balancer_controller" {
+  description = "Install AWS Load Balancer Controller via Helm."
+  type        = bool
+  default     = true
+}
+
+variable "install_argocd" {
+  description = "Install Argo CD via Helm into the EKS cluster."
+  type        = bool
+  default     = true
+}
+
+variable "bootstrap_gitops" {
+  description = "Create the AWS AppProject/Application so Argo CD owns kubernetes/overlays/aws."
   type        = bool
   default     = true
 }

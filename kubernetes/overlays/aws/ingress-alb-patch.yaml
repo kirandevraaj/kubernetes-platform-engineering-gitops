@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform-lab
+  annotations:
+    # AWS Load Balancer Controller — internet-facing ALB for the lab.
+    # No ACM/Route53 in the initial cost-conscious design; clients use the ALB DNS name.
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/tags: Project=kubernetes-platform-engineering-gitops,Environment=aws-lab,ManagedBy=aws-load-balancer-controller
+spec:
+  ingressClassName: alb
+  rules:
+    # Host is optional for lab access via ALB DNS. Keep a stable Host value for
+    # Host-header demos without requiring Route53.
+    - host: platform-lab.aws.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: platform-lab
+                port:
+                  number: 8000
+    # Catch-all so ALB DNS (without Host rewrite) still reaches the app.
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: platform-lab
+                port:
+                  number: 8000

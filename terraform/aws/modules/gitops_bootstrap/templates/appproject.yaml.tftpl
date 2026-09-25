@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ${name}
+  namespace: ${namespace}
+  labels:
+    app.kubernetes.io/name: ${name}
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+spec:
+  description: Platform-lab applications for the AWS EKS target (separate from VMware local)
+  sourceRepos:
+    - ${git_repo_url}
+  destinations:
+    - namespace: ${destination_namespace}
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: apps
+      kind: Deployment
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+    - group: policy
+      kind: PodDisruptionBudget
+    - group: monitoring.coreos.com
+      kind: ServiceMonitor
+  orphanedResources:
+    warn: true

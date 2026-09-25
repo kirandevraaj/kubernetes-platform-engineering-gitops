@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-lab-aws
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-lab
+    app.kubernetes.io/instance: platform-lab-aws
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform-lab-aws
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/overlays/aws
+  destination:
+    # In-cluster API of the AWS EKS cluster where Argo CD is installed by Terraform.
+    # Never apply this Application to the VMware ckad-lab Argo CD.
+    server: https://kubernetes.default.svc
+    namespace: platform-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: platform-lab
+      jsonPointers:
+        - /spec/replicas

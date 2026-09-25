@@ -111,7 +111,7 @@ When those overlays exist, they will describe the same application shape with di
 9. **Networking.** Completed for the local lab. Ingress + NetworkPolicy in `kubernetes/base`; local overlay patches `ingress-nginx-controller` to MetalLB **LoadBalancer** (L2). Application Service stays ClusterIP. See [docs/architecture/networking.md](docs/architecture/networking.md).
 10. **Observability.** Completed for the local lab on 24 September 2026. `kube-prometheus-stack` is managed by Argo CD Application `platform-lab-observability`. Grafana is MetalLB LoadBalancer (observed VIP `192.168.56.201`); Prometheus is ClusterIP. Application exposes `/metrics` from version `0.1.3`. ServiceMonitor targets are up. See [docs/architecture/observability.md](docs/architecture/observability.md).
 11. **Reliability & production hardening.** Completed for the local lab. Local overlay adds HPA (CPU 70%, 2–4 replicas), PDB (`minAvailable: 1`), RollingUpdate `maxUnavailable: 0` / `maxSurge: 1`, and soft hostname topology spread. See [docs/architecture/reliability.md](docs/architecture/reliability.md).
-12. **AWS path.** Planned. Terraform for the AWS runtime, kept apart from the VMware lab.
+12. **AWS path.** Terraform suite implemented under `terraform/aws` (VPC, IAM, EKS 1.36, AWS Load Balancer Controller, Argo CD bootstrap, AWS overlay). **Not applied** — `terraform apply` awaits explicit approval. VMware lab unchanged.
 13. **Python automation.** Planned. Repeatable checks and operational helpers.
 
 ## Published container artifact

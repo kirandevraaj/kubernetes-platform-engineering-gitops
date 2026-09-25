@@ -48,5 +48,5 @@ Record a decision here when it is accepted. Until then, items below are open.
 |---|---|---|
 | ADR-001 | Which container registry serves the local lab, and which serves AWS? | Local lab uses Docker Hub `kirandevraaj/platform-lab`. AWS registry undecided. |
 | ADR-002 | Where does Jenkins run? | Accepted in practice: Docker Desktop on the workstation. Formal ADR can close later. |
-| ADR-004 | AWS footprint | **Accepted:** EKS 1.36 in `ap-south-1`, VPC `10.50.0.0/16`, 2 AZ public/private, private nodes, single NAT; Terraform under `terraform/aws` (foundation only in Phase 2). |
+| ADR-004 | AWS footprint | **Accepted:** EKS 1.36 in `ap-south-1`, VPC `10.50.0.0/16`, 2 AZ public/private, private nodes, single NAT; Terraform under `terraform/aws` implements VPC/IAM/EKS/LB Controller/Argo CD bootstrap (apply still gated). |
 | ADR-005 | Image promotion | One image digest promoted between targets, or separate builds. Undecided. |
