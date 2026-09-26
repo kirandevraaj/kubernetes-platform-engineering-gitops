@@ -56,6 +56,32 @@ Elapsed snapshot-create → change-B ≈ **74 seconds**. Restore returned to sna
 
 ---
 
-## Git / Argo / namespace drills
+## Git / Argo / namespace drills (VMware `ckad-lab`)
 
-Timings filled after VMware experiments in this file's update section below.
+| Drill | Marks | OBSERVED |
+|---|---|---|
+| Initial Application sync | apply → Synced/Healthy | ~5–10 seconds |
+| Git desired-state change | commits `57df7df` (bad) → `e5b79b7` (restore) | Git is authoritative; Argo revision ended at `e5b79b7` / ConfigMap `recovery-test-1` |
+| Argo Application deletion | App deleted 12:31:42Z; re-applied 12:31:50Z; Synced/Healthy 12:31:56Z | Workload **remained** while App metadata was gone; App recovery ≈ **6–14 s** |
+| Namespace deletion | T0 12:31:56Z; gone 12:32:07Z; Deploy Ready+Synced 12:32:19Z | RTO ≈ **23 s** (ConfigMap/Service/Deployment/Pod recreated via CreateNamespace) |
+| selfHeal live drift | patched `version=live-drift` 12:32:44Z → `recovery-test-1` Synced 12:32:50Z | ≈ **6 s**; selfHeal ≠ backup |
+
+### What namespace recovery does **not** restore
+
+Declarative objects returned from Git. Runtime memory, ephemeral container state, node-local temp data, external DBs, and cloud resources not represented in Git/IaC were not recreated.
+
+---
+
+## AWS Backup assessment
+
+| Item | Result |
+|---|---|
+| Auth mode | `API_AND_CONFIG_MAP` (prerequisite met) |
+| Existing plans | EFS automatic plan/vault only; **no** EKS protected resources |
+| Lab on-demand EKS backup | **Not executed** (assessed/documented only — avoid unrelated backup plan changes) |
+
+---
+
+## Capacity note (lab)
+
+t3.medium nodes hit **17-pod** density during snapshot-controller + restore. Temporary desiredSize=3 and later scaling `snapshot-controller` to 1 replica were used so `storage-demo-0` could reschedule in **ap-south-1b**. Original volume `vol-05faa26874d720ecd` recovered **in-use** with POINT-A+B intact.

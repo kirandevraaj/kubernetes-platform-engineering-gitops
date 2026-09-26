@@ -121,6 +121,24 @@ When those overlays exist, they will describe the same application shape with di
 
 Demonstrated (observed, not claimed beyond evidence): same-AZ worker replacement · EBS CSI reattachment · data preservation · AZ topology restriction. **Not** multi-AZ EBS storage.
 
+### Project 1 — Disaster Recovery (Section 25)
+
+25. **Disaster / Recovery** ✅ — see [`docs/disaster-recovery-master-guide.md`](docs/disaster-recovery-master-guide.md) and [`docs/dr-lab-evidence.md`](docs/dr-lab-evidence.md).
+
+| Item | Status |
+|---|---|
+| 25.1 DR fundamentals | Completed |
+| 25.2 RPO/RTO | Completed (lab targets + measured windows) |
+| 25.3 Git recovery | Completed (measured) |
+| 25.4 Argo recovery | Completed (Application delete/recreate measured) |
+| 25.5 Namespace recovery | Completed (measured ≈ 23 s) |
+| 25.6 EBS snapshot recovery | Completed (POINT-A restored; POINT-B excluded; new volume) |
+| 25.7 AWS Backup assessment/test | Documented / assessed; on-demand EKS backup **not** executed |
+| 25.8 Terraform rebuild model | Documented; targeted plan/apply for snapshot-controller only |
+| 25.9 DR runbooks | Completed |
+| 25.10 DR automation | Completed (`platform-automate dr …`) |
+| 25.11 VMware vs AWS DR comparison | Completed (diagram + docs) |
+
 ## Published container artifact
 
 Version `0.1.3` is the current published image used by the local lab. The tag `latest` is intentionally unused. The digest is the immutable reference for that artifact.
