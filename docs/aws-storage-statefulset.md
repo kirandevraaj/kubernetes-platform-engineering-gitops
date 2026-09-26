@@ -21,7 +21,7 @@ Then validate **Pod deletion recovery** (same AZ):
 Pod deleted → StatefulSet recreates storage-demo-0 → same PVC/PV/EBS → state.txt survives
 ```
 
-This milestone does **not** test worker-node failure or cross-AZ mobility.
+This milestone does **not** re-test worker-node failure here — see [`docs/aws-storage-resilience.md`](./aws-storage-resilience.md).
 
 ---
 
@@ -387,30 +387,38 @@ No total monthly project cost is claimed from memory.
 
 ---
 
-## 23. Future Node-Failure Experiment
+## 23. Worker Failure and AZ Resilience
 
-**Not performed in this milestone.**
+Pod failure ≠ node failure.
 
-```text
-EBS-backed StatefulSet
-  → node hosting Pod becomes unavailable
-  → Kubernetes reschedules Pod if allowed
-  → EBS must attach to a surviving node in the same AZ
-  → data remains (hypothesis — untested)
-```
+| Layer | What changes |
+|---|---|
+| **Pod delete** | New Pod UID; same PVC/PV/EBS (proven in this document) |
+| **Worker node failure** | Node health + scheduling + CSI detach/attach + same-AZ capacity (proven separately) |
 
-Possible failure cases to test later:
+Node failure introduces:
 
-- Same-AZ worker failure with a peer node in-AZ  
-- No suitable node in the volume’s AZ  
-- AZ failure  
-- EBS volume / attach errors  
+- node NotReady / instance loss  
+- StatefulSet recreation  
+- PV topology evaluation  
+- EBS detach from the dead instance and attach to a replacement **in the same AZ**  
+- recovery latency dominated by detach wait  
 
-Do not claim recovery until that experiment is run.
+**Completed experiment:** [`docs/aws-storage-resilience.md`](./aws-storage-resilience.md)
+
+Observed:
+
+- same-AZ worker replacement  
+- EBS CSI reattachment of `vol-05faa26874d720ecd`  
+- identical `state.txt`  
+- AZ topology restriction (Pending while same-AZ workers cordoned)
+
+This is **AZ-local** resilience, not multi-AZ EBS storage.
 
 ---
 
 ## Related
 
 - VMware storage lab: [`docs/vmware-storage-statefulset.md`](./vmware-storage-statefulset.md)  
+- AWS node/AZ resilience: [`docs/aws-storage-resilience.md`](./aws-storage-resilience.md)  
 - Architecture overview: [`docs/architecture/architecture-overview.md`](./architecture/architecture-overview.md)

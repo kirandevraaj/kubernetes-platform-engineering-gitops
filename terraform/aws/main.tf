@@ -106,6 +106,59 @@ module "ebs_csi" {
   # refresh/plan (avoids unrelated SG/addon drift being applied with storage work).
 }
 
+# Temporary same-AZ worker for EBS node-failure resilience lab ONLY.
+# Subnet is restricted to the EBS volume AZ. Destroy after the experiment.
+locals {
+  private_subnet_by_az = {
+    for idx, az in var.availability_zones :
+    az => module.vpc.private_subnet_ids[idx]
+  }
+}
+
+resource "aws_eks_node_group" "storage_resilience_test" {
+  count = var.enable_storage_resilience_test_nodegroup ? 1 : 0
+
+  cluster_name    = module.eks.cluster_name
+  node_group_name = "storage-resilience-test-1b"
+  node_role_arn   = module.iam.eks_node_role_arn
+  subnet_ids      = [local.private_subnet_by_az[var.storage_resilience_test_az]]
+  version         = var.kubernetes_version
+
+  scaling_config {
+    desired_size = 1
+    min_size     = 0
+    max_size     = 1
+  }
+
+  update_config {
+    max_unavailable = 1
+  }
+
+  instance_types = [var.node_instance_type]
+  ami_type       = "AL2023_x86_64_STANDARD"
+  capacity_type  = "ON_DEMAND"
+
+  launch_template {
+    id      = module.eks.node_launch_template_id
+    version = module.eks.node_launch_template_latest_version
+  }
+
+  labels = {
+    "node.kubernetes.io/role"              = "worker"
+    "workload"                             = "storage-resilience-test"
+    "platform-lab.io/storage-resilience"   = "temporary"
+  }
+
+  tags = merge(local.common_tags, {
+    Name    = "storage-resilience-test-1b"
+    Purpose = "temporary-ebs-storage-resilience-lab"
+  })
+
+  lifecycle {
+    create_before_destroy = false
+  }
+}
+
 # Destroy-safety: this resource is destroyed first (it depends on K8s components).
 # Its destroy-time provisioner deletes Argo Applications / Ingress while the
 # cluster and AWS Load Balancer Controller are still available, so ALB finalizers

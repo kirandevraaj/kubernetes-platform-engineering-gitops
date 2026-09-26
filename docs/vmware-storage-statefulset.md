@@ -382,7 +382,7 @@ Same abstraction (`Pod`/`PVC`), different physical behavior (node-local vs attac
 ## 24. Future Storage Experiment
 
 1. Controlled **node-level** storage failure on VMware (separate milestone).  
-2. Controlled **node/AZ** storage resilience on AWS EBS (separate milestone).  
-3. Compare reclaim, attach/detach, and cross-node mobility with measured results.
+2. ~~AWS EBS node/AZ resilience~~ — **completed:** [`docs/aws-storage-resilience.md`](./aws-storage-resilience.md).  
+3. Compare reclaim, attach/detach, and cross-node mobility with measured results across both labs.
 
 `storage-lab` is retained for those lessons — PVC/PV are not cleaned up.

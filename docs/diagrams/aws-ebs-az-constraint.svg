@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" role="img" aria-label="EBS AZ constraint">
+  <title>EBS volume cannot be mounted from a different Availability Zone</title>
+  <defs>
+    <style>
+      .box { fill:#f8fafc; stroke:#334155; stroke-width:2; rx:8; }
+      .bad { fill:#fef2f2; stroke:#b91c1c; stroke-width:2; rx:8; }
+      .ok { fill:#ecfdf5; stroke:#047857; stroke-width:2; rx:8; }
+      .title { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:18px; font-weight:700; fill:#0f172a; }
+      .label { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:14px; font-weight:600; fill:#0f172a; }
+      .sub { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:12px; fill:#475569; }
+      .x { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:28px; font-weight:700; fill:#b91c1c; }
+      .check { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:28px; font-weight:700; fill:#047857; }
+    </style>
+  </defs>
+  <text x="460" y="36" text-anchor="middle" class="title">EBS Availability Zone Constraint</text>
+
+  <rect x="60" y="70" width="360" height="280" class="bad"/>
+  <text x="240" y="110" text-anchor="middle" class="label">Different AZ  blocked</text>
+  <text x="240" y="150" text-anchor="middle" class="sub">EBS volume in ap-south-1b</text>
+  <text x="240" y="190" text-anchor="middle" class="x">X</text>
+  <text x="240" y="230" text-anchor="middle" class="sub">ap-south-1a worker</text>
+  <text x="240" y="270" text-anchor="middle" class="sub">Pod stays Pending when</text>
+  <text x="240" y="292" text-anchor="middle" class="sub">same-AZ workers are cordoned</text>
+  <text x="240" y="320" text-anchor="middle" class="sub">EBS volume cannot be mounted</text>
+  <text x="240" y="340" text-anchor="middle" class="sub">from a different Availability Zone</text>
+
+  <rect x="500" y="70" width="360" height="280" class="ok"/>
+  <text x="680" y="110" text-anchor="middle" class="label">Same AZ  allowed</text>
+  <text x="680" y="150" text-anchor="middle" class="sub">EBS volume in ap-south-1b</text>
+  <text x="680" y="190" text-anchor="middle" class="check"></text>
+  <text x="680" y="230" text-anchor="middle" class="sub">ap-south-1b worker</text>
+  <text x="680" y="270" text-anchor="middle" class="sub">CSI attaches existing volume</text>
+  <text x="680" y="292" text-anchor="middle" class="sub">Pod becomes Ready</text>
+  <text x="680" y="320" text-anchor="middle" class="sub">PV nodeAffinity:</text>
+  <text x="680" y="340" text-anchor="middle" class="sub">topology.kubernetes.io/zone=ap-south-1b</text>
+</svg>

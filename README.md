@@ -113,6 +113,13 @@ When those overlays exist, they will describe the same application shape with di
 12. **AWS path.** Provisioned and validated: EKS 1.36, AWS Load Balancer Controller, Argo CD, Application `platform-lab-aws` watching `kubernetes/overlays/aws`. VMware lab remains independent.
 13. **Python automation.** Planned. Repeatable checks and operational helpers.
 
+### Project 1 — AWS storage (complete)
+
+20. **AWS EBS-backed persistent storage** ✅ — EBS CSI add-on + Pod Identity, `ebs-gp3`, StatefulSet `storage-demo`, Pod-delete persistence. See [`docs/aws-storage-statefulset.md`](docs/aws-storage-statefulset.md).
+21. **AWS node/AZ storage resilience** ✅ — controlled worker terminate, same-AZ EBS reattach, data preservation, AZ topology Pending demo, temporary same-AZ node group cleaned up. See [`docs/aws-storage-resilience.md`](docs/aws-storage-resilience.md).
+
+Demonstrated (observed, not claimed beyond evidence): same-AZ worker replacement · EBS CSI reattachment · data preservation · AZ topology restriction. **Not** multi-AZ EBS storage.
+
 ## Published container artifact
 
 Version `0.1.3` is the current published image used by the local lab. The tag `latest` is intentionally unused. The digest is the immutable reference for that artifact.

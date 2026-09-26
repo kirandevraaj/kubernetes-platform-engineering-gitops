@@ -217,3 +217,15 @@ variable "ebs_csi_addon_version" {
   type        = string
   default     = "v1.66.0-eksbuild.1"
 }
+
+variable "enable_storage_resilience_test_nodegroup" {
+  description = "Create a temporary single-AZ EKS managed node group for the EBS storage-resilience experiment. Default false; enable only for the lab, then destroy."
+  type        = bool
+  default     = false
+}
+
+variable "storage_resilience_test_az" {
+  description = "AZ for the temporary storage-resilience node group (must match the EBS volume AZ under test)."
+  type        = string
+  default     = "ap-south-1b"
+}

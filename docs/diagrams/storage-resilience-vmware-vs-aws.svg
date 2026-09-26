@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520" role="img" aria-label="Storage resilience VMware vs AWS">
+  <title>VMware local-path vs AWS EBS resilience</title>
+  <defs>
+    <style>
+      .box { fill:#f8fafc; stroke:#334155; stroke-width:2; rx:8; }
+      .aws { fill:#eff6ff; stroke:#1d4ed8; stroke-width:2; rx:8; }
+      .warn { fill:#fff7ed; stroke:#c2410c; stroke-width:2; rx:8; }
+      .title { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:18px; font-weight:700; fill:#0f172a; }
+      .label { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:13px; font-weight:600; fill:#0f172a; }
+      .sub { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:12px; fill:#475569; }
+      .emph { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:14px; font-weight:700; fill:#9a3412; }
+    </style>
+  </defs>
+  <text x="490" y="34" text-anchor="middle" class="title">Storage Resilience  VMware local-path vs AWS EBS</text>
+
+  <rect x="40" y="60" width="430" height="360" class="box"/>
+  <text x="255" y="95" text-anchor="middle" class="label">VMware</text>
+  <text x="255" y="125" text-anchor="middle" class="sub">Pod ’ PVC ’ PV ’ local-path</text>
+  <text x="255" y="148" text-anchor="middle" class="sub">’ worker-local filesystem</text>
+  <text x="255" y="185" text-anchor="middle" class="label">Worker failure</text>
+  <text x="255" y="215" text-anchor="middle" class="sub">storage remains on failed worker</text>
+  <text x="255" y="240" text-anchor="middle" class="sub">Pod cannot simply remount elsewhere</text>
+  <text x="255" y="275" text-anchor="middle" class="sub">Scope: node-local</text>
+  <text x="255" y="310" text-anchor="middle" class="sub">Pod delete on same node: data OK</text>
+  <text x="255" y="335" text-anchor="middle" class="sub">Node loss: data mobility not automatic</text>
+  <text x="255" y="380" text-anchor="middle" class="sub">Proven: Pod recreation only</text>
+
+  <rect x="510" y="60" width="430" height="360" class="aws"/>
+  <text x="725" y="95" text-anchor="middle" class="label">AWS</text>
+  <text x="725" y="125" text-anchor="middle" class="sub">Pod ’ PVC ’ PV ’ EBS CSI ’ EBS</text>
+  <text x="725" y="148" text-anchor="middle" class="sub">’ AZ-scoped block volume</text>
+  <text x="725" y="185" text-anchor="middle" class="label">Worker failure</text>
+  <text x="725" y="215" text-anchor="middle" class="sub">another worker SAME AZ</text>
+  <text x="725" y="240" text-anchor="middle" class="sub">EBS reattach ’ Pod recovers</text>
+  <text x="725" y="275" text-anchor="middle" class="sub">Scope: AZ-local (not multi-AZ)</text>
+  <text x="725" y="310" text-anchor="middle" class="sub">Pod delete: data OK (proven)</text>
+  <text x="725" y="335" text-anchor="middle" class="sub">Same-AZ node loss: recover (proven)</text>
+  <text x="725" y="380" text-anchor="middle" class="sub">Cross-AZ: blocked by topology</text>
+
+  <rect x="40" y="440" width="900" height="55" class="warn"/>
+  <text x="490" y="475" text-anchor="middle" class="emph">Both are NOT multi-AZ storage.</text>
+</svg>

@@ -38,6 +38,16 @@ output "node_group_name" {
   value       = aws_eks_node_group.this.node_group_name
 }
 
+output "node_launch_template_id" {
+  description = "Launch template ID used by the managed node group."
+  value       = aws_launch_template.nodes.id
+}
+
+output "node_launch_template_latest_version" {
+  description = "Latest launch template version for managed nodes."
+  value       = tostring(aws_launch_template.nodes.latest_version)
+}
+
 output "oidc_issuer_url" {
   description = "OIDC issuer URL for the cluster."
   value       = try(aws_eks_cluster.this.identity[0].oidc[0].issuer, null)
