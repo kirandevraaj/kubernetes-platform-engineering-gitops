@@ -8,7 +8,7 @@ metadata:
   name: ingress-nginx-controller
   namespace: ingress-nginx
   annotations:
-    argocd.argoproj.io/sync-options: ServerSideApply=true,Force=true
+    argocd.argoproj.io/sync-options: ServerSideApply=true
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
