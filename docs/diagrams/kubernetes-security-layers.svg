@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="640" viewBox="0 0 720 640" role="img" aria-label="Kubernetes security layers">
+  <title>Kubernetes security layers</title>
+  <defs>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .aws{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;fill:#475569}
+    </style>
+  </defs>
+  <text x="360" y="36" text-anchor="middle" class="t">Kubernetes Security Layers</text>
+  <rect x="80" y="60" width="560" height="60" class="box"/><text x="360" y="86" text-anchor="middle" class="l">1. Authentication / Identity</text><text x="360" y="106" text-anchor="middle" class="s">User · ServiceAccount · certificates · OIDC</text>
+  <rect x="80" y="135" width="560" height="60" class="box"/><text x="360" y="161" text-anchor="middle" class="l">2. RBAC authorization</text><text x="360" y="181" text-anchor="middle" class="s">Role · RoleBinding · ClusterRole · ClusterRoleBinding</text>
+  <rect x="80" y="210" width="560" height="60" class="box"/><text x="360" y="236" text-anchor="middle" class="l">3. Pod Security Admission</text><text x="360" y="256" text-anchor="middle" class="s">privileged · baseline · restricted (namespace labels)</text>
+  <rect x="80" y="285" width="560" height="60" class="box"/><text x="360" y="311" text-anchor="middle" class="l">4. Container securityContext</text><text x="360" y="331" text-anchor="middle" class="s">runAsNonRoot · drop caps · seccomp · no privilege escalation</text>
+  <rect x="80" y="360" width="560" height="60" class="box"/><text x="360" y="386" text-anchor="middle" class="l">5. NetworkPolicy</text><text x="360" y="406" text-anchor="middle" class="s">which pod-to-pod flows are allowed</text>
+  <rect x="80" y="435" width="560" height="60" class="box"/><text x="360" y="461" text-anchor="middle" class="l">6. Secrets / credentials</text><text x="360" y="481" text-anchor="middle" class="s">who may read Secrets  highly sensitive RBAC permission</text>
+  <rect x="80" y="510" width="560" height="70" class="aws"/><text x="360" y="540" text-anchor="middle" class="l">7. AWS IAM (when AWS APIs are involved)</text><text x="360" y="562" text-anchor="middle" class="s">Pod Identity / IRSA ’ IAM Role ’ EC2/EBS/ALB APIs</text>
+</svg>

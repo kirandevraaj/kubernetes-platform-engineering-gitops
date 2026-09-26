@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" role="img" aria-label="Kubernetes RBAC model">
+  <title>Kubernetes RBAC model</title>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .note{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <text x="460" y="36" text-anchor="middle" class="t">Kubernetes RBAC Model</text>
+  <rect x="340" y="60" width="240" height="48" class="box"/>
+  <text x="460" y="82" text-anchor="middle" class="l">User / ServiceAccount</text>
+  <text x="460" y="98" text-anchor="middle" class="s">identity (authentication)</text>
+  <path class="line" d="M460 108 V130"/>
+  <rect x="340" y="130" width="240" height="48" class="box"/>
+  <text x="460" y="152" text-anchor="middle" class="l">Binding</text>
+  <text x="460" y="168" text-anchor="middle" class="s">RoleBinding or ClusterRoleBinding</text>
+  <path class="line" d="M460 178 V200"/>
+  <rect x="340" y="200" width="240" height="48" class="box"/>
+  <text x="460" y="222" text-anchor="middle" class="l">Role / ClusterRole</text>
+  <text x="460" y="238" text-anchor="middle" class="s">permission set (verbs × resources)</text>
+  <path class="line" d="M460 248 V270"/>
+  <rect x="340" y="270" width="240" height="48" class="box"/>
+  <text x="460" y="292" text-anchor="middle" class="l">Kubernetes API</text>
+  <text x="460" y="308" text-anchor="middle" class="s">authorization decision</text>
+  <path class="line" d="M460 318 V340"/>
+  <rect x="340" y="340" width="240" height="40" class="box"/>
+  <text x="460" y="366" text-anchor="middle" class="l">Resource</text>
+  <rect x="40" y="130" width="260" height="90" class="note"/>
+  <text x="170" y="165" text-anchor="middle" class="l">RoleBinding</text>
+  <text x="170" y="188" text-anchor="middle" class="s">namespace-scoped access</text>
+  <text x="170" y="206" text-anchor="middle" class="s">even if RoleRef is a ClusterRole</text>
+  <rect x="620" y="130" width="260" height="90" class="note"/>
+  <text x="750" y="165" text-anchor="middle" class="l">ClusterRoleBinding</text>
+  <text x="750" y="188" text-anchor="middle" class="s">cluster-wide binding</text>
+  <text x="750" y="206" text-anchor="middle" class="s">subject receives ClusterRole globally</text>
+</svg>

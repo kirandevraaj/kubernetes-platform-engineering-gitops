@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" role="img" aria-label="AWS IAM vs Kubernetes RBAC">
+  <title>AWS IAM vs Kubernetes RBAC</title>
+  <defs>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .aws{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;fill:#475569}
+    </style>
+  </defs>
+  <text x="460" y="34" text-anchor="middle" class="t">AWS IAM vs Kubernetes RBAC</text>
+  <rect x="40" y="60" width="400" height="160" class="box"/>
+  <text x="240" y="100" text-anchor="middle" class="l">Kubernetes API</text>
+  <text x="240" y="130" text-anchor="middle" class="s">‘</text>
+  <text x="240" y="155" text-anchor="middle" class="l">Kubernetes RBAC</text>
+  <text x="240" y="185" text-anchor="middle" class="s">who may call the kube-apiserver</text>
+  <rect x="480" y="60" width="400" height="160" class="aws"/>
+  <text x="680" y="100" text-anchor="middle" class="l">AWS APIs</text>
+  <text x="680" y="130" text-anchor="middle" class="s">‘</text>
+  <text x="680" y="155" text-anchor="middle" class="l">AWS IAM</text>
+  <text x="680" y="185" text-anchor="middle" class="s">who may call EC2 / EBS / ELB / &</text>
+  <rect x="140" y="250" width="640" height="140" class="aws"/>
+  <text x="460" y="285" text-anchor="middle" class="l">Bridge example (EBS CSI  unchanged in this lab)</text>
+  <text x="460" y="315" text-anchor="middle" class="s">Pod ’ ServiceAccount ’ EKS Pod Identity ’ IAM Role ’ AWS API</text>
+  <text x="460" y="345" text-anchor="middle" class="s">Kubernetes RBAC does not grant AWS permissions; IAM does not grant kubectl verbs</text>
+  <text x="460" y="370" text-anchor="middle" class="s">Argo CD uses Kubernetes identity; Jenkins uses external CI credentials</text>
+</svg>

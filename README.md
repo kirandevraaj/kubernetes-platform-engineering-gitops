@@ -117,6 +117,7 @@ When those overlays exist, they will describe the same application shape with di
 
 20. **AWS EBS-backed persistent storage** ✅ — EBS CSI add-on + Pod Identity, `ebs-gp3`, StatefulSet `storage-demo`, Pod-delete persistence. See [`docs/aws-storage-statefulset.md`](docs/aws-storage-statefulset.md).
 21. **AWS node/AZ storage resilience** ✅ — controlled worker terminate, same-AZ EBS reattach, data preservation, AZ topology Pending demo, temporary same-AZ node group cleaned up. See [`docs/aws-storage-resilience.md`](docs/aws-storage-resilience.md).
+22. **Security / RBAC hardening** ✅ — isolated `security-lab` on VMware + AWS, least-privilege Roles/Bindings, PSA baseline, NetworkPolicy lab, platform-lab SA token disable. See [`docs/security-rbac.md`](docs/security-rbac.md).
 
 Demonstrated (observed, not claimed beyond evidence): same-AZ worker replacement · EBS CSI reattachment · data preservation · AZ topology restriction. **Not** multi-AZ EBS storage.
 
