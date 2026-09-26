@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: platform-lab
 resources:
   - namespace.yaml
+  - serviceaccount.yaml
   - configmap.yaml
   - deployment.yaml
   - service.yaml

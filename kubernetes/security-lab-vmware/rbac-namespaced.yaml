@@ -1,0 +1,72 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: security-pod-reader
+  namespace: security-lab
+  labels:
+    app.kubernetes.io/part-of: security-lab
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: security-pod-manager
+  namespace: security-lab
+  labels:
+    app.kubernetes.io/part-of: security-lab
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: security-reader-binding
+  namespace: security-lab
+  labels:
+    app.kubernetes.io/part-of: security-lab
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: security-pod-reader
+subjects:
+  - kind: ServiceAccount
+    name: security-reader
+    namespace: security-lab
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: security-writer-binding
+  namespace: security-lab
+  labels:
+    app.kubernetes.io/part-of: security-lab
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: security-pod-manager
+subjects:
+  - kind: ServiceAccount
+    name: security-writer
+    namespace: security-lab
+---
+# Demonstrates: ClusterRole + namespaced RoleBinding = namespace-scoped access only
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: security-reader-pod-viewer-binding
+  namespace: security-lab
+  labels:
+    app.kubernetes.io/part-of: security-lab
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: security-pod-viewer
+subjects:
+  - kind: ServiceAccount
+    name: security-reader
+    namespace: security-lab

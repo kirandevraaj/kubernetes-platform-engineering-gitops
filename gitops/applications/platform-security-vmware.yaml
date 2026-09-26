@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-security-vmware
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-security-vmware
+    app.kubernetes.io/part-of: platform-lab
+spec:
+  project: platform-security-vmware
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/security-lab-vmware
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: security-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

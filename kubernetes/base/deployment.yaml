@@ -21,6 +21,8 @@ spec:
         app.kubernetes.io/component: api
         app.kubernetes.io/version: "0.1.0"
     spec:
+      serviceAccountName: platform-lab
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001

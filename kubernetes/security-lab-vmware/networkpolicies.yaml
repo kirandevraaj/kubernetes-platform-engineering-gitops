@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: security-lab
+  labels:
+    app.kubernetes.io/part-of: security-lab
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-net-client-to-server
+  namespace: security-lab
+  labels:
+    app.kubernetes.io/part-of: security-lab
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: security-net-server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: security-net-client-allowed
+      ports:
+        - protocol: TCP
+          port: 8080

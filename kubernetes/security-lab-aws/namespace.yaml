@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security-lab
+  labels:
+    app.kubernetes.io/name: security-lab
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+    # Pod Security Admission — EKS 1.36
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: v1.36
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: v1.36
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: v1.36

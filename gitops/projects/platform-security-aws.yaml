@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-security-aws
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-security-aws
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+spec:
+  description: AWS security-lab RBAC / PSA / NetworkPolicy lab (isolated)
+  sourceRepos:
+    - https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+  destinations:
+    - namespace: security-lab
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ServiceAccount
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: Pod
+    - group: apps
+      kind: Deployment
+    - group: rbac.authorization.k8s.io
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+  orphanedResources:
+    warn: true
