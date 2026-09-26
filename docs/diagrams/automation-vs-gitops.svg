@@ -18,22 +18,22 @@
   <text x="190" y="58" text-anchor="middle" class="l">Operational automation</text>
   <rect x="70" y="72" width="240" height="44" class="ops"/><text x="190" y="99" text-anchor="middle" class="l">Python / Ansible</text>
   <path class="line" d="M190 116 V140"/>
-  <rect x="70" y="140" width="240" height="50" class="box"/><text x="190" y="162" text-anchor="middle" class="l">configuration / operations</text><text x="190" y="178" text-anchor="middle" class="s">OS · APIs · automation-lab</text>
+  <rect x="70" y="140" width="240" height="50" class="box"/><text x="190" y="162" text-anchor="middle" class="l">configuration / operations</text><text x="190" y="178" text-anchor="middle" class="s">OS / APIs / automation-lab</text>
 
   <text x="590" y="58" text-anchor="middle" class="l">GitOps path</text>
   <rect x="470" y="72" width="240" height="44" class="git"/><text x="590" y="99" text-anchor="middle" class="l">Git desired state</text>
   <path class="line" d="M590 116 V140"/>
   <rect x="470" y="140" width="240" height="44" class="git"/><text x="590" y="167" text-anchor="middle" class="l">Argo CD</text>
   <path class="line" d="M590 184 V208"/>
-  <rect x="470" y="208" width="240" height="50" class="box"/><text x="590" y="230" text-anchor="middle" class="l">Kubernetes apps</text><text x="590" y="246" text-anchor="middle" class="s">platform-lab · overlays</text>
+  <rect x="470" y="208" width="240" height="50" class="box"/><text x="590" y="230" text-anchor="middle" class="l">Kubernetes apps</text><text x="590" y="246" text-anchor="middle" class="s">platform-lab / overlays</text>
 
   <path class="dash" d="M310 162 H430"/>
   <text x="390" y="154" text-anchor="middle" class="s">may commit</text>
   <text x="390" y="168" text-anchor="middle" class="s">lab desired state</text>
 
   <rect x="70" y="280" width="640" height="70" class="box"/>
-  <text x="390" y="308" text-anchor="middle" class="l">Boundary: Jenkins builds/promotes digests — Argo reconciles — no kubectl apply of apps from CI</text>
-  <text x="390" y="328" text-anchor="middle" class="s">Image pin 0.1.4 · sha256:1cca2b59… · ADR-006</text>
+  <text x="390" y="308" text-anchor="middle" class="l">Boundary: Jenkins builds/promotes digests â€” Argo reconciles â€” no kubectl apply of apps from CI</text>
+  <text x="390" y="328" text-anchor="middle" class="s">Image pin 0.1.4 / sha256:1cca2b59â€¦ / ADR-006</text>
 
-  <text x="390" y="390" text-anchor="middle" class="s">Project 1 · Section 24</text>
+  <text x="390" y="390" text-anchor="middle" class="s">Project 1 / Section 24</text>
 </svg>

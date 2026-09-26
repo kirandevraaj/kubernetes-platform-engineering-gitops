@@ -14,15 +14,15 @@
     </style>
   </defs>
   <text x="210" y="28" text-anchor="middle" class="t">Python ? Ansible Orchestration</text>
-  <rect x="100" y="48" width="220" height="50" class="py"/><text x="210" y="70" text-anchor="middle" class="l">Python Controller</text><text x="210" y="88" text-anchor="middle" class="s">plan · confirm · verify</text>
+  <rect x="100" y="48" width="220" height="50" class="py"/><text x="210" y="70" text-anchor="middle" class="l">Python Controller</text><text x="210" y="88" text-anchor="middle" class="s">plan Â· confirm Â· verify</text>
   <path class="line" d="M210 98 V126"/>
-  <rect x="100" y="126" width="220" height="50" class="run"/><text x="210" y="148" text-anchor="middle" class="l">Ansible Runner 2.4.1</text><text x="210" y="166" text-anchor="middle" class="s">events · timeouts · privdata</text>
+  <rect x="100" y="126" width="220" height="50" class="run"/><text x="210" y="148" text-anchor="middle" class="l">Ansible Runner 2.4.1</text><text x="210" y="166" text-anchor="middle" class="s">events Â· timeouts Â· privdata</text>
   <path class="line" d="M210 176 V204"/>
-  <rect x="100" y="204" width="220" height="50" class="pb"/><text x="210" y="226" text-anchor="middle" class="l">Ansible Playbook</text><text x="210" y="244" text-anchor="middle" class="s">FQCN modules · roles</text>
+  <rect x="100" y="204" width="220" height="50" class="pb"/><text x="210" y="226" text-anchor="middle" class="l">Ansible Playbook</text><text x="210" y="244" text-anchor="middle" class="s">FQCN modules Â· roles</text>
   <path class="line" d="M210 254 V282"/>
-  <rect x="100" y="282" width="220" height="50" class="box"/><text x="210" y="304" text-anchor="middle" class="l">Hosts</text><text x="210" y="322" text-anchor="middle" class="s">localhost lab · readonly workers</text>
+  <rect x="100" y="282" width="220" height="50" class="box"/><text x="210" y="304" text-anchor="middle" class="l">Hosts</text><text x="210" y="322" text-anchor="middle" class="s">localhost lab Â· readonly workers</text>
   <path class="line" d="M210 332 V360"/>
   <rect x="100" y="360" width="220" height="44" class="py"/><text x="210" y="387" text-anchor="middle" class="l">Python verification</text>
-  <text x="210" y="440" text-anchor="middle" class="s">Python decides · Ansible configures · Python verifies</text>
-  <text x="210" y="480" text-anchor="middle" class="s">Project 1 · Section 24</text>
+  <text x="210" y="440" text-anchor="middle" class="s">Python decides Â· Ansible configures Â· Python verifies</text>
+  <text x="210" y="480" text-anchor="middle" class="s">Project 1 Â· Section 24</text>
 </svg>

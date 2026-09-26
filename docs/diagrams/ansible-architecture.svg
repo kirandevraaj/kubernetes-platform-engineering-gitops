@@ -16,9 +16,9 @@
   <text x="210" y="28" text-anchor="middle" class="t">Ansible Architecture</text>
   <rect x="110" y="48" width="200" height="44" class="ctl"/><text x="210" y="75" text-anchor="middle" class="l">Control Node</text>
   <path class="line" d="M210 92 V114"/>
-  <rect x="110" y="114" width="200" height="44" class="box"/><text x="210" y="133" text-anchor="middle" class="l">Inventory</text><text x="210" y="149" text-anchor="middle" class="s">hosts.yml · aws_ec2</text>
+  <rect x="110" y="114" width="200" height="44" class="box"/><text x="210" y="133" text-anchor="middle" class="l">Inventory</text><text x="210" y="149" text-anchor="middle" class="s">hosts.yml Â· aws_ec2</text>
   <path class="line" d="M210 158 V180"/>
-  <rect x="110" y="180" width="200" height="44" class="box"/><text x="210" y="199" text-anchor="middle" class="l">Playbook</text><text x="210" y="215" text-anchor="middle" class="s">roles · vars · handlers</text>
+  <rect x="110" y="180" width="200" height="44" class="box"/><text x="210" y="199" text-anchor="middle" class="l">Playbook</text><text x="210" y="215" text-anchor="middle" class="s">roles Â· vars Â· handlers</text>
   <path class="line" d="M210 224 V246"/>
   <rect x="110" y="246" width="200" height="44" class="mod"/><text x="210" y="265" text-anchor="middle" class="l">Modules (FQCN)</text><text x="210" y="281" text-anchor="middle" class="s">collections pinned</text>
   <path class="line" d="M210 290 V320"/>
@@ -27,6 +27,6 @@
   <rect x="155" y="350" width="110" height="50" class="node"/><text x="210" y="372" text-anchor="middle" class="l">VMware</text><text x="210" y="388" text-anchor="middle" class="s">read-only</text>
   <rect x="280" y="350" width="110" height="50" class="node"/><text x="335" y="372" text-anchor="middle" class="l">AWS hosts</text><text x="335" y="388" text-anchor="middle" class="s">by tags</text>
   <text x="210" y="440" text-anchor="middle" class="s">Managed Nodes</text>
-  <text x="210" y="480" text-anchor="middle" class="s">Check / diff before apply · Vault for secrets</text>
-  <text x="210" y="520" text-anchor="middle" class="s">Project 1 · ansible-core 2.18.6</text>
+  <text x="210" y="480" text-anchor="middle" class="s">Check / diff before apply Â· Vault for secrets</text>
+  <text x="210" y="520" text-anchor="middle" class="s">Project 1 Â· ansible-core 2.18.6</text>
 </svg>
