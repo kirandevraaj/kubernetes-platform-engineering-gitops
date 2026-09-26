@@ -1,0 +1,3 @@
+---
+# Intentionally empty — platform_node is read-only and has no change handlers.
+[]

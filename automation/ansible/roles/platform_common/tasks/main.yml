@@ -1,0 +1,19 @@
+---
+- name: Ensure platform_common workdir
+  ansible.builtin.file:
+    path: "{{ ansible_lab_workdir }}/{{ platform_common_subdir }}"
+    state: directory
+    mode: "0755"
+
+- name: Write platform_common marker from template
+  ansible.builtin.template:
+    src: common_marker.j2
+    dest: "{{ ansible_lab_workdir }}/{{ platform_common_subdir }}/marker.conf"
+    mode: "0644"
+  notify: Touch platform_common handler stamp
+
+- name: Copy static common notice
+  ansible.builtin.copy:
+    src: NOTICE.txt
+    dest: "{{ ansible_lab_workdir }}/{{ platform_common_subdir }}/NOTICE.txt"
+    mode: "0644"

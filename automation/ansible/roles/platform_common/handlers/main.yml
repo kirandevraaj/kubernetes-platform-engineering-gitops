@@ -1,0 +1,6 @@
+---
+- name: Touch platform_common handler stamp
+  ansible.builtin.copy:
+    dest: "{{ ansible_lab_workdir }}/{{ platform_common_subdir }}/handler.stamp"
+    content: "changed={{ ansible_date_time.iso8601 | default('unknown') }}\n"
+    mode: "0644"

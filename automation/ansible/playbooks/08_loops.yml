@@ -1,0 +1,49 @@
+---
+# 08 — Loops: loop, loop_control, dicts, with_items-style via loop
+
+- name: Section 24 — Loops
+  hosts: localhost
+  gather_facts: false
+  vars:
+    loops_dir: "{{ ansible_lab_workdir }}/loops"
+    demo_users:
+      - name: alice
+        role: reader
+      - name: bob
+        role: operator
+    demo_ports:
+      - 18080
+      - 18081
+      - 18082
+  tasks:
+    - name: Ensure loops workdir
+      ansible.builtin.file:
+        path: "{{ loops_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Create per-user marker files
+      ansible.builtin.copy:
+        dest: "{{ loops_dir }}/user_{{ item.name }}.txt"
+        content: |
+          user={{ item.name }}
+          role={{ item.role }}
+        mode: "0644"
+      loop: "{{ demo_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Write port allow-list lines
+      ansible.builtin.lineinfile:
+        path: "{{ loops_dir }}/ports.conf"
+        line: "allow_port={{ item }}"
+        create: true
+        mode: "0644"
+      loop: "{{ demo_ports }}"
+
+    - name: Loop over dict keys with dict2items
+      ansible.builtin.debug:
+        msg: "{{ item.key }}={{ item.value }}"
+      loop: "{{ {'env': 'lab', 'section': lab_section} | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"

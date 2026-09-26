@@ -1,0 +1,66 @@
+---
+# 13 — AWS safe tag mutation (OPTIONAL)
+#
+# Default: dry-run / check-mode oriented. Does NOT touch VPC, EKS, ALB, Jenkins, Argo.
+# Only adds a harmless tag on instances already tagged Lab=ansible-section24.
+#
+# Tags:
+#   - Always prefer --check first
+#   - Requires explicit -e aws_safe_tag_apply=true to mutate
+#
+#   ansible-playbook playbooks/13_aws_safe_tag.yml --check
+#   ansible-playbook playbooks/13_aws_safe_tag.yml -e aws_safe_tag_apply=true
+
+- name: Section 24 — AWS optional safe tag
+  hosts: localhost
+  gather_facts: false
+  vars:
+    aws_lab_region: us-east-1
+    aws_safe_tag_apply: false
+    aws_safe_tag_key: AnsibleLab
+    aws_safe_tag_value: section24-readonly-ok
+    aws_lab_filters:
+      "tag:Lab":
+        - ansible-section24
+      instance-state-name:
+        - running
+  tasks:
+    - name: Discover eligible lab instances
+      amazon.aws.ec2_instance_info:
+        region: "{{ aws_lab_region }}"
+        filters: "{{ aws_lab_filters }}"
+      register: tag_targets
+      failed_when: false
+
+    - name: Abort clearly when discovery fails
+      ansible.builtin.debug:
+        msg: "EC2 discovery failed or unavailable — skipping tag mutation."
+      when: tag_targets is failed
+
+    - name: Show dry-run plan
+      ansible.builtin.debug:
+        msg: >-
+          Would tag {{ tag_targets.instances | default([]) | length }} instance(s)
+          with {{ aws_safe_tag_key }}={{ aws_safe_tag_value }}.
+          Set -e aws_safe_tag_apply=true to apply (still only Lab=ansible-section24).
+      when: tag_targets is succeeded
+
+    - name: Apply harmless tag (explicit opt-in only)
+      amazon.aws.ec2_tag:
+        region: "{{ aws_lab_region }}"
+        resource: "{{ item.instance_id }}"
+        tags:
+          "{{ aws_safe_tag_key }}": "{{ aws_safe_tag_value }}"
+        state: present
+      loop: "{{ tag_targets.instances | default([]) }}"
+      loop_control:
+        label: "{{ item.instance_id }}"
+      when:
+        - tag_targets is succeeded
+        - aws_safe_tag_apply | bool
+        - tag_targets.instances | default([]) | length > 0
+
+    - name: Remind about check mode
+      ansible.builtin.debug:
+        msg: "Tip: run with --check before aws_safe_tag_apply=true. Never tag production EKS/ALB stacks from this playbook."
+      when: not (aws_safe_tag_apply | bool)

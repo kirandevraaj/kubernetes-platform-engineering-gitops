@@ -1,0 +1,25 @@
+---
+# inventory/group_vars/all.yml
+# Lowest inventory group precedence among group_vars (all < lab < host_vars).
+# See docs/ansible-variable-precedence.md for the full defaults → extra-vars ladder.
+
+lab_owner: "platform-engineering-lab"
+lab_section: 24
+lab_marker: "from-group-vars-all"
+
+# Disposable workdir for localhost mutations (never platform-lab / storage-lab / etc.)
+# TEMP (Windows) → TMPDIR (Unix) → /tmp
+ansible_lab_workdir: "{{ lookup('env', 'TEMP') | default(lookup('env', 'TMPDIR'), true) | default('/tmp', true) }}/ansible-platform-lab"
+
+# Harmless precedence demo variable — overridden by lab.yml, play vars, then -e
+precedence_demo_value: "all"
+
+# Safety boundaries — playbooks must honour these
+lab_forbidden_namespaces:
+  - platform-lab
+  - storage-lab
+  - observability
+  - monitoring
+  - argocd
+  - jenkins
+lab_allowed_k8s_namespace: automation-lab

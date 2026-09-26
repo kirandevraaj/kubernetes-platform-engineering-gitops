@@ -1,0 +1,54 @@
+---
+# 05 — Services (concept lab, localhost-safe)
+#
+# ansible.builtin.service / systemd need a real init system and usually become.
+# On this disposable localhost lab we model "service config + reload marker"
+# with file/template modules so Windows and Linux learners get the same lesson.
+# On a disposable Linux VM you would swap the marker task for:
+#   ansible.builtin.service: name=nginx state=started enabled=true
+
+- name: Section 24 — Services (simulated safely)
+  hosts: localhost
+  gather_facts: true
+  vars:
+    services_dir: "{{ ansible_lab_workdir }}/services"
+    demo_service_name: automation-demo-svc
+  handlers:
+    - name: Reload demo service marker
+      ansible.builtin.copy:
+        dest: "{{ services_dir }}/{{ demo_service_name }}.reloaded"
+        content: |
+          reloaded_at={{ ansible_date_time.iso8601 | default('unknown') }}
+          reason=config_changed
+        mode: "0644"
+
+  tasks:
+    - name: Ensure services workdir
+      ansible.builtin.file:
+        path: "{{ services_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Write demo service unit-like config
+      ansible.builtin.copy:
+        dest: "{{ services_dir }}/{{ demo_service_name }}.conf"
+        content: |
+          [Service]
+          Name={{ demo_service_name }}
+          Port={{ lab_demo_port }}
+          Owner={{ lab_config_owner }}
+          State=desired-started
+        mode: "0644"
+      notify: Reload demo service marker
+
+    - name: Record desired service state file
+      ansible.builtin.copy:
+        dest: "{{ services_dir }}/{{ demo_service_name }}.state"
+        content: "started\n"
+        mode: "0644"
+
+    - name: Explain real service module usage
+      ansible.builtin.debug:
+        msg: >-
+          On disposable Linux only: ansible.builtin.service / ansible.builtin.systemd.
+          Never restart kubelet, containerd, or platform services from this lab tree.

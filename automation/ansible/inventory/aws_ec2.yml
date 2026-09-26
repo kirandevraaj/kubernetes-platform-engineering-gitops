@@ -1,0 +1,46 @@
+---
+# plugin: amazon.aws.aws_ec2
+#
+# Dynamic inventory — filter by tags; never hardcode public IPs.
+# Static AWS IP lists are fragile: Elastic IPs aside, private/public addresses
+# change when instances are replaced by ASGs, spot interruption, or stop/start.
+#
+# Usage (from automation/ansible):
+#   ansible-inventory -i inventory/aws_ec2.yml --graph
+#   ansible-playbook -i inventory/aws_ec2.yml playbooks/12_aws_readonly.yml
+#
+# Requires AWS credentials via environment / shared config profile (lab account).
+# Read-only IAM is enough for inventory discovery and facts playbooks.
+
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+# Narrow to lab-tagged instances only — never invent cluster-wide scans for mutation.
+filters:
+  tag:Lab: "ansible-section24"
+  instance-state-name:
+    - running
+    - stopped
+keyed_groups:
+  # Group by Name tag value when present
+  - key: tags.Name
+    prefix: tag_Name_
+    separator: ""
+  # EKS / kubernetes.io/cluster/<name> tags
+  - key: tags
+    prefix: tag_
+    separator: ""
+  - key: tags.Role
+    prefix: role_
+    separator: ""
+  - key: tags.NodeGroup
+    prefix: nodegroup_
+    separator: ""
+hostnames:
+  - tag:Name
+  - private-ip-address
+  - dns-name
+compose:
+  ansible_host: private_ip_address
+# Safety: this file discovers hosts only. Mutation playbooks must still
+# restrict themselves to tagged disposable instances and prefer check mode.

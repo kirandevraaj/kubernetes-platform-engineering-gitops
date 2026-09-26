@@ -1,0 +1,49 @@
+---
+# 10 — Delegation
+#
+# delegate_to runs a task on a different host in the inventory while still
+# iterating the current play host. Useful for "controller talks to API" patterns.
+# Safety: VMware workers (if enabled) only receive read-only ping/setup style tasks.
+
+- name: Section 24 — Delegation
+  hosts: localhost
+  gather_facts: false
+  vars:
+    delegation_dir: "{{ ansible_lab_workdir }}/delegation"
+  tasks:
+    - name: Ensure delegation workdir on localhost
+      ansible.builtin.file:
+        path: "{{ delegation_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Run setup on localhost via explicit delegate_to
+      ansible.builtin.setup:
+        gather_subset:
+          - min
+      delegate_to: localhost
+      register: delegated_setup
+
+    - name: Show delegated facts snippet
+      ansible.builtin.debug:
+        msg: "delegated ansible_system={{ delegated_setup.ansible_facts.ansible_system | default('n/a') }}"
+
+    - name: Write delegation marker locally
+      ansible.builtin.copy:
+        dest: "{{ delegation_dir }}/delegated_ok.txt"
+        content: "delegation demo completed on localhost\n"
+        mode: "0644"
+
+    - name: Optional read-only ping to VMware workers (skipped if empty group)
+      ansible.builtin.ping:
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['vmware_workers'] | default([]) }}"
+      when: groups['vmware_workers'] | default([]) | length > 0
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Safety note
+      ansible.builtin.debug:
+        msg: >-
+          Delegation must not mutate platform-lab, storage-lab, observability,
+          VPC, EKS, ALB, Jenkins, or Argo. Workers stay read-only.

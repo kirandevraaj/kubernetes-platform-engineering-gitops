@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  role_name: platform_common
+  description: Disposable localhost baseline markers for Section 24 Ansible lab
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: GenericLinux
+      versions: ["all"]
+    - name: Windows
+      versions: ["all"]
+dependencies: []

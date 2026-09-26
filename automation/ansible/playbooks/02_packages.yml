@@ -1,0 +1,47 @@
+---
+# 02 — Packages / disposable markers with modules (not shell)
+#
+# Safety: localhost / lab group only. No mutations on VMware workers,
+# platform-lab, EKS, VPC, ALB, Jenkins, or Argo.
+#
+# Cross-platform: we do NOT call system package managers that need root.
+# Instead we use ansible.builtin.pip into a disposable virtualenv under
+# ansible_lab_workdir, plus file markers — teaches modules + idempotency.
+
+- name: Section 24 — Packages (disposable localhost)
+  hosts: localhost
+  gather_facts: true
+  vars:
+    packages_venv: "{{ ansible_lab_workdir }}/packages/venv"
+    packages_marker_dir: "{{ ansible_lab_workdir }}/packages"
+  tasks:
+    - name: Create disposable packages workdir
+      ansible.builtin.file:
+        path: "{{ packages_marker_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Write package demo markers with copy (module, idempotent)
+      ansible.builtin.copy:
+        dest: "{{ item.path }}"
+        content: |
+          name={{ item.name }}
+          managed_by=ansible
+          section=24
+        mode: "0644"
+      loop: "{{ lab_packages_demo }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Install a tiny pip package into disposable venv (module)
+      ansible.builtin.pip:
+        name: six
+        virtualenv: "{{ packages_venv }}"
+        virtualenv_command: "{{ ansible_playbook_python | default(ansible_python.executable) }} -m venv"
+        state: present
+
+    - name: Show that system package managers stay untouched
+      ansible.builtin.debug:
+        msg: >-
+          Prefer ansible.builtin.package / ansible.builtin.apt / dnf on disposable
+          Linux lab VMs with become. This playbook stays localhost-safe via pip+files.

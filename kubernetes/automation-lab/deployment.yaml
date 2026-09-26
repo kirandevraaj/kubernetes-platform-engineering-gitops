@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: automation-demo
+  namespace: automation-lab
+  labels:
+    app: automation-demo
+    lab: automation-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: automation-demo
+  template:
+    metadata:
+      labels:
+        app: automation-demo
+    spec:
+      containers:
+        - name: demo
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi

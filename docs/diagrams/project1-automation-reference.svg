@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="680" viewBox="0 0 900 680" role="img" aria-label="Project 1 automation reference">
+  <title>Project 1 automation reference</title>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .ci{fill:#ecfdf5;stroke:#047857;stroke-width:2;rx:8}
+      .cd{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .ops{fill:#fefce8;stroke:#a16207;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <text x="450" y="28" text-anchor="middle" class="t">Project 1 Automation Reference</text>
+
+  <rect x="360" y="48" width="180" height="36" class="box"/><text x="450" y="71" text-anchor="middle" class="l">Developer</text>
+  <path class="line" d="M450 84 V108"/>
+  <rect x="360" y="108" width="180" height="36" class="box"/><text x="450" y="131" text-anchor="middle" class="l">GitHub</text>
+
+  <path class="line" d="M450 144 V168"/>
+  <path class="line" d="M220 200 V168 H680 V200"/>
+
+  <rect x="100" y="200" width="240" height="60" class="ci"/>
+  <text x="220" y="226" text-anchor="middle" class="l">Jenkins CI</text>
+  <text x="220" y="244" text-anchor="middle" class="s">test · build · publish · promote digest</text>
+
+  <rect x="560" y="200" width="240" height="60" class="cd"/>
+  <text x="680" y="226" text-anchor="middle" class="l">Argo CD</text>
+  <text x="680" y="244" text-anchor="middle" class="s">VMware v3.5.3 · AWS v3.1.0</text>
+
+  <path class="line" d="M220 260 V290"/>
+  <rect x="120" y="290" width="200" height="36" class="box"/><text x="220" y="313" text-anchor="middle" class="l">Docker Hub</text>
+
+  <path class="line" d="M680 260 V290"/>
+  <rect x="560" y="290" width="240" height="50" class="box"/>
+  <text x="680" y="312" text-anchor="middle" class="l">Kubernetes</text>
+  <text x="680" y="328" text-anchor="middle" class="s">ckad-lab · EKS platform-lab-aws</text>
+
+  <text x="450" y="380" text-anchor="middle" class="l">Operational automation (separate path)</text>
+  <rect x="200" y="396" width="500" height="50" class="ops"/>
+  <text x="450" y="418" text-anchor="middle" class="l">Python</text>
+  <text x="450" y="434" text-anchor="middle" class="s">Boto3 · K8s API · Ansible Runner · Terraform boundary</text>
+  <path class="line" d="M450 446 V470"/>
+  <rect x="200" y="470" width="500" height="50" class="box"/>
+  <text x="450" y="492" text-anchor="middle" class="l">Infrastructure / lab Kubernetes / AWS APIs</text>
+  <text x="450" y="508" text-anchor="middle" class="s">Safe NS: automation-lab · security-lab · argo-advanced-lab</text>
+
+  <rect x="120" y="560" width="660" height="70" class="box"/>
+  <text x="450" y="588" text-anchor="middle" class="l">Git = desired state · Jenkins ? kubectl deploy apps · Argo reconciles · Terraform = AWS infra</text>
+  <text x="450" y="608" text-anchor="middle" class="s">App image 0.1.4 @ sha256:1cca2b5964043fe6c9c09f17d7f86a3572a46699602919d15c45c9a069b872ff</text>
+</svg>

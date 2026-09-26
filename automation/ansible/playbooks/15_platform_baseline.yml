@@ -1,0 +1,24 @@
+---
+# 15 — Role-based platform baseline (platform_common + platform_service)
+#
+# Applies disposable localhost markers only. Does not touch platform-lab workloads.
+#
+#   ansible-playbook playbooks/15_platform_baseline.yml
+
+- name: Section 24 — Platform baseline via roles
+  hosts: localhost
+  gather_facts: true
+  vars:
+    # Play-level overrides for role defaults (still lose to -e)
+    platform_common_owner: "ansible-section24"
+    platform_service_name: "automation-demo-svc"
+    platform_service_port: "{{ lab_demo_port }}"
+  roles:
+    - role: platform_common
+    - role: platform_service
+  post_tasks:
+    - name: Summarize baseline
+      ansible.builtin.debug:
+        msg: >-
+          Baseline applied under {{ ansible_lab_workdir }}.
+          platform_node is available for read-only node facts labs (not applied here).

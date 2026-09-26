@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: automation-lab-reader
+  namespace: automation-lab
+rules:
+  - apiGroups: ["", "apps"]
+    resources: ["pods", "services", "configmaps", "deployments"]
+    verbs: ["get", "list", "watch"]

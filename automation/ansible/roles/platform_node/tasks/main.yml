@@ -1,0 +1,32 @@
+---
+# Read-only oriented: gather facts and optionally write a local summary.
+# Safe for localhost. If applied to vmware_workers, keep write tasks delegated
+# to localhost or disabled — never mutate worker configs.
+
+- name: Gather minimal node facts
+  ansible.builtin.setup:
+    gather_subset: "{{ platform_node_gather_subset }}"
+
+- name: Ensure platform_node workdir on controller/localhost path
+  ansible.builtin.file:
+    path: "{{ ansible_lab_workdir }}/{{ platform_node_subdir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+  when: platform_node_write_facts | bool
+
+- name: Write read-only facts summary (delegated to localhost)
+  ansible.builtin.template:
+    src: node_facts.j2
+    dest: "{{ ansible_lab_workdir }}/{{ platform_node_subdir }}/{{ inventory_hostname }}_facts.txt"
+    mode: "0644"
+  delegate_to: localhost
+  when: platform_node_write_facts | bool
+
+- name: Copy read-only notice
+  ansible.builtin.copy:
+    src: READONLY.txt
+    dest: "{{ ansible_lab_workdir }}/{{ platform_node_subdir }}/READONLY.txt"
+    mode: "0644"
+  delegate_to: localhost
+  when: platform_node_write_facts | bool

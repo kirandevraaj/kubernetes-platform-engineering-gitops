@@ -1,0 +1,9 @@
+---
+# Non-secret demo vars for precedence / include_vars labs.
+# These are intentionally plain (not vaulted).
+
+example_app_name: automation-demo
+example_environment: lab
+example_replicas: 1
+example_image: public.ecr.aws/nginx/nginx:stable-alpine
+example_config_message: "hello from example_vars.yml"

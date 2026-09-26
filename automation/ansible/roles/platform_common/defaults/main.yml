@@ -1,0 +1,5 @@
+---
+# defaults/main.yml — lowest role precedence (overridden by play vars / -e)
+platform_common_owner: "platform-common"
+platform_common_marker: "platform_common_ok"
+platform_common_subdir: "roles/platform_common"

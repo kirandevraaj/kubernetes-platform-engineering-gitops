@@ -1,0 +1,4 @@
+# Static demo file for ansible.builtin.copy lessons.
+# Safe to overwrite under ansible_lab_workdir only.
+source=files/demo_static.txt
+purpose=idempotency-and-copy-lab

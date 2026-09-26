@@ -1,0 +1,15 @@
+---
+# Ansible collections are NOT part of ansible-core.
+# Install into ./collections (or ~/.ansible/collections) with:
+#   ansible-galaxy collection install -r collections/requirements.yml -p collections
+#
+# Pin versions so lab runs stay reproducible across machines.
+collections:
+  - name: amazon.aws
+    version: "9.2.0"
+  - name: kubernetes.core
+    version: "5.1.0"
+  - name: ansible.posix
+    version: "1.6.2"
+  - name: community.general
+    version: "10.3.0"

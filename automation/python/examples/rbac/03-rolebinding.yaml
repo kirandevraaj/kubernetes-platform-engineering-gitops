@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: automation-lab-reader
+  namespace: automation-lab
+subjects:
+  - kind: ServiceAccount
+    name: automation-lab-reader
+    namespace: automation-lab
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: automation-lab-reader

@@ -1,0 +1,46 @@
+---
+# 14 — Ansible Vault example (FAKE secrets only)
+#
+# Encrypt first — see vars/vault_example.yml.enc_instructions.md
+#
+#   echo lab-vault-password > .vault_pass_lab.txt
+#   ansible-vault encrypt vars/vault_example_plaintext.yml \
+#     --vault-password-file .vault_pass_lab.txt \
+#     --output vars/vault_example.yml
+#
+#   ansible-playbook playbooks/14_vault_example.yml --vault-password-file .vault_pass_lab.txt
+#
+# If vars/vault_example.yml is missing, falls back to plaintext FAKE file.
+
+- name: Section 24 — Vault example
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Resolve vaulted or plaintext FAKE vars file
+      ansible.builtin.set_fact:
+        vault_vars_file: "{{ lookup('ansible.builtin.first_found', vault_search) }}"
+      vars:
+        vault_search:
+          files:
+            - vault_example.yml
+            - vault_example_plaintext.yml
+          paths:
+            - "{{ playbook_dir }}/../vars"
+
+    - name: Load FAKE vault/plaintext variables
+      ansible.builtin.include_vars:
+        file: "{{ vault_vars_file }}"
+
+    - name: Show that FAKE vars loaded (never log real secrets in production)
+      ansible.builtin.debug:
+        msg:
+          - "loaded_file={{ vault_vars_file | basename }}"
+          - "lab_dummy_password is set={{ lab_dummy_password is defined }}"
+          - "lab_dummy_db_user={{ lab_dummy_db_user | default('missing') }}"
+          - "length(lab_dummy_api_token)={{ lab_dummy_api_token | default('') | length }}"
+
+    - name: Safety reminder
+      ansible.builtin.debug:
+        msg: >-
+          Values are FAKE lab secrets (not-a-real-secret). Never commit real
+          credentials; never vault production AWS keys into this repo.

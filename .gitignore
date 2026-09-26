@@ -80,3 +80,14 @@ $RECYCLE.BIN/
 # Jenkins controller state stays in the Docker volume platform-lab-jenkins-home.
 jenkins/runtime/jenkins_home/
 jenkins/runtime/.env
+
+# Terraform plan artifacts (any name)
+tfplan*
+
+
+# Platform automation local artifacts
+automation/python/.venv/
+automation/python/**/__pycache__/
+automation/reports/
+*.vault_pass
+

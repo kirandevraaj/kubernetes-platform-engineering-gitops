@@ -1,0 +1,11 @@
+# Desired-state manifests for the Section 24 automation-lab demo stack.
+# Safe lab-only resources: automation-demo Deployment/Service + automation-demo-config.
+# Do not point production Argo apps here.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: automation-lab
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml

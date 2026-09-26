@@ -1,0 +1,49 @@
+---
+# 01 — Ansible basics: inventory, facts, FQCN, variable sources
+#
+# Run (Windows venv):
+#   ..\python\.venv\Scripts\ansible-playbook.exe playbooks\01_basics.yml
+#
+# Variable precedence demo (harmless):
+#   inventory/group_vars/all.yml  → precedence_demo_value: all
+#   inventory/group_vars/lab.yml  → precedence_demo_value: lab  (wins over all)
+#   play vars below               → precedence_demo_value: play (wins over lab)
+#   CLI --extra-vars              → wins over play vars
+#     ansible-playbook playbooks/01_basics.yml -e precedence_demo_value=extra
+#
+# See docs/ansible-variable-precedence.md
+
+- name: Section 24 — Ansible basics
+  hosts: lab
+  gather_facts: true
+  vars:
+    # Play vars beat group_vars; lose to --extra-vars / -e
+    precedence_demo_value: play
+    basics_greeting: "Hello from play vars"
+  tasks:
+    - name: Show connection and inventory identity
+      ansible.builtin.debug:
+        msg:
+          - "inventory_hostname={{ inventory_hostname }}"
+          - "ansible_connection={{ ansible_connection | default('ssh') }}"
+          - "lab_marker={{ lab_marker }}"
+          - "basics_greeting={{ basics_greeting }}"
+
+    - name: Show selected facts
+      ansible.builtin.debug:
+        msg:
+          - "os_family={{ ansible_os_family | default('n/a') }}"
+          - "system={{ ansible_system | default('n/a') }}"
+          - "python={{ ansible_python_version | default('n/a') }}"
+
+    - name: Demonstrate variable precedence (expect 'play' unless -e overrides)
+      ansible.builtin.debug:
+        msg: >-
+          precedence_demo_value={{ precedence_demo_value }}
+          (group_vars/all=all, group_vars/lab=lab, play=play, -e wins)
+
+    - name: Ensure disposable lab workdir exists (localhost-safe)
+      ansible.builtin.file:
+        path: "{{ ansible_lab_workdir }}"
+        state: directory
+        mode: "0755"

@@ -1,0 +1,5 @@
+# Local lab artifacts — never commit secrets or vault passwords
+.vault_pass_lab.txt
+.vault_pass*.txt
+*.retry
+collections/ansible_collections/

@@ -1,0 +1,40 @@
+---
+# 03 — Files: file, copy, lineinfile (modules → idempotent)
+
+- name: Section 24 — Files
+  hosts: localhost
+  gather_facts: false
+  vars:
+    files_dir: "{{ ansible_lab_workdir }}/files"
+  tasks:
+    - name: Ensure files lab directory
+      ansible.builtin.file:
+        path: "{{ files_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy static demo file into workdir
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../files/demo_static.txt"
+        dest: "{{ files_dir }}/demo_static.txt"
+        mode: "0644"
+
+    - name: Create an empty marker file
+      ansible.builtin.file:
+        path: "{{ files_dir }}/marker.empty"
+        state: touch
+        mode: "0644"
+
+    - name: Ensure a managed line exists (lineinfile)
+      ansible.builtin.lineinfile:
+        path: "{{ files_dir }}/managed.conf"
+        line: "lab_section={{ lab_section }}"
+        create: true
+        mode: "0644"
+
+    - name: Ensure owner comment line present
+      ansible.builtin.lineinfile:
+        path: "{{ files_dir }}/managed.conf"
+        line: "owner={{ lab_config_owner }}"
+        create: true
+        mode: "0644"

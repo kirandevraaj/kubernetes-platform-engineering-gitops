@@ -1,0 +1,12 @@
+environment: vmware
+cluster: ckad-lab
+namespace: automation-lab
+region: us-east-1
+# aws_profile: lab
+# context: ckad-lab
+dry_run: true
+confirm: false
+timeout: 120
+max_retries: 3
+verbose: false
+quiet: false

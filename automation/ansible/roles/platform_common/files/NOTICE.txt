@@ -1,0 +1,1 @@
+platform_common — disposable localhost markers only. No cluster mutations.

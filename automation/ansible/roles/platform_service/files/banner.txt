@@ -1,0 +1,1 @@
+platform_service — simulated service config for localhost lab only.

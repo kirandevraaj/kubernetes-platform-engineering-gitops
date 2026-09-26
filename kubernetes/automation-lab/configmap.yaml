@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: automation-demo-config
+  namespace: automation-lab
+  labels:
+    app: automation-demo
+    lab: automation-lab
+data:
+  message: automation-lab

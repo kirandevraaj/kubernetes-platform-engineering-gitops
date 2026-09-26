@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: automation-lab
+  namespace: argocd
+  labels:
+    lab: automation
+    section: "24"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/automation-lab
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: automation-lab
+  # Manual sync preferred for the lab until validated; prune disabled for safety.
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+  ignoreDifferences: []

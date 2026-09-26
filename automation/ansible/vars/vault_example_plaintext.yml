@@ -1,0 +1,21 @@
+---
+# FAKE secrets for ansible-vault practice ONLY.
+# Do NOT put real credentials, AWS keys, kubeconfig, or passwords here.
+#
+# Encrypt non-interactively (from automation/ansible):
+#   echo lab-vault-password > .vault_pass_lab.txt
+#   ansible-vault encrypt vars/vault_example_plaintext.yml \
+#     --vault-password-file .vault_pass_lab.txt \
+#     --output vars/vault_example.yml
+#   # add .vault_pass_lab.txt to .gitignore — never commit the password file
+#
+# Or encrypt in place after copying:
+#   copy vault_example_plaintext.yml → vault_example.yml then:
+#   ansible-vault encrypt vars/vault_example.yml --vault-password-file .vault_pass_lab.txt
+#
+# Run playbook 14:
+#   ansible-playbook playbooks/14_vault_example.yml --vault-password-file .vault_pass_lab.txt
+
+lab_dummy_password: "not-a-real-secret"
+lab_dummy_api_token: "fake-token-00000000-lab-only"
+lab_dummy_db_user: "lab_readonly_user"

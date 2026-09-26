@@ -1,0 +1,5 @@
+---
+platform_service_name: "platform-service"
+platform_service_port: 18080
+platform_service_subdir: "roles/platform_service"
+platform_service_enabled: true

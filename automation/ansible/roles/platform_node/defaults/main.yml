@@ -1,0 +1,5 @@
+---
+platform_node_gather_subset:
+  - min
+platform_node_subdir: "roles/platform_node"
+platform_node_write_facts: true

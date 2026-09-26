@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "platform-automation"
+version = "0.1.0"
+description = "Platform automation framework for the Kubernetes Platform Engineering & GitOps Lab"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "kubernetes==32.0.1",
+  "boto3==1.40.18",
+  "botocore==1.40.18",
+  "httpx==0.28.1",
+  "PyYAML==6.0.3",
+  "ansible-runner==2.4.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.4.1",
+  "pytest-cov==6.2.1",
+  "ruff==0.12.8",
+  "mypy==1.17.1",
+  "types-PyYAML",
+  "ansible-core==2.18.6",
+  "ansible-lint==25.6.1",
+]
+
+[project.scripts]
+platform-automate = "platform_automation.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+markers = [
+  "unit: fast mocked unit tests",
+  "integration: mocked adapter integration",
+  "live: requires live cluster or AWS (skipped by default)",
+]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true

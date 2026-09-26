@@ -1,0 +1,8 @@
+---
+- name: Refresh platform_service reload marker
+  ansible.builtin.copy:
+    dest: "{{ ansible_lab_workdir }}/{{ platform_service_subdir }}/reloaded.flag"
+    content: |
+      service={{ platform_service_name }}
+      reloaded_at={{ ansible_date_time.iso8601 | default('unknown') }}
+    mode: "0644"

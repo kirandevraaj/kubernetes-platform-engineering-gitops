@@ -1,0 +1,26 @@
+---
+# 04 — Templates: Jinja2 render via ansible.builtin.template
+
+- name: Section 24 — Templates
+  hosts: localhost
+  gather_facts: true
+  vars:
+    templates_dir: "{{ ansible_lab_workdir }}/templates"
+    demo_message: "rendered by 04_templates.yml"
+    example_environment: lab
+  tasks:
+    - name: Ensure templates output directory
+      ansible.builtin.file:
+        path: "{{ templates_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Render lab_config.j2 to workdir
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/lab_config.j2"
+        dest: "{{ templates_dir }}/lab_config.conf"
+        mode: "0644"
+
+    - name: Display rendered path
+      ansible.builtin.debug:
+        msg: "Wrote {{ templates_dir }}/lab_config.conf (rerun → changed=0 when vars unchanged)"

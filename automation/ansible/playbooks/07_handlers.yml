@@ -1,0 +1,42 @@
+---
+# 07 — Handlers
+#
+# Handlers run once at end of play, and ONLY when notified by a task that
+# reports changed=true. Second run with identical content → no notify → handler skipped.
+
+- name: Section 24 — Handlers
+  hosts: localhost
+  gather_facts: true
+  vars:
+    handlers_dir: "{{ ansible_lab_workdir }}/handlers"
+    demo_message: "handler notify demo"
+  handlers:
+    - name: Write handler fired marker
+      ansible.builtin.copy:
+        dest: "{{ handlers_dir }}/handler_fired.flag"
+        content: |
+          handler=Write handler fired marker
+          fired_at={{ ansible_date_time.iso8601 | default('unknown') }}
+          note=Handlers run only when a notifying task reports changed
+        mode: "0644"
+
+  tasks:
+    - name: Ensure handlers workdir
+      ansible.builtin.file:
+        path: "{{ handlers_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Render config and notify handler on change
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/lab_config.j2"
+        dest: "{{ handlers_dir }}/watched.conf"
+        mode: "0644"
+      notify: Write handler fired marker
+
+    - name: Explain handler semantics
+      ansible.builtin.debug:
+        msg: >-
+          If watched.conf content is unchanged, this play ends with changed=0
+          and the handler does not run. Delete handler_fired.flag then change
+          demo_message to see a notify again.

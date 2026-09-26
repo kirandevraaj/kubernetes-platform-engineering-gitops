@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="520" viewBox="0 0 420 520" role="img" aria-label="Python Ansible orchestration">
+  <title>Python Ansible orchestration</title>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .py{fill:#ecfdf5;stroke:#047857;stroke-width:2;rx:8}
+      .run{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .pb{fill:#fefce8;stroke:#a16207;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <text x="210" y="28" text-anchor="middle" class="t">Python ? Ansible Orchestration</text>
+  <rect x="100" y="48" width="220" height="50" class="py"/><text x="210" y="70" text-anchor="middle" class="l">Python Controller</text><text x="210" y="88" text-anchor="middle" class="s">plan · confirm · verify</text>
+  <path class="line" d="M210 98 V126"/>
+  <rect x="100" y="126" width="220" height="50" class="run"/><text x="210" y="148" text-anchor="middle" class="l">Ansible Runner 2.4.1</text><text x="210" y="166" text-anchor="middle" class="s">events · timeouts · privdata</text>
+  <path class="line" d="M210 176 V204"/>
+  <rect x="100" y="204" width="220" height="50" class="pb"/><text x="210" y="226" text-anchor="middle" class="l">Ansible Playbook</text><text x="210" y="244" text-anchor="middle" class="s">FQCN modules · roles</text>
+  <path class="line" d="M210 254 V282"/>
+  <rect x="100" y="282" width="220" height="50" class="box"/><text x="210" y="304" text-anchor="middle" class="l">Hosts</text><text x="210" y="322" text-anchor="middle" class="s">localhost lab · readonly workers</text>
+  <path class="line" d="M210 332 V360"/>
+  <rect x="100" y="360" width="220" height="44" class="py"/><text x="210" y="387" text-anchor="middle" class="l">Python verification</text>
+  <text x="210" y="440" text-anchor="middle" class="s">Python decides · Ansible configures · Python verifies</text>
+  <text x="210" y="480" text-anchor="middle" class="s">Project 1 · Section 24</text>
+</svg>

@@ -1,0 +1,110 @@
+// Lab-only automation pipeline. Does NOT replace jenkins/Jenkinsfile.
+// Credentials remain in Jenkins credential store — never in Git.
+// Scope: lint/unit/dry-run/plan against automation-lab only.
+// Jenkins must NOT kubectl-apply production app desired state (GitOps boundary).
+
+pipeline {
+    agent { label 'linux && docker' }
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    environment {
+        VENV = 'automation/python/.venv'
+        REPORT_DIR = 'automation/reports'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Python venv + install') {
+            steps {
+                sh '''
+                    set -eu
+                    python3 -m venv "${VENV}"
+                    . "${VENV}/bin/activate"
+                    pip install -U pip
+                    pip install -e "automation/python[dev]"
+                '''
+            }
+        }
+
+        stage('Ruff') {
+            steps {
+                sh '''
+                    set -eu
+                    . "${VENV}/bin/activate"
+                    ruff check automation/python/src automation/python/tests || true
+                '''
+            }
+        }
+
+        stage('Unit tests') {
+            steps {
+                sh '''
+                    set -eu
+                    . "${VENV}/bin/activate"
+                    pytest automation/python/tests/unit -q --junitxml=automation/reports/pytest-unit.xml
+                '''
+            }
+        }
+
+        stage('Ansible lint') {
+            steps {
+                sh '''
+                    set -eu
+                    . "${VENV}/bin/activate"
+                    if command -v ansible-lint >/dev/null 2>&1; then
+                      ansible-lint automation/ansible/playbooks || true
+                    else
+                      echo "ansible-lint not available; skipping"
+                    fi
+                '''
+            }
+        }
+
+        stage('Doctor + dry-run plan') {
+            steps {
+                sh '''
+                    set -eu
+                    . "${VENV}/bin/activate"
+                    platform-automate doctor
+                    platform-automate platform plan
+                    platform-automate kubernetes ensure --dry-run || true
+                '''
+            }
+        }
+
+        stage('Live lab (gated)') {
+            when {
+                expression { return params.RUN_LIVE_LAB == true }
+            }
+            steps {
+                sh '''
+                    set -eu
+                    . "${VENV}/bin/activate"
+                    platform-automate platform apply --confirm
+                    platform-automate platform verify
+                    platform-automate report
+                '''
+            }
+        }
+    }
+
+    parameters {
+        booleanParam(name: 'RUN_LIVE_LAB', defaultValue: false, description: 'Mutate automation-lab only')
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'automation/reports/**', allowEmptyArchive: true
+            junit allowEmptyResults: true, testResults: 'automation/reports/pytest-unit.xml'
+        }
+    }
+}

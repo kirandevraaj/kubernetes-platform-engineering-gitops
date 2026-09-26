@@ -1,0 +1,3 @@
+---
+# vars/main.yml — role constants (beat defaults; lose to play vars / extra-vars)
+platform_common_role_name: platform_common

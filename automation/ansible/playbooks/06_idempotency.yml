@@ -1,0 +1,50 @@
+---
+# 06 — Idempotency
+#
+# Run twice. Second run should report changed=0 for these tasks because we use
+# modules (copy / file / lineinfile / template), not shell/command.
+#
+# Anti-pattern (do NOT use for managed config):
+#   ansible.builtin.shell: echo "x" >> /path/file   # always "changes"
+
+- name: Section 24 — Idempotency
+  hosts: localhost
+  gather_facts: true
+  vars:
+    idem_dir: "{{ ansible_lab_workdir }}/idempotency"
+    demo_message: "idempotent template content"
+  tasks:
+    - name: Ensure idempotency workdir
+      ansible.builtin.file:
+        path: "{{ idem_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy static file (changed=0 on second run)
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../files/demo_static.txt"
+        dest: "{{ idem_dir }}/demo_static.txt"
+        mode: "0644"
+
+    - name: Ensure directory mode with file module
+      ansible.builtin.file:
+        path: "{{ idem_dir }}/subdir"
+        state: directory
+        mode: "0755"
+
+    - name: Manage exact line with lineinfile
+      ansible.builtin.lineinfile:
+        path: "{{ idem_dir }}/app.conf"
+        line: "idempotent=true"
+        create: true
+        mode: "0644"
+
+    - name: Render template (changed=0 when vars unchanged)
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/lab_config.j2"
+        dest: "{{ idem_dir }}/lab_config.conf"
+        mode: "0644"
+
+    - name: Remind learner to re-run
+      ansible.builtin.debug:
+        msg: "Re-run this playbook; expect changed=0 on the module tasks above."

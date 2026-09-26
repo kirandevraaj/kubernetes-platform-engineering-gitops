@@ -1,0 +1,126 @@
+---
+# 11 — Kubernetes lab (kubernetes.core.*)
+#
+# SAFETY: ONLY namespace automation-lab.
+# Never target platform-lab, storage-lab, observability, monitoring, argocd, jenkins.
+# Primary API: kubernetes.core.k8s — do not use kubectl shell apply as the main path.
+#
+# Prerequisites:
+#   - kubeconfig pointing at a lab cluster (e.g. ckad-lab)
+#   - collections installed (kubernetes.core)
+#   - python kubernetes client in the venv (pip install kubernetes)
+
+- name: Section 24 — Kubernetes automation-lab only
+  hosts: localhost
+  gather_facts: false
+  vars:
+    k8s_lab_namespace: automation-lab
+    k8s_demo_name: automation-demo
+    # Pull non-secret image/name defaults
+    example_image: public.ecr.aws/nginx/nginx:stable-alpine
+  tasks:
+    - name: Assert namespace is the allowed lab namespace
+      ansible.builtin.assert:
+        that:
+          - k8s_lab_namespace == 'automation-lab'
+          - k8s_lab_namespace not in lab_forbidden_namespaces
+        fail_msg: "Refusing to run outside automation-lab"
+
+    - name: Ensure Namespace automation-lab exists
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ k8s_lab_namespace }}"
+            labels:
+              app.kubernetes.io/part-of: ansible-section24
+              app.kubernetes.io/name: "{{ k8s_demo_name }}"
+
+    - name: Apply ConfigMap automation-demo-config
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: "{{ k8s_demo_name }}-config"
+            namespace: "{{ k8s_lab_namespace }}"
+            labels:
+              app.kubernetes.io/name: "{{ k8s_demo_name }}"
+          data:
+            APP_ENVIRONMENT: "ansible-lab"
+            MESSAGE: "managed by kubernetes.core.k8s"
+
+    - name: Apply Deployment automation-demo
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: "{{ k8s_demo_name }}"
+            namespace: "{{ k8s_lab_namespace }}"
+            labels:
+              app.kubernetes.io/name: "{{ k8s_demo_name }}"
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app.kubernetes.io/name: "{{ k8s_demo_name }}"
+            template:
+              metadata:
+                labels:
+                  app.kubernetes.io/name: "{{ k8s_demo_name }}"
+              spec:
+                containers:
+                  - name: demo
+                    image: "{{ example_image }}"
+                    ports:
+                      - containerPort: 80
+                        name: http
+                    envFrom:
+                      - configMapRef:
+                          name: "{{ k8s_demo_name }}-config"
+                    resources:
+                      requests:
+                        cpu: "25m"
+                        memory: "32Mi"
+                      limits:
+                        cpu: "100m"
+                        memory: "64Mi"
+
+    - name: Apply Service automation-demo
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "{{ k8s_demo_name }}"
+            namespace: "{{ k8s_lab_namespace }}"
+            labels:
+              app.kubernetes.io/name: "{{ k8s_demo_name }}"
+          spec:
+            selector:
+              app.kubernetes.io/name: "{{ k8s_demo_name }}"
+            ports:
+              - name: http
+                port: 80
+                targetPort: http
+            type: ClusterIP
+
+    - name: Read back Deployment (info)
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: "{{ k8s_demo_name }}"
+        namespace: "{{ k8s_lab_namespace }}"
+      register: demo_deploy
+
+    - name: Show Deployment status
+      ansible.builtin.debug:
+        msg: >-
+          deployment={{ demo_deploy.resources[0].metadata.name | default('missing') }}
+          replicas={{ demo_deploy.resources[0].status.readyReplicas | default(0) }}

@@ -1,0 +1,52 @@
+---
+# 12 — AWS read-only inspection (amazon.aws facts / info modules only)
+#
+# No create/update/delete of VPC, EKS, ALB, ASG, security groups, or instances.
+# Prefer dynamic inventory (inventory/aws_ec2.yml) over static public IP lists —
+# static AWS IP lists are fragile across stop/start and ASG replacement.
+#
+# Example:
+#   ansible-playbook -i inventory/aws_ec2.yml playbooks/12_aws_readonly.yml
+#   ansible-playbook playbooks/12_aws_readonly.yml   # still works; uses module filters
+
+- name: Section 24 — AWS read-only
+  hosts: localhost
+  gather_facts: false
+  vars:
+    aws_lab_region: us-east-1
+    # Optional: limit to lab-tagged instances only
+    aws_lab_filters:
+      "tag:Lab":
+        - ansible-section24
+  tasks:
+    - name: Gather EC2 instance facts (read-only)
+      amazon.aws.ec2_instance_info:
+        region: "{{ aws_lab_region }}"
+        filters: "{{ aws_lab_filters }}"
+      register: ec2_info
+      failed_when: false
+
+    - name: Show instance summary
+      ansible.builtin.debug:
+        msg: >-
+          count={{ ec2_info.instances | default([]) | length }}
+          ids={{ ec2_info.instances | default([]) | map(attribute='instance_id') | list }}
+      when: ec2_info is succeeded
+
+    - name: Note credential / empty result cases
+      ansible.builtin.debug:
+        msg: >-
+          If this failed or returned 0 instances, check AWS creds/region and that
+          instances carry tag Lab=ansible-section24. No mutations were attempted.
+      when: ec2_info is failed or (ec2_info.instances | default([]) | length == 0)
+
+    - name: Optional VPC describe (read-only)
+      amazon.aws.ec2_vpc_net_info:
+        region: "{{ aws_lab_region }}"
+      register: vpc_info
+      failed_when: false
+
+    - name: Show VPC count
+      ansible.builtin.debug:
+        msg: "vpcs_visible={{ vpc_info.vpcs | default([]) | length }}"
+      when: vpc_info is succeeded

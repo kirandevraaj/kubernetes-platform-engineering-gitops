@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: automation-lab
+  labels:
+    lab: automation-lab
+    app.kubernetes.io/part-of: automation-lab

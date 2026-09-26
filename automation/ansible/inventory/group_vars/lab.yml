@@ -1,0 +1,14 @@
+---
+# inventory/group_vars/lab.yml
+# Overrides group_vars/all.yml for hosts in the `lab` group.
+# Precedence demo: this beats `all`, loses to play vars and --extra-vars.
+
+lab_marker: "from-group-vars-lab"
+precedence_demo_value: "lab"
+
+# Localhost-safe mutation defaults
+lab_config_owner: "ansible-lab"
+lab_demo_port: 18080
+lab_packages_demo:
+  - name: demo-marker
+    path: "{{ ansible_lab_workdir }}/packages/demo-marker.txt"

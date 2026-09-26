@@ -1,0 +1,21 @@
+---
+- name: Ensure platform_service workdir
+  ansible.builtin.file:
+    path: "{{ ansible_lab_workdir }}/{{ platform_service_subdir }}"
+    state: directory
+    mode: "0755"
+
+- name: Render service config template
+  ansible.builtin.template:
+    src: service.conf.j2
+    dest: "{{ ansible_lab_workdir }}/{{ platform_service_subdir }}/service.conf"
+    mode: "0644"
+  notify: Refresh platform_service reload marker
+  when: platform_service_enabled | bool
+
+- name: Copy service banner file
+  ansible.builtin.copy:
+    src: banner.txt
+    dest: "{{ ansible_lab_workdir }}/{{ platform_service_subdir }}/banner.txt"
+    mode: "0644"
+  when: platform_service_enabled | bool

@@ -1,0 +1,54 @@
+---
+# 09 — Error handling: block / rescue / always with a controlled failure
+
+- name: Section 24 — Error handling
+  hosts: localhost
+  gather_facts: false
+  vars:
+    errors_dir: "{{ ansible_lab_workdir }}/errors"
+  tasks:
+    - name: Ensure errors workdir
+      ansible.builtin.file:
+        path: "{{ errors_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Controlled failure with block/rescue/always
+      block:
+        - name: Start block — write attempt marker
+          ansible.builtin.copy:
+            dest: "{{ errors_dir }}/attempt.txt"
+            content: "attempting controlled failure\n"
+            mode: "0644"
+
+        - name: Intentionally fail (learning only)
+          ansible.builtin.fail:
+            msg: "Controlled failure for block/rescue demo — expected"
+
+        - name: This task is skipped after fail
+          ansible.builtin.debug:
+            msg: "You should not see this message"
+
+      rescue:
+        - name: Handle the controlled failure
+          ansible.builtin.copy:
+            dest: "{{ errors_dir }}/rescued.txt"
+            content: |
+              rescued=true
+              original_msg={{ ansible_failed_result.msg | default('n/a') }}
+            mode: "0644"
+
+        - name: Confirm rescue path
+          ansible.builtin.debug:
+            msg: "Rescue ran — play continues after controlled failure"
+
+      always:
+        - name: Always write cleanup/audit marker
+          ansible.builtin.copy:
+            dest: "{{ errors_dir }}/always.txt"
+            content: "always_ran=true\n"
+            mode: "0644"
+
+        - name: Explain always
+          ansible.builtin.debug:
+            msg: "always runs whether block succeeded or rescue handled a failure"
