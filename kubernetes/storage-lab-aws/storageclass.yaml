@@ -1,0 +1,18 @@
+# Dedicated EBS CSI StorageClass for the AWS storage lab.
+# Not the cluster default — leaves the in-tree gp2 class untouched.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-gp3
+  labels:
+    app.kubernetes.io/name: ebs-gp3
+    app.kubernetes.io/part-of: platform-lab
+    app.kubernetes.io/component: storage
+    platform-lab.io/target: aws
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  fsType: ext4
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: false

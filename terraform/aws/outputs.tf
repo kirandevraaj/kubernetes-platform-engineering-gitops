@@ -77,3 +77,13 @@ output "gitops_application_name" {
   description = "Bootstrapped Argo CD Application name."
   value       = try(module.gitops_bootstrap[0].application_name, null)
 }
+
+output "ebs_csi_addon_version" {
+  description = "Pinned Amazon EBS CSI Driver EKS add-on version when installed."
+  value       = try(module.ebs_csi[0].addon_version, null)
+}
+
+output "ebs_csi_controller_role_arn" {
+  description = "IAM role ARN for the EBS CSI controller Pod Identity association."
+  value       = module.iam.ebs_csi_controller_role_arn
+}

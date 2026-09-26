@@ -366,7 +366,7 @@ Deleting the Pod removes the process, not the hostPath directory (while PVC/PV r
 
 ## 23. AWS Storage Comparison
 
-Conceptual only — **not implemented** in this milestone:
+AWS EKS counterpart is implemented — see [`docs/aws-storage-statefulset.md`](./aws-storage-statefulset.md) and [`docs/diagrams/storage-vmware-vs-aws.svg`](./diagrams/storage-vmware-vs-aws.svg).
 
 ![VMware vs AWS storage abstraction](./diagrams/vmware-vs-aws-storage-abstraction.svg)
 
@@ -375,14 +375,14 @@ VMware:  Pod → PVC → PV → local-path → node-local hostPath
 AWS:     Pod → PVC → EBS CSI → EBS volume (AZ-scoped network block)
 ```
 
-Same abstraction (`Pod`/`PVC`), different physical behavior (node-local vs attachable block).
+Same abstraction (`Pod`/`PVC`), different physical behavior (node-local vs attachable block). **VMware local-path remains node-local** — that finding is unchanged.
 
 ---
 
 ## 24. Future Storage Experiment
 
-1. Controlled **node-level** storage failure (separate milestone).  
-2. AWS EBS CSI equivalent architecture on EKS.  
-3. Compare reclaim, attach/detach, and cross-node mobility.
+1. Controlled **node-level** storage failure on VMware (separate milestone).  
+2. Controlled **node/AZ** storage resilience on AWS EBS (separate milestone).  
+3. Compare reclaim, attach/detach, and cross-node mobility with measured results.
 
 `storage-lab` is retained for those lessons — PVC/PV are not cleaned up.

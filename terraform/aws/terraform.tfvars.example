@@ -34,3 +34,5 @@ install_aws_load_balancer_controller = true
 install_metrics_server               = true
 install_argocd                       = true
 bootstrap_gitops                     = true
+install_ebs_csi_driver               = true
+ebs_csi_addon_version                = "v1.66.0-eksbuild.1"

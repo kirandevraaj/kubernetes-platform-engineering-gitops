@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="920" height="280" viewBox="0 0 920 280" role="img" aria-label="VMware vs AWS storage abstraction comparison">
-  <title>Same PVC abstraction  different backends</title>
+  <title>Same PVC abstraction — different backends</title>
   <defs>
     <style>
       .box { fill:#f8fafc; stroke:#334155; stroke-width:2; rx:8; }
@@ -9,19 +9,19 @@
       .sub { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:12px; fill:#475569; }
     </style>
   </defs>
-  <text x="460" y="34" text-anchor="middle" class="title">Same Kubernetes Interface  Different Storage Behavior</text>
+  <text x="460" y="34" text-anchor="middle" class="title">Same Kubernetes Interface — Different Storage Behavior</text>
 
   <rect x="40" y="70" width="400" height="160" class="box"/>
-  <text x="240" y="100" text-anchor="middle" class="label">VMware (this milestone)</text>
-  <text x="240" y="130" text-anchor="middle" class="sub">Pod ’ PVC ’ PV ’ local-path</text>
-  <text x="240" y="154" text-anchor="middle" class="sub">’ node-local hostPath</text>
+  <text x="240" y="100" text-anchor="middle" class="label">VMware (local-path lab)</text>
+  <text x="240" y="130" text-anchor="middle" class="sub">Pod ? PVC ? PV ? local-path</text>
+  <text x="240" y="154" text-anchor="middle" class="sub">? node-local hostPath</text>
   <text x="240" y="186" text-anchor="middle" class="sub">Node-tied · not automatically movable</text>
   <text x="240" y="208" text-anchor="middle" class="sub">Pod recreate on same node: data OK</text>
 
   <rect x="480" y="70" width="400" height="160" class="aws"/>
-  <text x="680" y="100" text-anchor="middle" class="label">AWS (conceptual  not implemented)</text>
-  <text x="680" y="130" text-anchor="middle" class="sub">Pod ’ PVC ’ EBS CSI ’ EBS volume</text>
-  <text x="680" y="154" text-anchor="middle" class="sub">’ network-attached block device</text>
+  <text x="680" y="100" text-anchor="middle" class="label">AWS (EBS CSI lab)</text>
+  <text x="680" y="130" text-anchor="middle" class="sub">Pod ? PVC ? EBS CSI ? EBS volume</text>
+  <text x="680" y="154" text-anchor="middle" class="sub">? network-attached block device</text>
   <text x="680" y="186" text-anchor="middle" class="sub">AZ-scoped · attachable to nodes in AZ</text>
   <text x="680" y="208" text-anchor="middle" class="sub">Different failure / mobility model</text>
 </svg>

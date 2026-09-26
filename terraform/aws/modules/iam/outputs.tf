@@ -17,3 +17,13 @@ output "aws_load_balancer_controller_role_name" {
   description = "IAM role name for the AWS Load Balancer Controller."
   value       = aws_iam_role.aws_load_balancer_controller.name
 }
+
+output "ebs_csi_controller_role_arn" {
+  description = "IAM role ARN for the Amazon EBS CSI Driver controller (Pod Identity)."
+  value       = aws_iam_role.ebs_csi_controller.arn
+}
+
+output "ebs_csi_controller_role_name" {
+  description = "IAM role name for the Amazon EBS CSI Driver controller."
+  value       = aws_iam_role.ebs_csi_controller.name
+}

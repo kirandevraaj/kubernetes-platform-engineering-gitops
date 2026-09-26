@@ -205,3 +205,15 @@ variable "bootstrap_gitops" {
   type        = bool
   default     = true
 }
+
+variable "install_ebs_csi_driver" {
+  description = "Install the Amazon EBS CSI Driver as an EKS managed add-on with Pod Identity."
+  type        = bool
+  default     = true
+}
+
+variable "ebs_csi_addon_version" {
+  description = "Pinned aws-ebs-csi-driver EKS add-on version (from describe-addon-versions for the cluster Kubernetes version)."
+  type        = string
+  default     = "v1.66.0-eksbuild.1"
+}

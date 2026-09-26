@@ -4,3 +4,4 @@ namespace: observability
 resources:
   - platform-lab-dashboard.yaml
   - kubernetes-platform-aws-dashboard.yaml
+  - kubernetes-storage-aws-dashboard.yaml

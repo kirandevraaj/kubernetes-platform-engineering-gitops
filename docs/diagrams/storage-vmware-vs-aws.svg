@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360" role="img" aria-label="VMware vs AWS storage comparison">
+  <title>Kubernetes abstraction shared  storage backend different</title>
+  <defs>
+    <style>
+      .box { fill:#f8fafc; stroke:#334155; stroke-width:2; rx:8; }
+      .aws { fill:#eff6ff; stroke:#1d4ed8; stroke-width:2; rx:8; }
+      .shared { fill:#ecfdf5; stroke:#047857; stroke-width:2; rx:8; }
+      .title { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:18px; font-weight:700; fill:#0f172a; }
+      .label { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:13px; font-weight:600; fill:#0f172a; }
+      .sub { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:12px; fill:#475569; }
+      .emph { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:13px; font-weight:700; fill:#047857; }
+      .diff { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:13px; font-weight:700; fill:#1d4ed8; }
+    </style>
+  </defs>
+
+  <text x="480" y="34" text-anchor="middle" class="title">Project 1 Storage  VMware vs AWS</text>
+
+  <rect x="40" y="56" width="880" height="44" class="shared"/>
+  <text x="480" y="84" text-anchor="middle" class="emph">Kubernetes abstraction is shared: Pod ’ PVC ’ PV</text>
+
+  <rect x="40" y="120" width="420" height="160" class="box"/>
+  <text x="250" y="150" text-anchor="middle" class="label">VMware / kubeadm</text>
+  <text x="250" y="178" text-anchor="middle" class="sub">PVC ’ local-path ’ node-local disk</text>
+  <text x="250" y="202" text-anchor="middle" class="sub">rancher.io/local-path · hostPath</text>
+  <text x="250" y="226" text-anchor="middle" class="sub">PV nodeAffinity to worker hostname</text>
+  <text x="250" y="250" text-anchor="middle" class="sub">Pod recreate on same node: data OK</text>
+
+  <rect x="500" y="120" width="420" height="160" class="aws"/>
+  <text x="710" y="150" text-anchor="middle" class="label">AWS / EKS</text>
+  <text x="710" y="178" text-anchor="middle" class="sub">PVC ’ EBS CSI ’ EBS volume</text>
+  <text x="710" y="202" text-anchor="middle" class="sub">ebs.csi.aws.com · gp3 · AZ-scoped</text>
+  <text x="710" y="226" text-anchor="middle" class="sub">WaitForFirstConsumer + topology</text>
+  <text x="710" y="250" text-anchor="middle" class="sub">Pod recreate: CSI reattaches EBS</text>
+
+  <rect x="40" y="300" width="880" height="40" class="aws"/>
+  <text x="480" y="326" text-anchor="middle" class="diff">Storage backend is different  do not claim equal resilience</text>
+</svg>

@@ -93,6 +93,19 @@ module "gitops_bootstrap" {
   depends_on = [module.argocd]
 }
 
+module "ebs_csi" {
+  count  = var.install_ebs_csi_driver ? 1 : 0
+  source = "./modules/ebs_csi"
+
+  cluster_name        = module.eks.cluster_name
+  controller_role_arn = module.iam.ebs_csi_controller_role_arn
+  addon_version       = var.ebs_csi_addon_version
+  tags                = local.common_tags
+
+  # Attribute references establish ordering without forcing a full EKS module
+  # refresh/plan (avoids unrelated SG/addon drift being applied with storage work).
+}
+
 # Destroy-safety: this resource is destroyed first (it depends on K8s components).
 # Its destroy-time provisioner deletes Argo Applications / Ingress while the
 # cluster and AWS Load Balancer Controller are still available, so ALB finalizers
@@ -119,6 +132,7 @@ resource "null_resource" "destroy_safety" {
     module.argocd,
     module.aws_load_balancer_controller,
     module.metrics_server,
+    module.ebs_csi,
     module.eks,
   ]
 }

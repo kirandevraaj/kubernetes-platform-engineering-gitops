@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-storage-aws
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-storage-aws
+    app.kubernetes.io/instance: platform-storage-aws
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: aws
+spec:
+  project: platform-storage-aws
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/storage-lab-aws
+  destination:
+    # In-cluster API of the AWS EKS Argo CD instance. Never apply onto VMware ckad-lab.
+    server: https://kubernetes.default.svc
+    namespace: storage-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

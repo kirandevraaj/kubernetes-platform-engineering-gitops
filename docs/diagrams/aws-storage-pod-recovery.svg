@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="720" viewBox="0 0 920 720" role="img" aria-label="AWS storage Pod recovery flow">
+  <title>AWS EBS Pod Recovery  same PVC/PV/EBS</title>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#334155"/>
+    </marker>
+    <style>
+      .box { fill:#f8fafc; stroke:#334155; stroke-width:2; rx:8; }
+      .del { fill:#fef2f2; stroke:#b91c1c; stroke-width:2; rx:8; }
+      .ok { fill:#ecfdf5; stroke:#047857; stroke-width:2; rx:8; }
+      .same { fill:#eff6ff; stroke:#1d4ed8; stroke-width:2; rx:8; }
+      .title { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:18px; font-weight:700; fill:#0f172a; }
+      .label { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:14px; font-weight:600; fill:#0f172a; }
+      .sub { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:12px; fill:#475569; }
+      .line { stroke:#334155; stroke-width:2; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <text x="460" y="36" text-anchor="middle" class="title">Pod Failure Recovery (same AZ)  AWS EBS Lab</text>
+
+  <rect x="300" y="60" width="320" height="52" class="box"/>
+  <text x="460" y="82" text-anchor="middle" class="label">storage-demo-0</text>
+  <text x="460" y="100" text-anchor="middle" class="sub">Running · /data/state.txt written</text>
+  <path class="line" d="M460 112 V132"/>
+
+  <rect x="300" y="132" width="320" height="48" class="del"/>
+  <text x="460" y="154" text-anchor="middle" class="label">kubectl delete pod</text>
+  <text x="460" y="170" text-anchor="middle" class="sub">PVC / PV / EBS not deleted</text>
+  <path class="line" d="M460 180 V200"/>
+
+  <rect x="300" y="200" width="320" height="52" class="box"/>
+  <text x="460" y="222" text-anchor="middle" class="label">StatefulSet recreates storage-demo-0</text>
+  <text x="460" y="240" text-anchor="middle" class="sub">Same ordinal · new Pod UID</text>
+  <path class="line" d="M460 252 V272"/>
+
+  <rect x="300" y="272" width="320" height="48" class="same"/>
+  <text x="460" y="294" text-anchor="middle" class="label">same PVC</text>
+  <text x="460" y="310" text-anchor="middle" class="sub">data-storage-demo-0 remains Bound</text>
+  <path class="line" d="M460 320 V340"/>
+
+  <rect x="300" y="340" width="320" height="48" class="same"/>
+  <text x="460" y="362" text-anchor="middle" class="label">same PV</text>
+  <text x="460" y="378" text-anchor="middle" class="sub">CSI volumeHandle unchanged</text>
+  <path class="line" d="M460 388 V408"/>
+
+  <rect x="300" y="408" width="320" height="48" class="same"/>
+  <text x="460" y="430" text-anchor="middle" class="label">same EBS volume</text>
+  <text x="460" y="446" text-anchor="middle" class="sub">CSI reattaches / remounts</text>
+  <path class="line" d="M460 456 V476"/>
+
+  <rect x="300" y="476" width="320" height="56" class="ok"/>
+  <text x="460" y="500" text-anchor="middle" class="label">state.txt survives</text>
+  <text x="460" y="520" text-anchor="middle" class="sub">File contents identical before and after</text>
+
+  <rect x="80" y="560" width="760" height="120" class="box"/>
+  <text x="100" y="592" class="label">Identity comparison</text>
+  <text x="100" y="616" class="sub">Pod name / ordinal: same (storage-demo-0)</text>
+  <text x="100" y="636" class="sub">Pod UID: changes · PVC: same · PV: same · EBS volume ID: same</text>
+  <text x="100" y="656" class="sub">This proves Pod deletion resilience  not worker-node or AZ failure resilience</text>
+</svg>
