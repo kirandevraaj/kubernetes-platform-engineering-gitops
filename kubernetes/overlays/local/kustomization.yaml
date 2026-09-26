@@ -3,6 +3,8 @@ kind: Kustomization
 resources:
   - ../../base
   - ingress-nginx-controller-service.yaml
+  - ingress-nginx-controller-ha.yaml
+  - ingress-nginx-controller-pdb.yaml
   - servicemonitor.yaml
   - hpa.yaml
   - pdb.yaml

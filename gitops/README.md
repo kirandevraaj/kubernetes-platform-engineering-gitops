@@ -90,7 +90,13 @@ Automated sync with prune and self-heal is intentional for this personal lab:
 - **selfHeal** restores Git state when someone edits the cluster directly, which is how drift detection is demonstrated.
 - **prune** removes objects that Git no longer declares under the Application path, so the overlay stays authoritative.
 
-The Allowed kinds include ConfigMap, Service, Deployment, Ingress, NetworkPolicy, ServiceMonitor, HorizontalPodAutoscaler, and PodDisruptionBudget. The `ingress-nginx` destination exists so the local overlay can patch the existing controller Service to MetalLB LoadBalancer without managing the full ingress-nginx Helm release.
+The Allowed kinds include ConfigMap, Service, Deployment, Ingress, NetworkPolicy, ServiceMonitor, HorizontalPodAutoscaler, and PodDisruptionBudget. The `ingress-nginx` destination exists so the local overlay can:
+
+- patch the existing controller Service to MetalLB LoadBalancer
+- own ingress HA fields (2 replicas + soft topology spread) via ServerSideApply
+- own the ingress-nginx PodDisruptionBudget (`minAvailable: 1`)
+
+without taking over the full ingress-nginx Helm release (chart still installed as `ingress-nginx` in namespace `ingress-nginx`). Documented chart values for HA live at `kubernetes/overlays/local/ingress-nginx-values.yaml`.
 
 ## Install note
 

@@ -1,0 +1,29 @@
+# Documented Helm values for ingress-nginx chart 4.15.1 on VMware (ckad-lab).
+# Live HA fields (replicas, topologySpreadConstraints, PDB) are applied by Argo CD
+# via platform-lab-local overlays (ingress-nginx-controller-ha.yaml + pdb).
+# Keep this file aligned so a future `helm upgrade` does not revert HA.
+#
+# Original install used NodePort; GitOps Service overlay converted exposure to
+# MetalLB LoadBalancer (ingress-nginx-controller-service.yaml). Service remains
+# managed by platform-lab-local — do not flip service.type here without removing
+# that overlay ownership.
+controller:
+  replicaCount: 2
+  minAvailable: 1
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: controller
+          app.kubernetes.io/instance: ingress-nginx
+          app.kubernetes.io/name: ingress-nginx
+  ingressClassResource:
+    default: true
+    name: nginx
+  service:
+    type: NodePort
+    nodePorts:
+      http: 30080
+      https: 30443
