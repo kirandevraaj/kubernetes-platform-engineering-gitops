@@ -286,21 +286,135 @@ error getting ClusterInformation: connection is unauthorized: Unauthorized
 
 ---
 
-## 17. Limitations
+## 17. Extended Failure Visibility Experiment
 
-- Single delete on a 2-replica Deployment; not a full outage test.
-- Prometheus replacement-UP timestamp is an upper bound from post-loop polling.
-- Grafana may undersample a ~10s available-replica dip.
-- Calico sandbox cleanup delayed victim removal from the API list.
-- Not an HPA, Argo drift, rollout, or node-failure test.
+**Date:** 2026-09-26 (same day, second controlled run)  
+**Goal:** Make the `available replicas 2 → 1 → 2` transition visible to Prometheus/Grafana given a **30s** scrape interval.
+
+### Why the first ~10.4s failure was hard to see in Grafana
+
+| Layer | What happened in experiment 1 |
+|---|---|
+| Kubernetes | Available dipped to 1 for ~10s (real) |
+| Prometheus | Scrape interval **30s** → at most ~0–1 samples can land in the dip |
+| Grafana | Charts step/lookback often miss a sub-interval notch |
+
+**Lesson:** short outages can be real in Kubernetes yet nearly invisible in dashboards.
+
+### Method (safe, temporary scheduling delay)
+
+1. **Cordon** workers only: `k8s-worker-01`, `k8s-worker-02` (no drain).
+2. Confirm control-plane taint `node-role.kubernetes.io/control-plane:NoSchedule` (apps cannot schedule there).
+3. Delete **exactly one** Running app pod: `platform-lab-9c5b867f-r4666`.
+4. Replacement stays **Pending** (~85–90s) while workers are unschedulable.
+5. **Uncordon** both workers (mandatory cleanup).
+6. Replacement schedules → Running → Ready → available returns to 2.
+
+No Deployment/HPA/PDB/Prometheus/Grafana/Git changes. AWS untouched.
+
+### Timing diagram (measured)
+
+```text
+T0  ~10:54:20  Baseline available=2, endpoints=2, health=200
+T1  ~10:54:21  Deleted platform-lab-9c5b867f-r4666
+T2  ~10:54:21  Kubernetes available=1, endpoints=1
+T3  ~10:54:21  Replacement platform-lab-9c5b867f-65xpb Pending
+               FailedScheduling: 2 unschedulable workers + control-plane taint
+T4  ~10:54:51  Prometheus/KSM first scraped available=1  (≈30s after T2)
+               … continued available=1 samples …
+T5  ~10:55:51  Workers uncordoned (Pending held ≈90s from T3)
+T6  ~10:55:55  Replacement Running (~3s after uncordon)
+T7  ~10:56:02  Replacement Ready (~10s after uncordon)
+T8  soon after Deployment available=2; KSM caught up to 2 by later query
+```
+
+### Three layers of “truth”
+
+| Layer | Observation during failure window |
+|---|---|
+| **Kubernetes actual state** | `availableReplicas=1` for entire ~85s window; endpoints=1; replacement Pending |
+| **Prometheus sampled state** | `kube_deployment_status_replicas_available` stayed **2** for first ~30s (stale scrape), then **1** across multiple scrapes |
+| **Grafana visualization** | With Last 15m on **Kubernetes Platform VMware**, Available replicas should show a sustained valley **2 → 1 → 2**; Desired stays **2** |
+
+### Prometheus evidence (query_range, step=15s)
+
+Metric:
+
+```promql
+kube_deployment_status_replicas_available{namespace="platform-lab",deployment="platform-lab"}
+```
+
+| Local time | available |
+|---|---|
+| 10:54:21 | 2 |
+| 10:54:36 | 2 |
+| 10:54:51 | **1** |
+| 10:55:06 | **1** |
+| 10:55:21 | **1** |
+| 10:55:36 | **1** |
+| 10:55:51 | **1** |
+| 10:56:06 | **1** (scrape lag vs Ready at ~10:56:02) |
+
+- Samples with `available=1` in this range: **6** (15s step)  
+- Instant polls during Pending with `ksm_available=1`: **11**  
+- Instant Kubernetes polls with `available=1`: **16** (entire observation window)
+
+Scrape interval remains **30s** (unchanged).
+
+### Application continuity
+
+| Check | Result |
+|---|---|
+| Surviving pod | `platform-lab-9c5b867f-dfd2m` (worker-01) |
+| `up{job="platform-lab"}` during failure | survivor stayed **1**; deleted target eventually disappeared |
+| Endpoints during failure | **1** |
+| `/health` during failure | **HTTP 200** on every bounded poll |
+| Desired replicas | **2** unchanged |
+
+### Recovery after uncordon
+
+| Event | Approx |
+|---|---|
+| Uncordon both workers | 10:55:51 |
+| Replacement Running | +~3.0s |
+| Replacement Ready | +~10.2s |
+| Final Deployment | **2/2** Ready |
+| Final endpoints | 2 (`dfd2m` + `65xpb`) |
+| Final `/health` `/version` | 200 / **0.1.4** |
+| Image digest | unchanged `sha256:1cca2b59…872ff` |
+| Nodes | Ready, **no** SchedulingDisabled |
+| Argo `platform-lab-local` | Synced / Healthy |
+
+### Grafana result
+
+Prometheus stored a multi-minute `available=1` plateau. On dashboard **Kubernetes Platform VMware** (Last 15 minutes), the Available-replicas panel is expected to show **2 → 1 → 2**. Desired-replicas stays flat at **2**.
+
+If a panel still looks flat, check raw PromQL in Explore first (table above) — do **not** change scrape interval or dashboards for this lab. Likely causes would be panel time range, wrong labels, or `min`/`max` over a wide step — not absence of the metric.
+
+### Safety confirmations
+
+- Workers were **uncordoned** before finish.
+- Exactly **one** Running app pod deleted in this experiment (`r4666`).
+- No permanent cluster/Git config changes (docs only).
+- Temporary `FailedScheduling` on the Pending pod was **expected** and cleared after uncordon.
 
 ---
 
-## 18. Next Failure Experiment
+## 18. Limitations
+
+- Single-pod failure with one survivor; not a full outage.
+- Experiment 1’s ~10s dip can be invisible at 30s scrape cadence.
+- Experiment 2 uses temporary cordon (scheduling delay), not production node failure.
+- Calico sandbox cleanup can leave old pods Terminating long after replacement is healthy.
+- Not an HPA, Argo drift, rollout, or real node-crash test.
+
+---
+
+## 19. Next Failure Experiment
 
 Candidates for later milestones (separate):
 
-- Node cordon/drain / node failure
+- True node failure / drain with PDB interaction
 - Multi-pod disruption vs PDB
 - Bad image / CrashLoopBackOff recovery
 - Readiness failure without delete
@@ -316,8 +430,16 @@ kubectl get deploy,rs,pods,svc,endpoints,hpa,pdb -n platform-lab -o wide
 curl.exe -H "Host: platform-lab.local" http://192.168.56.200/health
 curl.exe -H "Host: platform-lab.local" http://192.168.56.200/version
 
-# Intentional failure (exactly one pod):
+# Experiment 1 — fast self-heal:
 kubectl delete pod platform-lab-9c5b867f-r455h -n platform-lab
+
+# Experiment 2 — extended visibility (temporary):
+kubectl cordon k8s-worker-01
+kubectl cordon k8s-worker-02
+kubectl delete pod <one-running-platform-lab-pod> -n platform-lab
+# observe Pending ~75–90s, then ALWAYS:
+kubectl uncordon k8s-worker-01
+kubectl uncordon k8s-worker-02
 
 kubectl get pods -n platform-lab -o wide
 kubectl get deploy,endpoints -n platform-lab
