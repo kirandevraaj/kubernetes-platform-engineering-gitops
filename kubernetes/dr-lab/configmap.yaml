@@ -1,1 +1,13 @@
-apiVersion: v1kind: ConfigMapmetadata:  name: dr-recovery-marker  namespace: dr-lab  labels:    app.kubernetes.io/name: dr-recovery-demo    app.kubernetes.io/part-of: platform-lab    platform-lab.io/purpose: disaster-recovery-labdata:  version: recovery-test-BAD  marker: SNAPSHOT-CONFIG-BAD  purpose: "Disposable DR configuration recovery marker. Not production."
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dr-recovery-marker
+  namespace: dr-lab
+  labels:
+    app.kubernetes.io/name: dr-recovery-demo
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/purpose: disaster-recovery-lab
+data:
+  version: recovery-test-1
+  marker: SNAPSHOT-CONFIG-A
+  purpose: "Disposable DR configuration recovery marker. Not production."
