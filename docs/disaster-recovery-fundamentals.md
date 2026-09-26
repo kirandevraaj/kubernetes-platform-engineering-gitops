@@ -32,7 +32,7 @@ These layers stack: HA reduces how often you need restore; backup/restore bounds
 | Capability | Target RPO (intent) | Target RTO (intent) | OBSERVED in Project 1 |
 |------------|---------------------|---------------------|------------------------|
 | Stateless app (`platform-lab`) on EKS | N/A (Git + image are source of truth) | Redeploy via GitOps after cluster exists | **TBD** (full cluster loss not exercised) |
-| Stateful lab volume (`storage-demo` / EBS) | Depends on snapshot/backup cadence | Same-AZ node failure → pod Ready | **≈ 6.3 min** T0→Ready ([`aws-storage-resilience.md`](./aws-storage-resilience.md)); **TBD** for snapshot restore |
+| Stateful lab volume (`storage-demo` / EBS) | Depends on snapshot/backup cadence | Same-AZ node failure → pod Ready; snapshot restore | **≈ 6.3 min** T0→Ready ([`aws-storage-resilience.md`](./aws-storage-resilience.md)); snapshot restore ≈ **15 s** after PVC create ([`dr-lab-evidence.md`](./dr-lab-evidence.md)) |
 | VMware `platform-lab` (2 replicas) | N/A for app data | Single worker kubelet outage → degraded then restored | Documented in [`vmware-node-failure-resilience.md`](./vmware-node-failure-resilience.md) (capacity path, not full DR) |
 | Entire AWS account / VPC / EKS | Git + Terraform code; **no** remote state backup yet | Full rebuild sequence | **TBD** |
 | Terraform state (local) | Last successful `apply` only | Re-import or re-apply from code | **TBD** (recovery drill not run) |
@@ -110,7 +110,7 @@ These layers stack: HA reduces how often you need restore; backup/restore bounds
 |----------|------------------|
 | *(When configured)* Point-in-time block copies for restore/new PVCs | Anything until snapshot schedule + restore drill exist |
 
-**Inventory status (Section 25):** At DR inventory time, **`kubectl get crd | grep -i snapshot` reported no snapshot CRDs**; no `VolumeSnapshot` objects in use. EBS CSI add-on is present for dynamic provisioning; **snapshot workflow = not implemented in lab yet**.
+**Inventory status (Section 25):** At DR inventory time, snapshot CRDs were **absent**. They were then installed via EKS managed add-on **`snapshot-controller` v8.6.0-eksbuild.8**; restore drill **lab-tested** ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 ### 4.6 AWS Backup (EKS)
 
@@ -162,11 +162,11 @@ These layers stack: HA reduces how often you need restore; backup/restore bounds
 | AWS account → platform rebuild runbook | [`terraform-recovery-runbook.md`](./terraform-recovery-runbook.md) | **Conceptual; timings TBD** |
 | AWS Backup for EKS assessment | [`aws-backup-eks-dr.md`](./aws-backup-eks-dr.md) | **Assessed; no EKS plan yet** |
 | Business continuity checklist | [`business-continuity.md`](./business-continuity.md) | **Done** |
-| EBS snapshot + restore drill | Restored PVC with known `state.txt` | **TBD** |
-| CSI VolumeSnapshot install + `VolumeSnapshotClass` | CRDs + one successful snapshot | **TBD** |
+| EBS snapshot + restore drill | Restored PVC with known `state.txt` | **Lab-tested** — POINT-A only; new volume ([`dr-lab-evidence.md`](./dr-lab-evidence.md)) |
+| CSI VolumeSnapshot install + `VolumeSnapshotClass` | CRDs + one successful snapshot | **Lab-tested** (`v8.6.0-eksbuild.8`, `ebs-csi-snapclass`) |
 | Full EKS loss rebuild (new cluster, same Git) | App + storage lab reachable | **TBD** |
 | VMware control-plane failure / etcd restore | Documented procedure | **TBD** |
-| DR lab manifests (`kubernetes/dr-lab/`) | Optional sync via GitOps | **Present in repo; DR sync exercise TBD** |
+| DR lab manifests (`kubernetes/dr-lab/`) | Optional sync via GitOps | **Lab-tested** (App/namespace/selfHeal/Git drills; disposable resources cleaned) |
 
 ---
 

@@ -28,7 +28,7 @@ In this lab: committed Git config ≈ **RPO 0** for desired state; `storage-demo
 
 **Recovery Time Objective** — maximum acceptable **downtime** until service is acceptable again.
 
-Observed examples: pod delete on `storage-demo-0` ~**14 s**; same-AZ worker failure → pod Ready ~**6.3 min** (**lab-tested**). Argo Application re-apply target &lt; 10 min (**TBD**). Full cluster rebuild **TBD**.
+Observed examples: pod delete on `storage-demo-0` ~**14 s**; same-AZ worker failure → pod Ready ~**6.3 min**; Argo Application re-apply ~**6–14 s**; namespace recreate ~**23 s**; EBS snapshot restore ~**15 s** after PVC create (**lab-tested**, [`dr-lab-evidence.md`](./dr-lab-evidence.md)). Full cluster rebuild **TBD**.
 
 ---
 
@@ -85,18 +85,18 @@ A **volume** is the live attachable block device used by the node/Pod. A **snaps
 2. **If volume gone but snapshot exists:** create snapshot → new volume → new PVC with `dataSource` (CSI VolumeSnapshot) or EC2 API workflow → mount in **`dr-storage-restore`** for drills ([`runbooks/ebs-storage-recovery.md`](./runbooks/ebs-storage-recovery.md)).
 3. **If no snapshot:** data **unrecoverable**; recreate empty StatefulSet from Git only.
 
-Requires **snapshot-controller** add-on (**v8.6.0-eksbuild.8** planned) + VolumeSnapshotClass — **TBD** in lab.
+Requires **snapshot-controller** add-on (**v8.6.0-eksbuild.8**, installed) + VolumeSnapshotClass — **lab-tested** ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 ---
 
 ## 11. How does CSI snapshot work?
 
-1. Admin installs **EBS CSI driver** (present) + **snapshot controller** (being added) + **VolumeSnapshotClass**.
+1. Admin installs **EBS CSI driver** (present) + **snapshot controller** (**v8.6.0-eksbuild.8**, ACTIVE) + **VolumeSnapshotClass**.
 2. User creates **VolumeSnapshot** referencing PVC.
 3. **External snapshotter** creates EBS snapshot; **VolumeSnapshotContent** holds handle.
 4. New PVC references snapshot as **dataSource**; CSI provisions new volume and binds.
 
-At inventory: **no snapshot CRDs** — workflow **documented only**.
+**Lab-tested:** restore returned POINT-A and excluded POINT-B on new volume ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 ---
 
@@ -150,7 +150,7 @@ New pods needing **pull** fail (`ImagePullBackOff`); nodes with cached layers ma
 4. Re-register **repo credentials** from secure store (not Git).
 5. Sync and verify Health/Synced.
 
-Application delete drill on **`platform-dr-recovery`**: **documented only** (**TBD**).
+Application delete drill on **`platform-dr-recovery`**: **lab-tested** (~**6–14 s**, [`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 ---
 
@@ -186,7 +186,7 @@ Patterns: **one replica per AZ** with **PVC per AZ** (data sharded); **EFS/RDS**
 
 ## 25. How would you validate a backup?
 
-Restore to **isolated** scope (`dr-storage-restore`, test cluster, or duplicate namespace), then **verify** known content (e.g., `state.txt` marker, ConfigMap `SNAPSHOT-CONFIG-A` in [`kubernetes/dr-lab/`](../kubernetes/dr-lab/)), compare checksums/timestamps, and record **RPO/RTO** milestones. **Not yet executed** for snapshots in this lab.
+Restore to **isolated** scope (`dr-storage-restore`, test cluster, or duplicate namespace), then **verify** known content (e.g., `state.txt` marker POINT-A vs POINT-B), compare volume IDs/timestamps, and record **RPO/RTO**. **Lab-tested** for EBS CSI snapshot ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 ---
 
@@ -198,7 +198,7 @@ Success only proves **creation** of a recovery point—not **restorability**, **
 
 ## 27. How do you prove restore works?
 
-Run a **scheduled restore drill** in non-prod: restore → mount → read known data → run app smoke test → document volume IDs and timestamps. Delete disposable resources after evidence. Project 1 status: **TBD** for EBS; Git revert + Argo **partially proven** via self-heal experiments.
+Run a **scheduled restore drill** in non-prod: restore → mount → read known data → run app smoke test → document volume IDs and timestamps. Delete disposable resources after evidence. Project 1: **EBS CSI snapshot restore lab-tested**; Git/Argo/namespace drills **lab-tested** ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 ---
 

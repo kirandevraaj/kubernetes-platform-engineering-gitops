@@ -93,7 +93,7 @@ If infrastructure exists but state is lost, see [`terraform-infrastructure-recov
 |------|-----------|
 | Pod deleted; PVC intact | StatefulSet recreates pod; CSI reattaches same EBS (**Tested**, ~14 s Ready on pod delete) |
 | Worker lost, same AZ capacity | Scheduler + CSI reattach (**Tested**, ~6.3 min T0→Ready) |
-| Data loss / need point-in-time | Snapshot → new PVC in `dr-storage-restore` — [`ebs-storage-recovery.md`](./ebs-storage-recovery.md) (**Documented only** until drill completes) |
+| Data loss / need point-in-time | Snapshot → new PVC in `dr-storage-restore` — [`ebs-storage-recovery.md`](./ebs-storage-recovery.md) (**Lab-tested** — [`dr-lab-evidence.md`](../dr-lab-evidence.md)) |
 | AWS Backup EKS restore | Only if enrolled; at inventory **no EKS protected resources** — [`aws-backup-eks-dr.md`](../aws-backup-eks-dr.md) |
 
 StorageClass for lab: `ebs-gp3`. Original volume ID: `vol-05faa26874d720ecd`.
@@ -104,7 +104,7 @@ StorageClass for lab: `ebs-gp3`. Original volume ID: `vol-05faa26874d720ecd`.
 
 1. **Managed control plane:** AWS operates EKS CP HA — do not simulate CP destruction. Verify cluster ACTIVE and endpoint reachable.
 2. **etcd object loss (namespace/app):** Prefer **Git + Argo** over manual object recreation for owned apps.
-3. **CRDs / add-ons:** Reconcile via Terraform EKS add-ons (EBS CSI present; snapshot controller **TBD** at inventory).
+3. **CRDs / add-ons:** Reconcile via Terraform EKS add-ons (EBS CSI + **snapshot-controller v8.6.0-eksbuild.8** installed).
 4. **RBAC:** Restore from Git overlays where declared; do not grant cluster-admin as default DR step ([`security-rbac.md`](../security-rbac.md)).
 5. **AWS Backup** (optional future): non-destructive restore to existing/new cluster per AWS docs — **not executed** in lab inventory.
 
@@ -173,7 +173,7 @@ Record UTC timestamps:
 - **RTO (observed)** = T5 − T0 (or T4 − T0 for internal service).
 - **RPO (observed)** = data loss window for stateful tier (last snapshot vs failure time).
 
-**Lab OBSERVED examples (not full DR):** same-AZ node failure **≈ 6.3 min** to pod Ready; pod delete **~14 s**. Full cluster RTO **TBD**.
+**Lab OBSERVED examples (not full DR):** same-AZ node failure **≈ 6.3 min** to pod Ready; pod delete **~14 s**; App recreate **~6–14 s**; namespace recreate **≈ 23 s**; EBS snapshot restore **~15 s** ([`dr-lab-evidence.md`](../dr-lab-evidence.md)). Full cluster RTO **TBD**.
 
 ---
 

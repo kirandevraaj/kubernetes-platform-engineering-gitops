@@ -70,9 +70,11 @@ Measure RPO at **detection** of data loss: compare live `state.txt` (or DB) to l
 | Single pod delete (stateless) | Minutes → often seconds | VMware/AWS app: seconds scale (**lab-tested**) |
 | Pod delete (`storage-demo-0`) | &lt; 10 min | **~14 s** to Ready ([`aws-storage-statefulset.md`](./aws-storage-statefulset.md)) |
 | Same-AZ worker failure + EBS reattach | &lt; 15 min | **≈ 6.3 min** T0→Ready ([`aws-storage-resilience.md`](./aws-storage-resilience.md)) |
-| Argo Application re-apply | &lt; 10 min | **TBD** (`platform-dr-recovery`) |
-| EBS snapshot restore drill | Measure T0→data verified | **TBD** |
-| Full EKS rebuild | Hours (documented model) | **TBD** |
+| Argo Application re-apply | &lt; 10 min | **~6–14 s** (`platform-dr-recovery`; [`dr-lab-evidence.md`](./dr-lab-evidence.md)) |
+| Namespace recreate (`dr-lab`) | &lt; 10 min | **≈ 23 s** T0→Ready+Synced |
+| selfHeal live ConfigMap drift | Seconds–minutes | **≈ 6 s** |
+| EBS snapshot restore drill | Measure T0→data verified | Snapshot ready ≈ **72 s**; restore ≈ **15 s**; POINT-A only |
+| Full EKS rebuild | Hours (documented model) | **TBD** (not safe to destroy lab cluster) |
 | VMware control-plane loss | Hours / manual rebuild | **TBD** (single `k8s-ctrl-01`) |
 
 RTO starts at **T0** (detection or declared incident), not when someone starts reading docs.
@@ -157,7 +159,7 @@ Deleting a namespace removes namespaced objects. **PVCs and data** go with it un
 
 **Safe drill scope:** `dr-lab` only ([`dr-baseline-inventory.md`](./dr-baseline-inventory.md#4-safety-boundaries-for-section-25)).
 
-**Recovery:** Argo Application with `CreateNamespace=true` + manifests in Git. **Status:** **Documented only** (**TBD** timing).
+**Recovery:** Argo Application with `CreateNamespace=true` + manifests in Git. **Status:** **Lab-tested** on `dr-lab` — **≈ 23 s** to Ready+Synced ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 **Never** use this drill on `platform-lab`, `storage-lab`, `security-lab`, `observability`.
 
@@ -171,7 +173,7 @@ GitOps recovery means **restoring desired state in Git** (or reverting bad commi
 | Cluster empty but Git intact | Install Argo + Applications → sync |
 | Live drift | Self-heal or sync (prefer Git fix for intentional change) |
 
-**Lab-tested:** self-heal for drift. **Documented only:** bad ConfigMap on `dr-lab` + revert timing.
+**Lab-tested:** self-heal for drift (≈ **6 s** on `dr-lab`); Git restore commits `57df7df`→`e5b79b7` ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 Jenkins **does not** deploy to cluster — recovery path remains **Git → Argo** ([`git-argo-recovery.md`](./runbooks/git-argo-recovery.md)).
 
@@ -186,7 +188,7 @@ Two Argo instances: VMware **v3.5.3**, AWS **v3.1.0** ([`toolchain-inventory.md`
 | Argo CD server/repo-server down | Helm/Terraform reinstall; repo credentials out-of-band |
 | Redis / application controller | Kubernetes reschedule (HA not fully modeled in lab) |
 
-**Lab-tested:** Application sync health on production-like apps (normal ops). **Documented only:** delete `platform-dr-recovery` Application (**TBD**). **Not safe to test:** full `argocd` namespace outage on sole GitOps plane.
+**Lab-tested:** Application sync health on production-like apps; delete/recreate `platform-dr-recovery` (~**6–14 s**). **Not safe to test:** full `argocd` namespace outage on sole GitOps plane.
 
 ### 12. RBAC Recovery
 
@@ -259,7 +261,7 @@ EBS snapshots are **regional** point-in-time copies used to create **new** volum
 
 **Inventory:** **no snapshots** on lab volume at Section 25 inventory. **RPO undefined** until cadence exists.
 
-**Documented only:** snapshot create/restore drill. Use markers `SNAPSHOT-POINT-A/B` in disposable paths ([`runbooks/ebs-storage-recovery.md`](./runbooks/ebs-storage-recovery.md)).
+**Lab-tested:** CSI snapshot + restore to new volume in `dr-storage-restore` — POINT-A recovered, POINT-B excluded; new volume ID ([`dr-lab-evidence.md`](./dr-lab-evidence.md)). Markers `SNAPSHOT-POINT-A/B` ([`runbooks/ebs-storage-recovery.md`](./runbooks/ebs-storage-recovery.md)).
 
 ### 19. CSI Snapshots
 
@@ -271,7 +273,7 @@ Requires:
 
 Workflow (when installed): `VolumeSnapshot` → `VolumeSnapshotContent` → EBS snapshot ID → restore via `dataSource` on new PVC.
 
-**Status:** **Documented only** until CRDs + successful snapshot **TBD**.
+**Status:** **Lab-tested** — CRDs + `snapshot-controller` **v8.6.0-eksbuild.8** + successful restore ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 ### 20. AWS Backup
 
@@ -369,7 +371,7 @@ AWS apps: `platform-lab-aws`, `platform-storage-aws`, `platform-security-aws`, `
 
 Manifests under [`gitops/applications/`](../gitops/applications/). Disposable: **`platform-dr-recovery`**.
 
-**Lab-tested:** normal sync operations. **Documented only:** Application delete recovery (**TBD**).
+**Lab-tested:** normal sync operations; Application delete recovery on `platform-dr-recovery` (~**6–14 s**).
 
 ### 31. ApplicationSets
 
@@ -400,27 +402,27 @@ Jenkins builds image and **promotes digest to Git** — does not kubectl apply p
 
 ### 34. Git recovery
 
-**Exercise (planned):** bad ConfigMap in `dr-lab` → detect → `git revert` → Argo healthy.
+**Exercise:** bad ConfigMap in `dr-lab` → Git restore → Argo healthy; also live drift selfHeal.
 
-**Status:** **Documented only** (**TBD**). **Related:** self-heal for live drift **lab-tested** on VMware.
+**Status:** **Lab-tested** — restore commits + selfHeal ≈ **6 s** ([`dr-lab-evidence.md`](./dr-lab-evidence.md)).
 
 ### 35. Argo Application recovery
 
 **Exercise:** delete `platform-dr-recovery` Application → re-apply YAML → Synced.
 
-**Status:** **Documented only** (**TBD**). Runbook: [`runbooks/git-argo-recovery.md`](./runbooks/git-argo-recovery.md).
+**Status:** **Lab-tested** (~**6–14 s**). Runbook: [`runbooks/git-argo-recovery.md`](./runbooks/git-argo-recovery.md).
 
 ### 36. Namespace recovery
 
 **Exercise:** delete `dr-lab` namespace → Argo recreates.
 
-**Status:** **Documented only** (**TBD**). **Never** on `storage-lab`.
+**Status:** **Lab-tested** (**≈ 23 s**). **Never** on `storage-lab`.
 
 ### 37. EBS snapshot recovery
 
 **Exercise:** install snapshot controller → `VolumeSnapshotClass` → snapshot → new PVC in `dr-storage-restore` → verify `state.txt` excludes post-snapshot writes.
 
-**Status:** **Documented only** (**TBD**). Prerequisites in [`runbooks/ebs-storage-recovery.md`](./runbooks/ebs-storage-recovery.md).
+**Status:** **Lab-tested** (ready ≈ **72 s**; restore ≈ **15 s**; POINT-A only). See [`dr-lab-evidence.md`](./dr-lab-evidence.md) and [`runbooks/ebs-storage-recovery.md`](./runbooks/ebs-storage-recovery.md).
 
 ### 38. Node recovery
 
@@ -444,7 +446,7 @@ Jenkins builds image and **promotes digest to Git** — does not kubectl apply p
 2. At failure, record **T_loss**.
 3. **Demonstrated RPO** ≈ data changes between **T_snap** and **T_loss** (for config, compare Git SHA).
 
-For `storage-demo`, without snapshots, only **live volume** exists — RPO for catastrophic volume loss is **total loss**.
+For `storage-demo`, **CSI snapshot restore was lab-tested** (POINT-A recovered). Without a recovery point, catastrophic volume loss remains **total loss**.
 
 ### 41. RTO measurement
 
