@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="560" viewBox="0 0 880 560" role="img" aria-label="EBS snapshot recovery">
+  <title>EBS snapshot recovery flow</title>
+  <defs>
+    <marker id="e" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .live{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .snap{fill:#fefce8;stroke:#a16207;stroke-width:2;rx:8}
+      .rest{fill:#ecfdf5;stroke:#047857;stroke-width:2;rx:8}
+      .gate{fill:#ecfdf5;stroke:#047857;stroke-width:2;rx:8}
+      .note{fill:#f8fafc;stroke:#64748b;stroke-width:1;rx:6}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:17px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#e)}
+    </style>
+  </defs>
+  <text x="440" y="28" text-anchor="middle" class="t">EBS Snapshot Recovery (live vs restored copy)</text>
+
+  <text x="220" y="58" text-anchor="middle" class="l">Live path (storage-lab)</text>
+  <rect x="40" y="72" width="360" height="40" class="live"/>
+  <text x="220" y="98" text-anchor="middle" class="l">Live EBS vol-05faa26874d720ecd</text>
+  <path class="line" d="M220 112 V132"/>
+  <rect x="80" y="132" width="280" height="36" class="live"/>
+  <text x="220" y="155" text-anchor="middle" class="l">Point-in-time snapshot (VolumeSnapshot)</text>
+  <path class="line" d="M220 168 V188"/>
+  <rect x="100" y="188" width="240" height="32" class="snap"/>
+  <text x="220" y="209" text-anchor="middle" class="l">Snapshot handle (AWS)</text>
+
+  <text x="660" y="58" text-anchor="middle" class="l">Restore path (dr-storage-restore)</text>
+  <path class="line" d="M220 204 H440 V240 H660"/>
+  <rect x="540" y="240" width="240" height="36" class="rest"/>
+  <text x="660" y="263" text-anchor="middle" class="l">New EBS volume (new ID)</text>
+  <path class="line" d="M660 276 V296"/>
+  <rect x="540" y="296" width="240" height="32" class="rest"/>
+  <text x="660" y="317" text-anchor="middle" class="l">PVC restored-storage</text>
+  <path class="line" d="M660 328 V348"/>
+  <rect x="540" y="348" width="240" height="32" class="rest"/>
+  <text x="660" y="369" text-anchor="middle" class="l">PV (dynamic bind)</text>
+  <path class="line" d="M660 380 V400"/>
+  <rect x="540" y="400" width="240" height="36" class="rest"/>
+  <text x="660" y="423" text-anchor="middle" class="l">Pod storage-restore-demo</text>
+  <path class="line" d="M660 436 V456"/>
+  <rect x="520" y="456" width="280" height="36" class="gate"/>
+  <text x="660" y="479" text-anchor="middle" class="l">Data verification (state.txt)</text>
+
+  <rect x="40" y="240" width="360" height="120" class="note"/>
+  <text x="220" y="268" text-anchor="middle" class="l">Snapshot point in time</text>
+  <text x="60" y="292" class="s">+ data before snapshot = recoverable in restore copy</text>
+  <text x="60" y="312" class="s">+ data after snapshot (e.g. SNAPSHOT-POINT-B) = NOT in restore</text>
+  <text x="60" y="340" class="s">Live volume keeps A + B; restore copy should show A only</text>
+
+  <rect x="40" y="400" width="360" height="92" class="note"/>
+  <text x="220" y="424" text-anchor="middle" class="l">Same-volume recovery (no snapshot)</text>
+  <text x="60" y="448" class="s">Pod delete / same-AZ node loss: same PVC, PV, EBS</text>
+  <text x="60" y="468" class="s">Tested: ~14s pod delete; ~6.3 min node failure</text>
+  <text x="60" y="488" class="s">Snapshot drill: documented only until Phase 19-27</text>
+
+  <text x="440" y="540" text-anchor="middle" class="s">Do not delete original vol-05faa26874d720ecd or data-storage-demo-0</text>
+</svg>

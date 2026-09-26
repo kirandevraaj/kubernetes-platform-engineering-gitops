@@ -1,0 +1,12 @@
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: storage-demo-snapshot
+  namespace: storage-lab
+  labels:
+    app.kubernetes.io/name: storage-demo-snapshot
+    platform-lab.io/purpose: disaster-recovery-lab
+spec:
+  volumeSnapshotClassName: ebs-csi-snapclass
+  source:
+    persistentVolumeClaimName: data-storage-demo-0

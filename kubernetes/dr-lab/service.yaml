@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dr-recovery-demo
+  namespace: dr-lab
+  labels:
+    app.kubernetes.io/name: dr-recovery-demo
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/purpose: disaster-recovery-lab
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: dr-recovery-demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dr-lab
+  labels:
+    app.kubernetes.io/name: dr-lab
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/purpose: disaster-recovery-lab

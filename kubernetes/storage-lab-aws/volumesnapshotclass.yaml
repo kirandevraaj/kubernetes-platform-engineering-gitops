@@ -1,0 +1,13 @@
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: ebs-csi-snapclass
+  labels:
+    app.kubernetes.io/name: ebs-csi-snapclass
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/purpose: disaster-recovery-lab
+driver: ebs.csi.aws.com
+deletionPolicy: Delete
+parameters:
+  # Default EBS snapshot encryption follows account/region defaults.
+  # Not marked as cluster default — lab workloads opt in explicitly.

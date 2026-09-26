@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="900" viewBox="0 0 520 900" role="img" aria-label="EKS recovery flow">
+  <title>EKS disaster recovery flow</title>
+  <defs>
+    <marker id="f" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .step{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .gate{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:17px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;font-weight:600;fill:#0f172a}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#f)}
+    </style>
+  </defs>
+  <text x="260" y="28" text-anchor="middle" class="t">EKS Recovery Flow</text>
+
+  <rect x="110" y="44" width="300" height="36" class="step"/><text x="260" y="67" text-anchor="middle" class="l">Incident detected</text>
+  <path class="line" d="M260 80 V100"/>
+  <rect x="110" y="100" width="300" height="36" class="step"/><text x="260" y="123" text-anchor="middle" class="l">Classify failure domain</text>
+  <path class="line" d="M260 136 V156"/>
+  <rect x="110" y="156" width="300" height="36" class="gate"/><text x="260" y="179" text-anchor="middle" class="l">Protect remaining data</text>
+  <path class="line" d="M260 192 V212"/>
+  <rect x="110" y="212" width="300" height="36" class="step"/><text x="260" y="235" text-anchor="middle" class="l">Determine recovery source</text>
+  <path class="line" d="M260 248 V268"/>
+  <rect x="110" y="268" width="300" height="36" class="step"/><text x="260" y="291" text-anchor="middle" class="l">Restore infrastructure (if required)</text>
+  <path class="line" d="M260 304 V324"/>
+  <rect x="110" y="324" width="300" height="36" class="step"/><text x="260" y="347" text-anchor="middle" class="l">Restore storage (EBS / snapshot)</text>
+  <path class="line" d="M260 360 V380"/>
+  <rect x="110" y="380" width="300" height="36" class="step"/><text x="260" y="403" text-anchor="middle" class="l">Restore Kubernetes state</text>
+  <path class="line" d="M260 416 V436"/>
+  <rect x="110" y="436" width="300" height="36" class="step"/><text x="260" y="459" text-anchor="middle" class="l">Argo reconcile (GitOps)</text>
+  <path class="line" d="M260 472 V492"/>
+  <rect x="110" y="492" width="300" height="36" class="step"/><text x="260" y="515" text-anchor="middle" class="l">Deploy / sync applications</text>
+  <path class="line" d="M260 528 V548"/>
+  <rect x="110" y="548" width="300" height="36" class="step"/><text x="260" y="571" text-anchor="middle" class="l">Restore observability</text>
+  <path class="line" d="M260 584 V604"/>
+  <rect x="110" y="604" width="300" height="36" class="gate"/><text x="260" y="627" text-anchor="middle" class="l">Verify (health · ALB · metrics)</text>
+  <path class="line" d="M260 640 V660"/>
+  <rect x="110" y="660" width="300" height="36" class="step"/><text x="260" y="683" text-anchor="middle" class="l">Measure RTO / RPO</text>
+  <path class="line" d="M260 696 V716"/>
+  <rect x="110" y="716" width="300" height="36" class="step"/><text x="260" y="739" text-anchor="middle" class="l">Close incident</text>
+  <path class="line" d="M260 752 V772"/>
+  <rect x="110" y="772" width="300" height="36" class="step"/><text x="260" y="795" text-anchor="middle" class="l">Postmortem + update matrix</text>
+
+  <text x="260" y="840" text-anchor="middle" class="l">Runbook: docs/runbooks/aws-eks-disaster-recovery.md</text>
+  <text x="260" y="862" text-anchor="middle" class="l">Full cluster rebuild: TBD (not safe to test on live lab)</text>
+</svg>

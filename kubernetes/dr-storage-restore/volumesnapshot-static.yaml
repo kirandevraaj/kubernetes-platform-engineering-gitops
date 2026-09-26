@@ -1,0 +1,29 @@
+# Static VolumeSnapshot in restore namespace bound to the existing EBS snapshot.
+# Required because PVC dataSource VolumeSnapshot must be same-namespace.
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotContent
+metadata:
+  name: dr-restore-snapcontent
+  labels:
+    platform-lab.io/purpose: disaster-recovery-lab
+spec:
+  deletionPolicy: Retain
+  driver: ebs.csi.aws.com
+  source:
+    snapshotHandle: SNAPSHOT_HANDLE_PLACEHOLDER
+  volumeSnapshotRef:
+    name: storage-demo-snapshot
+    namespace: dr-storage-restore
+  volumeSnapshotClassName: ebs-csi-snapclass
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: storage-demo-snapshot
+  namespace: dr-storage-restore
+  labels:
+    platform-lab.io/purpose: disaster-recovery-lab
+spec:
+  volumeSnapshotClassName: ebs-csi-snapclass
+  source:
+    volumeSnapshotContentName: dr-restore-snapcontent

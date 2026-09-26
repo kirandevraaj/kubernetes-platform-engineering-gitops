@@ -81,6 +81,26 @@ def build_parser() -> argparse.ArgumentParser:
         p_sub.add_parser(name)
 
     sub.add_parser("report", help="Emit last/local report summary")
+
+    dr = sub.add_parser("dr", help="Disaster recovery helpers")
+    dr_sub = dr.add_subparsers(dest="dr_command", required=True)
+    dr_sub.add_parser("scenarios", help="List known DR scenarios")
+    dr_verify = dr_sub.add_parser("verify", help="Read-only DR verification aggregate")
+    dr_verify.add_argument("--kubernetes-api", choices=["pass", "fail", "unknown"], default="unknown")
+    dr_verify.add_argument("--nodes", choices=["pass", "fail", "unknown"], default="unknown")
+    dr_verify.add_argument("--argo", choices=["pass", "fail", "unknown"], default="unknown")
+    dr_verify.add_argument("--applications", choices=["pass", "fail", "unknown"], default="unknown")
+    dr_verify.add_argument("--pvc", choices=["pass", "fail", "unknown"], default="unknown")
+    dr_verify.add_argument("--ebs", choices=["pass", "fail", "unknown"], default="unknown")
+    dr_verify.add_argument("--observability", choices=["pass", "fail", "unknown"], default="unknown")
+    dr_verify.add_argument("--application", choices=["pass", "fail", "unknown"], default="unknown")
+    dr_report = dr_sub.add_parser("report", help="Emit DR report JSON + summary")
+    dr_report.add_argument("--scenario", required=True)
+    dr_report.add_argument("--failure-time", default=None)
+    dr_report.add_argument("--recovery-time", default=None)
+    dr_report.add_argument("--mechanism", default="")
+    dr_report.add_argument("--result", default="UNKNOWN")
+    dr_report.add_argument("--text", action="store_true", help="Also print human-readable summary")
     return parser
 
 
@@ -250,6 +270,51 @@ def main(argv: list[str] | None = None) -> int:
             controller = PlatformController(settings=settings)
             _print(controller.report())
             return 0
+
+        if args.command == "dr":
+            from platform_automation.dr import (
+                build_dr_report,
+                format_dr_report_text,
+                list_scenarios,
+                verify_platform,
+            )
+
+            def _tri(value: str) -> bool | None:
+                if value == "pass":
+                    return True
+                if value == "fail":
+                    return False
+                return None
+
+            if args.dr_command == "scenarios":
+                _print(list_scenarios())
+                return 0
+            if args.dr_command == "verify":
+                payload = verify_platform(
+                    kubernetes_api_ok=_tri(args.kubernetes_api),
+                    nodes_ready=_tri(args.nodes),
+                    argo_healthy=_tri(args.argo),
+                    applications_synced=_tri(args.applications),
+                    pvc_bound=_tri(args.pvc),
+                    ebs_attached=_tri(args.ebs),
+                    observability_ok=_tri(args.observability),
+                    application_healthy=_tri(args.application),
+                )
+                _print(payload)
+                return 0 if payload["overall"] != "FAIL" else 4
+            if args.dr_command == "report":
+                payload = build_dr_report(
+                    scenario=args.scenario,
+                    failure_time=args.failure_time,
+                    recovery_time=args.recovery_time,
+                    recovery_mechanism=args.mechanism,
+                    result=args.result,
+                )
+                if args.text:
+                    print(format_dr_report_text(payload))
+                else:
+                    _print(payload)
+                return 0
 
         parser.error(f"unknown command {args.command}")
         return 2

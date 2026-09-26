@@ -83,6 +83,11 @@ output "ebs_csi_addon_version" {
   value       = try(module.ebs_csi[0].addon_version, null)
 }
 
+output "snapshot_controller_addon_version" {
+  description = "Pinned CSI snapshot-controller EKS add-on version when installed."
+  value       = try(module.snapshot_controller[0].addon_version, null)
+}
+
 output "ebs_csi_controller_role_arn" {
   description = "IAM role ARN for the EBS CSI controller Pod Identity association."
   value       = module.iam.ebs_csi_controller_role_arn

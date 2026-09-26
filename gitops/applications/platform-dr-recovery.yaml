@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-dr-recovery
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-dr-recovery
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/purpose: disaster-recovery-lab
+spec:
+  project: platform-dr-recovery
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/dr-lab
+  destination:
+    # In-cluster API of the VMware lab Argo CD instance (ckad-lab).
+    # Disposable DR lab only — never point at platform-lab / storage-lab / security-lab.
+    server: https://kubernetes.default.svc
+    namespace: dr-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

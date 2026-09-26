@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520" role="img" aria-label="VMware vs AWS DR">
+  <title>VMware vs AWS disaster recovery comparison</title>
+  <defs>
+    <marker id="v" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .aws{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#v)}
+    </style>
+  </defs>
+  <text x="460" y="32" text-anchor="middle" class="t">VMware vs AWS DR (Project 1)</text>
+
+  <rect x="40" y="56" width="400" height="380" class="box"/>
+  <text x="240" y="88" text-anchor="middle" class="l">VMware ckad-lab · K8s 1.31.14</text>
+
+  <rect x="120" y="108" width="240" height="32" class="box"/><text x="240" y="129" text-anchor="middle" class="l">Git</text>
+  <path class="line" d="M240 140 V158"/>
+  <rect x="120" y="158" width="240" height="32" class="box"/><text x="240" y="179" text-anchor="middle" class="l">Argo CD v3.5.3</text>
+  <path class="line" d="M240 190 V208"/>
+  <rect x="120" y="208" width="240" height="32" class="box"/><text x="240" y="229" text-anchor="middle" class="l">Kubernetes</text>
+  <path class="line" d="M240 240 V258"/>
+  <rect x="120" y="258" width="240" height="32" class="box"/><text x="240" y="279" text-anchor="middle" class="l">local-path (storage-lab)</text>
+  <path class="line" d="M240 290 V308"/>
+  <rect x="120" y="308" width="240" height="32" class="box"/><text x="240" y="329" text-anchor="middle" class="l">node-local disk</text>
+
+  <text x="240" y="368" text-anchor="middle" class="s">Node failure: storage stays on failed worker</text>
+  <text x="240" y="388" text-anchor="middle" class="s">Pod delete on same node: data OK (proven)</text>
+  <text x="240" y="408" text-anchor="middle" class="s">Single control-plane node (no etcd backup in repo)</text>
+  <text x="240" y="428" text-anchor="middle" class="s">Config recovery: Git + Argo (same model as AWS)</text>
+
+  <rect x="480" y="56" width="400" height="380" class="aws"/>
+  <text x="680" y="88" text-anchor="middle" class="l">AWS EKS platform-lab-aws · 1.36.4</text>
+
+  <rect x="560" y="108" width="240" height="32" class="box"/><text x="680" y="129" text-anchor="middle" class="l">Git</text>
+  <path class="line" d="M680 140 V158"/>
+  <rect x="560" y="158" width="240" height="32" class="box"/><text x="680" y="179" text-anchor="middle" class="l">Argo CD v3.1.0</text>
+  <path class="line" d="M680 190 V208"/>
+  <rect x="560" y="208" width="240" height="32" class="box"/><text x="680" y="229" text-anchor="middle" class="l">EKS (managed control plane HA)</text>
+  <path class="line" d="M680 240 V258"/>
+  <rect x="560" y="258" width="240" height="32" class="box"/><text x="680" y="279" text-anchor="middle" class="l">EBS CSI · ebs-gp3</text>
+  <path class="line" d="M680 290 V308"/>
+  <rect x="560" y="308" width="240" height="32" class="box"/><text x="680" y="329" text-anchor="middle" class="l">EBS (AZ-local)</text>
+  <path class="line" d="M680 340 V358"/>
+  <rect x="560" y="358" width="240" height="32" class="box"/><text x="680" y="379" text-anchor="middle" class="l">Snapshot / AWS Backup (TBD)</text>
+
+  <text x="680" y="408" text-anchor="middle" class="s">Node failure same AZ: same EBS reattach (~6.3 min)</text>
+  <text x="680" y="428" text-anchor="middle" class="s">Data loss: snapshot restore to dr-storage-restore (TBD)</text>
+  <text x="680" y="448" text-anchor="middle" class="s">Infra rebuild: Terraform local state + Git</text>
+
+  <rect x="40" y="460" width="840" height="48" class="box"/>
+  <text x="460" y="482" text-anchor="middle" class="l">Shared recovery planes: Git (config) · Registry digest 0.1.4 · Runbooks</text>
+  <text x="460" y="500" text-anchor="middle" class="s">Never destroy main EKS/VPC/platform-lab/storage-lab  use dr-lab and dr-storage-restore only</text>
+</svg>

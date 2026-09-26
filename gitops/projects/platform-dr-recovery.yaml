@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-dr-recovery
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-dr-recovery
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/purpose: disaster-recovery-lab
+spec:
+  description: Disposable Disaster Recovery lab Application (isolated from production-like workloads)
+  sourceRepos:
+    - https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+  destinations:
+    - namespace: dr-lab
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: ReplicaSet
+    - group: ""
+      kind: Pod

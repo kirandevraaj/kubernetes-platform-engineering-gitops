@@ -106,6 +106,18 @@ module "ebs_csi" {
   # refresh/plan (avoids unrelated SG/addon drift being applied with storage work).
 }
 
+module "snapshot_controller" {
+  count  = var.install_snapshot_controller ? 1 : 0
+  source = "./modules/snapshot_controller"
+
+  cluster_name  = module.eks.cluster_name
+  addon_version = var.snapshot_controller_addon_version
+  tags          = local.common_tags
+
+  # CSI VolumeSnapshot CRDs/controller. Independent of EBS CSI Pod Identity.
+  depends_on = [module.eks]
+}
+
 # Temporary same-AZ worker for EBS node-failure resilience lab ONLY.
 # Subnet is restricted to the EBS volume AZ. Destroy after the experiment.
 locals {
@@ -144,9 +156,9 @@ resource "aws_eks_node_group" "storage_resilience_test" {
   }
 
   labels = {
-    "node.kubernetes.io/role"              = "worker"
-    "workload"                             = "storage-resilience-test"
-    "platform-lab.io/storage-resilience"   = "temporary"
+    "node.kubernetes.io/role"            = "worker"
+    "workload"                           = "storage-resilience-test"
+    "platform-lab.io/storage-resilience" = "temporary"
   }
 
   tags = merge(local.common_tags, {
@@ -186,6 +198,7 @@ resource "null_resource" "destroy_safety" {
     module.aws_load_balancer_controller,
     module.metrics_server,
     module.ebs_csi,
+    module.snapshot_controller,
     module.eks,
   ]
 }

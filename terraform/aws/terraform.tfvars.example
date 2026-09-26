@@ -36,6 +36,8 @@ install_argocd                       = true
 bootstrap_gitops                     = true
 install_ebs_csi_driver               = true
 ebs_csi_addon_version                = "v1.66.0-eksbuild.1"
+install_snapshot_controller          = true
+snapshot_controller_addon_version    = "v8.6.0-eksbuild.8"
 # Temporary: set true only during EBS node-failure resilience lab, then false + apply destroy.
 enable_storage_resilience_test_nodegroup = false
 storage_resilience_test_az               = "ap-south-1b"

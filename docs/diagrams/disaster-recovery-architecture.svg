@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" role="img" aria-label="Disaster recovery architecture">
+  <title>Project 1 disaster recovery architecture</title>
+  <defs>
+    <marker id="m" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .git{fill:#ecfdf5;stroke:#047857;stroke-width:2;rx:8}
+      .tf{fill:#fff7ed;stroke:#c2410c;stroke-width:2;rx:8}
+      .k8s{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .bak{fill:#fefce8;stroke:#a16207;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#m)}
+      .dash{stroke:#64748b;stroke-width:2;stroke-dasharray:6 4;fill:none;marker-end:url(#m)}
+    </style>
+  </defs>
+  <text x="450" y="32" text-anchor="middle" class="t">Disaster Recovery Architecture (Project 1)</text>
+
+  <rect x="360" y="56" width="180" height="40" class="git"/>
+  <text x="450" y="82" text-anchor="middle" class="l">GitHub</text>
+
+  <path class="line" d="M450 96 V118"/>
+  <rect x="320" y="118" width="260" height="36" class="git"/>
+  <text x="450" y="141" text-anchor="middle" class="l">Desired configuration (Git SoT)</text>
+
+  <path class="line" d="M450 154 V176"/>
+  <rect x="330" y="176" width="240" height="44" class="k8s"/>
+  <text x="450" y="198" text-anchor="middle" class="l">Argo CD</text>
+  <text x="450" y="214" text-anchor="middle" class="s">reconcile · self-heal (not backup)</text>
+
+  <path class="line" d="M450 220 V248"/>
+  <rect x="250" y="248" width="400" height="44" class="k8s"/>
+  <text x="450" y="276" text-anchor="middle" class="l">Kubernetes (EKS / VMware)</text>
+
+  <path class="line" d="M330 292 V330 H180 V358"/>
+  <path class="line" d="M450 292 V358"/>
+  <path class="line" d="M570 292 V330 H720 V358"/>
+
+  <rect x="60" y="358" width="240" height="48" class="box"/>
+  <text x="180" y="382" text-anchor="middle" class="l">Apps</text>
+  <text x="180" y="398" text-anchor="middle" class="s">platform-lab · dr-lab</text>
+
+  <rect x="330" y="358" width="240" height="48" class="box"/>
+  <text x="450" y="382" text-anchor="middle" class="l">Storage</text>
+  <text x="450" y="398" text-anchor="middle" class="s">PVC · StatefulSet</text>
+
+  <rect x="600" y="358" width="240" height="48" class="box"/>
+  <text x="720" y="382" text-anchor="middle" class="l">Observability</text>
+  <text x="720" y="398" text-anchor="middle" class="s">Prometheus · Grafana</text>
+
+  <path class="line" d="M450 406 V434"/>
+  <rect x="330" y="434" width="240" height="40" class="bak"/>
+  <text x="450" y="460" text-anchor="middle" class="l">EBS (ebs-gp3)</text>
+
+  <path class="line" d="M450 474 V496"/>
+  <rect x="310" y="496" width="280" height="44" class="bak"/>
+  <text x="450" y="522" text-anchor="middle" class="l">EBS Snapshot / VolumeSnapshot</text>
+  <text x="450" y="536" text-anchor="middle" class="s">point-in-time · drill TBD</text>
+
+  <path class="line" d="M450 540 V562"/>
+  <rect x="280" y="562" width="340" height="44" class="bak"/>
+  <text x="450" y="588" text-anchor="middle" class="l">AWS Backup (EKS)</text>
+  <text x="450" y="604" text-anchor="middle" class="s">assessed · EFS vault only at inventory</text>
+
+  <rect x="40" y="176" width="220" height="120" class="tf"/>
+  <text x="150" y="204" text-anchor="middle" class="l">Terraform</text>
+  <text x="150" y="224" text-anchor="middle" class="s">terraform/aws</text>
+  <text x="150" y="244" text-anchor="middle" class="s">local state</text>
+  <text x="150" y="264" text-anchor="middle" class="s">VPC · EKS · IAM</text>
+  <text x="150" y="284" text-anchor="middle" class="s">Argo bootstrap</text>
+
+  <path class="dash" d="M260 236 H330"/>
+  <text x="295" y="228" text-anchor="middle" class="s">rebuild</text>
+</svg>

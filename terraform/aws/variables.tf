@@ -218,6 +218,18 @@ variable "ebs_csi_addon_version" {
   default     = "v1.66.0-eksbuild.1"
 }
 
+variable "install_snapshot_controller" {
+  description = "Install the EKS managed CSI snapshot-controller add-on (VolumeSnapshot CRDs + controller)."
+  type        = bool
+  default     = true
+}
+
+variable "snapshot_controller_addon_version" {
+  description = "Pinned snapshot-controller EKS add-on version (from describe-addon-versions for the cluster Kubernetes version)."
+  type        = string
+  default     = "v8.6.0-eksbuild.8"
+}
+
 variable "enable_storage_resilience_test_nodegroup" {
   description = "Create a temporary single-AZ EKS managed node group for the EBS storage-resilience experiment. Default false; enable only for the lab, then destroy."
   type        = bool
