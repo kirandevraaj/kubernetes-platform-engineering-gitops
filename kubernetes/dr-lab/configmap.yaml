@@ -8,6 +8,6 @@ metadata:
     app.kubernetes.io/part-of: platform-lab
     platform-lab.io/purpose: disaster-recovery-lab
 data:
-  version: recovery-test-BAD
-  marker: SNAPSHOT-CONFIG-BAD
+  version: recovery-test-1
+  marker: SNAPSHOT-CONFIG-A
   purpose: "Disposable DR configuration recovery marker. Not production."
