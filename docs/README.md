@@ -2,6 +2,20 @@
 
 Architecture, design, runbooks, and lab notes for the Kubernetes Platform Engineering & GitOps Lab.
 
+## Operations (Section 26)
+
+| Document | Path |
+|---|---|
+| Operations landing page | [operations/README.md](operations/README.md) |
+| Platform Operations Handbook | [operations/platform-operations-handbook.md](operations/platform-operations-handbook.md) |
+| Triage framework | [troubleshooting/triage-framework.md](troubleshooting/triage-framework.md) |
+| Troubleshooting matrix | [troubleshooting/troubleshooting-matrix.md](troubleshooting/troubleshooting-matrix.md) |
+| Daily health checklist | [checklists/daily-platform-health.md](checklists/daily-platform-health.md) |
+| Postmortems | [postmortems/](postmortems/) |
+| Operations interview notes | [operations/operations-interview-notes.md](operations/operations-interview-notes.md) |
+
+Concept → architecture → experiment → runbook → recovery: start at [operations/README.md](operations/README.md).
+
 ## Disaster Recovery (Section 25)
 
 | Document | Description |
@@ -65,8 +79,25 @@ Architecture, design, runbooks, and lab notes for the Kubernetes Platform Engine
 | Platform automation master guide | [automation/platform-automation-master-guide.md](automation/platform-automation-master-guide.md) |
 | Toolchain inventory | [toolchain-inventory.md](toolchain-inventory.md) |
 
+## Operations (Section 26)
+
+| Document | Description |
+|---|---|
+| Operations index | [operations/README.md](operations/README.md) |
+| Platform Operations Handbook | [operations/platform-operations-handbook.md](operations/platform-operations-handbook.md) |
+| Platform inventory | [operations/platform-inventory.md](operations/platform-inventory.md) |
+| Golden signals | [operations/golden-signals.md](operations/golden-signals.md) |
+| Triage framework | [troubleshooting/triage-framework.md](troubleshooting/triage-framework.md) |
+| Troubleshooting matrix | [troubleshooting/troubleshooting-matrix.md](troubleshooting/troubleshooting-matrix.md) |
+| Runbook template | [runbooks/runbook-template.md](runbooks/runbook-template.md) |
+| Daily / shift checklists | [checklists/daily-platform-health.md](checklists/daily-platform-health.md) |
+
+DR operational timings link [operations/rpo-rto-operational-guide.md](operations/rpo-rto-operational-guide.md) to Section 25 [dr-lab-evidence.md](dr-lab-evidence.md) (authoritative drill detail).
+
 ## Troubleshooting
 
 | Document | Path |
 |---|---|
 | Common issues | [troubleshooting/common-issues.md](troubleshooting/common-issues.md) |
+| Triage framework | [troubleshooting/triage-framework.md](troubleshooting/triage-framework.md) |
+| Troubleshooting matrix | [troubleshooting/troubleshooting-matrix.md](troubleshooting/troubleshooting-matrix.md) |

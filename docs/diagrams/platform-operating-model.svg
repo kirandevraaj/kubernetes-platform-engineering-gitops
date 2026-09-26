@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="560" viewBox="0 0 920 560">
+  <rect width="920" height="560" fill="#f7f8fa"/>
+  <text x="24" y="32" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#1a1a1a">Platform operating model</text>
+  <rect x="380" y="50" width="100" height="36" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="415" y="73" font-family="Segoe UI, Arial, sans-serif" font-size="13">Git</text>
+  <path d="M430 86 V110" stroke="#333"/>
+  <path d="M280 110 H580" stroke="#333"/>
+  <path d="M280 110 V130" stroke="#333"/>
+  <path d="M580 110 V130" stroke="#333"/>
+  <rect x="200" y="130" width="160" height="50" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="245" y="150" font-family="Segoe UI, Arial, sans-serif" font-size="13">Jenkins</text>
+  <text x="235" y="168" font-family="Segoe UI, Arial, sans-serif" font-size="11">CI / build</text>
+  <rect x="500" y="130" width="160" height="50" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="545" y="150" font-family="Segoe UI, Arial, sans-serif" font-size="13">Argo CD</text>
+  <text x="525" y="168" font-family="Segoe UI, Arial, sans-serif" font-size="11">reconcile</text>
+  <path d="M580 180 V210" stroke="#333"/>
+  <rect x="480" y="210" width="200" height="40" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="530" y="235" font-family="Segoe UI, Arial, sans-serif" font-size="13">Kubernetes</text>
+  <path d="M520 250 V280" stroke="#333"/><path d="M580 250 V280" stroke="#333"/><path d="M640 250 V280" stroke="#333"/><path d="M680 250 V280" stroke="#333"/>
+  <rect x="400" y="280" width="90" height="36" rx="4" fill="#e0f7fa" stroke="#00796b"/><text x="415" y="302" font-family="Segoe UI, Arial, sans-serif" font-size="11">Network</text>
+  <rect x="500" y="280" width="90" height="36" rx="4" fill="#e8ffe8" stroke="#3ba55a"/><text x="520" y="302" font-family="Segoe UI, Arial, sans-serif" font-size="11">Storage</text>
+  <rect x="600" y="280" width="90" height="36" rx="4" fill="#ffe8e8" stroke="#a53b3b"/><text x="625" y="302" font-family="Segoe UI, Arial, sans-serif" font-size="11">Apps</text>
+  <rect x="700" y="280" width="110" height="36" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="715" y="302" font-family="Segoe UI, Arial, sans-serif" font-size="11">Observability</text>
+  <text x="40" y="150" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">Operational side</text>
+  <rect x="30" y="170" width="120" height="32" rx="4" fill="#efebe9" stroke="#5d4037"/><text x="55" y="190" font-family="Segoe UI, Arial, sans-serif" font-size="12">Python</text>
+  <rect x="30" y="210" width="120" height="32" rx="4" fill="#efebe9" stroke="#5d4037"/><text x="55" y="230" font-family="Segoe UI, Arial, sans-serif" font-size="12">Ansible</text>
+  <rect x="30" y="250" width="120" height="32" rx="4" fill="#efebe9" stroke="#5d4037"/><text x="50" y="270" font-family="Segoe UI, Arial, sans-serif" font-size="12">Terraform</text>
+  <rect x="30" y="290" width="120" height="32" rx="4" fill="#efebe9" stroke="#5d4037"/><text x="55" y="310" font-family="Segoe UI, Arial, sans-serif" font-size="12">AWS APIs</text>
+  <rect x="30" y="360" width="160" height="36" rx="6" fill="#fce4ec" stroke="#ad1457"/><text x="50" y="383" font-family="Segoe UI, Arial, sans-serif" font-size="12">Incident response</text>
+  <path d="M110 396 V420" stroke="#333"/>
+  <rect x="40" y="420" width="140" height="32" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="70" y="440" font-family="Segoe UI, Arial, sans-serif" font-size="12">Runbooks</text>
+  <path d="M110 452 V470" stroke="#333"/>
+  <text x="200" y="400" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">Verify → Postmortem → Automation improvements</text>
+</svg>

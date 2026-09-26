@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 from typing import Any
 
 from platform_automation import __version__
@@ -101,6 +102,23 @@ def build_parser() -> argparse.ArgumentParser:
     dr_report.add_argument("--mechanism", default="")
     dr_report.add_argument("--result", default="UNKNOWN")
     dr_report.add_argument("--text", action="store_true", help="Also print human-readable summary")
+
+    ops = sub.add_parser("ops", help="Read-only platform operations helpers")
+    ops_sub = ops.add_subparsers(dest="ops_command", required=True)
+    ops_sub.add_parser("health", help="Aggregate platform health (live read-only when cluster reachable)")
+    ops_triage = ops_sub.add_parser("triage", help="Suggest triage layer from a symptom")
+    ops_triage.add_argument("--symptom", required=True)
+    ops_triage.add_argument("--layer", default=None)
+    ops_report = ops_sub.add_parser("report", help="Emit ops report JSON/text")
+    ops_report.add_argument("--text", action="store_true")
+    ops_report.add_argument("--notes", default="")
+    ops_evidence = ops_sub.add_parser("evidence", help="Write redacted local evidence bundle")
+    _repo_root = Path(__file__).resolve().parents[4]
+    ops_evidence.add_argument(
+        "--output-dir",
+        default=str(_repo_root / "automation" / "reports" / "evidence"),
+        help="Directory for timestamped evidence (gitignored under automation/reports/)",
+    )
     return parser
 
 
@@ -314,6 +332,77 @@ def main(argv: list[str] | None = None) -> int:
                     print(format_dr_report_text(payload))
                 else:
                     _print(payload)
+                return 0
+
+        if args.command == "ops":
+            from platform_automation.ops import (
+                build_ops_report,
+                collect_evidence_bundle,
+                collect_ops_health,
+                format_ops_report_text,
+                suggest_triage,
+            )
+
+            context = settings.context or settings.cluster or settings.environment or "unknown"
+
+            if args.ops_command == "triage":
+                _print(suggest_triage(args.symptom, layer=args.layer))
+                return 0
+
+            if args.ops_command == "health":
+                try:
+                    from platform_automation.ops.live import live_ops_health
+
+                    facade = _k8s_facade(settings)
+                    env = settings.environment or (
+                        "aws" if "aws" in str(context) else "vmware"
+                    )
+                    payload = live_ops_health(facade, environment=env)
+                except Exception:
+                    payload = collect_ops_health()
+                    payload["details"] = {
+                        "note": "live cluster checks unavailable; returning UNKNOWN aggregate"
+                    }
+                _print(payload)
+                return 0 if payload.get("overall") != "FAIL" else 4
+
+            if args.ops_command == "report":
+                health = None
+                try:
+                    from platform_automation.ops.live import live_ops_health
+
+                    facade = _k8s_facade(settings)
+                    env = settings.environment or (
+                        "aws" if "aws" in str(context) else "vmware"
+                    )
+                    health = live_ops_health(facade, environment=env)
+                except Exception:
+                    health = collect_ops_health()
+                payload = build_ops_report(
+                    context=str(context), health=health, notes=args.notes
+                )
+                if args.text:
+                    print(format_ops_report_text(payload))
+                else:
+                    _print(payload)
+                return 0
+
+            if args.ops_command == "evidence":
+                collectors = None
+                try:
+                    from platform_automation.ops.live import live_evidence_collectors
+
+                    facade = _k8s_facade(settings)
+                    collectors = live_evidence_collectors(facade)
+                except Exception:
+                    collectors = None
+                payload = collect_evidence_bundle(
+                    output_dir=args.output_dir,
+                    context=str(context),
+                    collectors=collectors,
+                    metadata={"environment": settings.environment, "cluster": settings.cluster},
+                )
+                _print(payload)
                 return 0
 
         parser.error(f"unknown command {args.command}")

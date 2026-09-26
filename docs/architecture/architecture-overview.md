@@ -107,6 +107,10 @@ flowchart TD
 
 The application Service is ClusterIP. External HTTP entry for the local lab is the MetalLB LoadBalancer IP on port **80** with Host `platform-lab.local` (see [networking.md](networking.md)). The AWS overlay does not patch ingress-nginx.
 
+## Operations handbook
+
+Day-2 runbooks, triage, and incident procedures: [Platform Operations Handbook](../operations/platform-operations-handbook.md) · [Operations index](../operations/README.md).
+
 ## Windows workstation
 
 The workstation reaches the nodes with OpenSSH (`k8s-ctrl-01`, `k8s-worker-01`, `k8s-worker-02` in the user SSH config). A local kubectl context named `ckad-lab` is present. Docker Desktop client 29.6.1 is installed; the engine was not running at assessment time. Terraform is not on `PATH`.

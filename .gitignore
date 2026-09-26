@@ -88,6 +88,7 @@ tfplan*
 # Platform automation local artifacts
 automation/python/.venv/
 automation/python/**/__pycache__/
+automation/python/automation/
 automation/reports/
 *.vault_pass
 

@@ -662,3 +662,5 @@ Disaster recovery is **reconstruct + verify within RTO/RPO**, not merely possess
 - Terraform DR: [`terraform-dr.md`](./terraform-dr.md)
 - BC: [`business-continuity.md`](./business-continuity.md)
 - Interview: [`disaster-recovery-interview-notes.md`](./disaster-recovery-interview-notes.md)
+- Operations handbook: [`operations/platform-operations-handbook.md`](./operations/platform-operations-handbook.md)
+- DR runbook index: [`runbooks/disaster-recovery-index.md`](./runbooks/disaster-recovery-index.md)

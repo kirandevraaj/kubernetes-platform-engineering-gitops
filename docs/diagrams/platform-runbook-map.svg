@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480">
+  <rect width="900" height="480" fill="#f7f8fa"/>
+  <text x="24" y="32" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#1a1a1a">Platform runbook map</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="12">
+    <rect x="30" y="60" width="160" height="80" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+    <text x="70" y="90">Application</text>
+    <text x="45" y="110">unhealthy, pod, rollout</text>
+    <rect x="210" y="60" width="160" height="80" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+    <text x="260" y="90">GitOps</text>
+    <text x="225" y="110">Argo, AppSet, Project</text>
+    <rect x="390" y="60" width="160" height="80" rx="6" fill="#e0f7fa" stroke="#00796b"/>
+    <text x="430" y="90">Networking</text>
+    <text x="405" y="110">ingress, ALB, MetalLB</text>
+    <rect x="570" y="60" width="160" height="80" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+    <text x="620" y="90">Storage</text>
+    <text x="585" y="110">PVC, EBS, snapshot</text>
+    <rect x="750" y="60" width="120" height="80" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+    <text x="785" y="90">Nodes</text>
+    <text x="760" y="110">worker failure</text>
+    <rect x="30" y="180" width="200" height="80" rx="6" fill="#ffe8e8" stroke="#a53b3b"/>
+    <text x="80" y="210">Observability</text>
+    <text x="45" y="230">Prom, Grafana, HPA, KSM</text>
+    <rect x="250" y="180" width="160" height="80" rx="6" fill="#fce4ec" stroke="#ad1457"/>
+    <text x="295" y="210">Security</text>
+    <text x="265" y="230">RBAC, PSA, incident</text>
+    <rect x="430" y="180" width="200" height="80" rx="6" fill="#efebe9" stroke="#5d4037"/>
+    <text x="485" y="210">Automation</text>
+    <text x="445" y="230">Python, Ansible, TF, CI</text>
+    <rect x="650" y="180" width="200" height="80" rx="6" fill="#e8eaf6" stroke="#3949ab"/>
+    <text x="730" y="210">DR</text>
+    <text x="670" y="230">EKS, EBS, Git/Argo, RPO</text>
+  </g>
+  <text x="24" y="320" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">See docs/operations/README.md for full links</text>
+</svg>

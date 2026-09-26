@@ -1,6 +1,9 @@
-# Runbook: Ansible Failure (Project 1)
+# Runbook: Ansible Failure (Project 1 — Section 26)
 
-**Scope:** Playbooks, inventory, collections, Ansible Runner under `automation/ansible`.
+**Scope:** Playbooks, inventory, collections, Ansible Runner under `automation/ansible`.  
+**Execution environment:** Prefer **Linux / Jenkins `linux-agent`** for playbook runs. **Windows Ansible CLI is blocked** on this workstation — use WSL, Jenkins, or Python Runner wrappers for live execution; local `--syntax-check` may still work where documented.
+
+**Peer runbooks:** [`python-automation-failure.md`](./python-automation-failure.md) · [`automation-failure.md`](./automation-failure.md)
 
 ---
 

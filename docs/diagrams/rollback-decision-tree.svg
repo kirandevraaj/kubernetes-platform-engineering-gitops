@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <rect width="900" height="520" fill="#f7f8fa"/>
+  <text x="24" y="36" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#1a1a1a">Rollback decision tree</text>
+  <text x="24" y="56" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">Primary path: Git rollback then Argo reconcile (not kubectl rollout undo)</text>
+  <rect x="340" y="80" width="160" height="40" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="365" y="105" font-family="Segoe UI, Arial, sans-serif" font-size="13">Issue detected</text>
+  <path d="M420 120 V150" stroke="#333"/>
+  <rect x="320" y="150" width="200" height="40" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="345" y="175" font-family="Segoe UI, Arial, sans-serif" font-size="13">Recent deployment?</text>
+  <path d="M320 170 H160" stroke="#333"/>
+  <text x="200" y="162" font-family="Segoe UI, Arial, sans-serif" font-size="11">Yes</text>
+  <path d="M520 170 H700" stroke="#333"/>
+  <text x="560" y="162" font-family="Segoe UI, Arial, sans-serif" font-size="11">No</text>
+  <rect x="60" y="200" width="200" height="40" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="90" y="225" font-family="Segoe UI, Arial, sans-serif" font-size="13">Inspect rollout / RS</text>
+  <path d="M160 240 V270" stroke="#333"/>
+  <rect x="40" y="270" width="240" height="40" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="55" y="295" font-family="Segoe UI, Arial, sans-serif" font-size="13">Known-good Git commit?</text>
+  <path d="M40 290 H20 V360 H80" stroke="#333"/>
+  <text x="25" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="11">yes</text>
+  <rect x="80" y="360" width="180" height="48" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="100" y="380" font-family="Segoe UI, Arial, sans-serif" font-size="12">Git rollback</text>
+  <text x="100" y="396" font-family="Segoe UI, Arial, sans-serif" font-size="12">Argo reconcile</text>
+  <path d="M280 290 H320 V360 H300" stroke="#333"/>
+  <text x="290" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="11">no</text>
+  <rect x="260" y="360" width="160" height="40" rx="6" fill="#ffe8e8" stroke="#a53b3b"/>
+  <text x="290" y="385" font-family="Segoe UI, Arial, sans-serif" font-size="13">Investigate</text>
+  <rect x="600" y="200" width="220" height="56" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="620" y="225" font-family="Segoe UI, Arial, sans-serif" font-size="13">Infrastructure /</text>
+  <text x="620" y="243" font-family="Segoe UI, Arial, sans-serif" font-size="13">platform triage</text>
+</svg>

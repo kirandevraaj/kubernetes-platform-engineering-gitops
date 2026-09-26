@@ -843,3 +843,5 @@ Each item is answered in [automation-interview-notes.md](../automation-interview
 - [diagrams/](../diagrams/)
 - [runbooks/](../runbooks/)
 - [toolchain-inventory.md](../toolchain-inventory.md)
+- Operations: [platform-operations-handbook.md](../operations/platform-operations-handbook.md) · [python-automation-failure.md](../runbooks/python-automation-failure.md) · [ansible-failure.md](../runbooks/ansible-failure.md)
+- CLI ops: `platform-automate doctor|ops health|ops triage|ops report|ops evidence` (read-only)

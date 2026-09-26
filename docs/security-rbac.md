@@ -337,3 +337,4 @@ flowchart TB
 - Manifests: `kubernetes/security-lab-vmware/`, `kubernetes/security-lab-aws/`  
 - App hardening: `kubernetes/base/serviceaccount.yaml`, `deployment.yaml`  
 - Argo: `gitops/applications/platform-security-*.yaml`
+- Operations: [`operations/README.md`](./operations/README.md) · runbooks [`rbac-access-denied.md`](./runbooks/rbac-access-denied.md), [`pod-security-admission.md`](./runbooks/pod-security-admission.md), [`security-incident.md`](./runbooks/security-incident.md)

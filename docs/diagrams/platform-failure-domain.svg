@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="640" viewBox="0 0 920 640">
+  <rect width="920" height="640" fill="#f7f8fa"/>
+  <text x="24" y="36" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#1a1a1a">Platform failure domains</text>
+  <text x="24" y="58" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">User-visible failure ≠ application root cause</text>
+  <rect x="40" y="90" width="140" height="40" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="70" y="115" font-family="Segoe UI, Arial, sans-serif" font-size="13">User</text>
+  <path d="M110 130 V160" stroke="#333" marker-end="url(#a)"/>
+  <rect x="40" y="160" width="140" height="40" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="48" y="185" font-family="Segoe UI, Arial, sans-serif" font-size="12">DNS / ALB / MetalLB</text>
+  <path d="M110 200 V230" stroke="#333"/>
+  <rect x="40" y="230" width="140" height="36" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="80" y="253" font-family="Segoe UI, Arial, sans-serif" font-size="13">Ingress</text>
+  <path d="M110 266 V296" stroke="#333"/>
+  <rect x="40" y="296" width="140" height="36" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="80" y="319" font-family="Segoe UI, Arial, sans-serif" font-size="13">Service</text>
+  <path d="M110 332 V362" stroke="#333"/>
+  <rect x="40" y="362" width="140" height="36" rx="6" fill="#ffe8e8" stroke="#a53b3b"/>
+  <text x="90" y="385" font-family="Segoe UI, Arial, sans-serif" font-size="13">Pod</text>
+  <path d="M110 398 V428" stroke="#333"/>
+  <rect x="40" y="428" width="140" height="36" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="88" y="451" font-family="Segoe UI, Arial, sans-serif" font-size="13">Node</text>
+  <path d="M110 464 V494" stroke="#333"/>
+  <rect x="40" y="494" width="140" height="36" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="80" y="517" font-family="Segoe UI, Arial, sans-serif" font-size="13">Storage</text>
+  <rect x="280" y="90" width="160" height="36" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="340" y="113" font-family="Segoe UI, Arial, sans-serif" font-size="13">Git</text>
+  <path d="M360 126 V156" stroke="#333"/>
+  <rect x="280" y="156" width="160" height="36" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="325" y="179" font-family="Segoe UI, Arial, sans-serif" font-size="13">Jenkins</text>
+  <path d="M360 192 V222" stroke="#333"/>
+  <rect x="280" y="222" width="160" height="36" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="325" y="245" font-family="Segoe UI, Arial, sans-serif" font-size="13">Argo CD</text>
+  <path d="M360 258 V288" stroke="#333"/>
+  <rect x="280" y="288" width="160" height="36" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="300" y="311" font-family="Segoe UI, Arial, sans-serif" font-size="13">Kubernetes API</text>
+  <rect x="560" y="90" width="180" height="36" rx="6" fill="#e0f7fa" stroke="#00796b"/>
+  <text x="610" y="113" font-family="Segoe UI, Arial, sans-serif" font-size="13">AWS API</text>
+  <path d="M650 126 V156" stroke="#333"/>
+  <rect x="560" y="156" width="180" height="48" rx="6" fill="#e0f7fa" stroke="#00796b"/>
+  <text x="585" y="185" font-family="Segoe UI, Arial, sans-serif" font-size="13">EKS / EC2 / EBS</text>
+  <text x="280" y="380" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">Control-plane path (GitOps/CI)</text>
+  <text x="560" y="240" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">Cloud control path</text>
+  <defs><marker id="a" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#333"/></marker></defs>
+</svg>

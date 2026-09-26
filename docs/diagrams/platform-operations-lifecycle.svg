@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="200" viewBox="0 0 880 200">
+  <rect width="880" height="200" fill="#f7f8fa"/>
+  <text x="24" y="32" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#1a1a1a">Platform operations lifecycle</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="12">
+    <rect x="20" y="70" width="90" height="50" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/><text x="38" y="100">Observe</text>
+    <rect x="130" y="70" width="90" height="50" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/><text x="148" y="100">Detect</text>
+    <rect x="240" y="70" width="90" height="50" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/><text x="258" y="100">Triage</text>
+    <rect x="350" y="70" width="90" height="50" rx="6" fill="#fff4e0" stroke="#a57a3b"/><text x="360" y="100">Diagnose</text>
+    <rect x="460" y="70" width="90" height="50" rx="6" fill="#ffe8e8" stroke="#a53b3b"/><text x="478" y="100">Change</text>
+    <rect x="570" y="70" width="90" height="50" rx="6" fill="#e8ffe8" stroke="#3ba55a"/><text x="590" y="100">Verify</text>
+    <rect x="680" y="70" width="90" height="50" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/><text x="690" y="100">Document</text>
+    <rect x="790" y="70" width="70" height="50" rx="6" fill="#e0f7fa" stroke="#00796b"/><text x="800" y="100">Improve</text>
+  </g>
+  <text x="24" y="160" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">OBSERVE → UNDERSTAND → ACT → VERIFY → LEARN</text>
+</svg>
