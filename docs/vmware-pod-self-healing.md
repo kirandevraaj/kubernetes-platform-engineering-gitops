@@ -400,25 +400,180 @@ If a panel still looks flat, check raw PromQL in Explore first (table above) —
 
 ---
 
-## 18. Limitations
+## 18. Readiness Failure and Service Traffic Isolation
+
+**Date:** 2026-09-26 (same lab day as experiments 1–2)  
+**Type:** Controlled readiness failure (no pod delete, no Deployment change)  
+**AWS:** not modified  
+
+### Why readiness failure ≠ pod failure
+
+| | Pod delete (exps 1–2) | Readiness failure (this) |
+|---|---|---|
+| Pod object | Deleted | **Same pod remains** |
+| Container | Gone | Stays present (frozen / non-responsive) |
+| Phase | Terminating → new Pod | Stays **Running** |
+| Ready | n/a → new Ready | **True → False → True** |
+| ReplicaSet | Creates **replacement** Pod | Desired/current stay **2**; **no new Pod** |
+| Service | Endpoint removed (pod gone) | Endpoint removed (**NotReady**) |
+| Recovery | New container start | Process resume **or** same-pod container restart |
+
+```text
+Pod A                         Pod B
+Running + Ready               Running + Ready
+      ↓
+FastAPI / container suspended (Pod A only)
+      ↓
+Running + NOT Ready           Running + Ready
+      ↓
+Removed from Service endpoints
+      ↓
+Traffic only to Pod B
+      ↓
+Process / container resumed (same Pod A)
+      ↓
+Running + Ready
+      ↓
+Endpoint restored
+```
+
+**Running ≠ Ready.** A Pod can remain Running while Kubernetes refuses it as a Service endpoint.
+
+### How the experiment was performed
+
+1. **Baseline:** `platform-lab` 2/2 Ready · endpoints 2 · digest `sha256:1cca2b59…872ff` · `/health` 200 · `/version` 0.1.4.
+2. **Selected pod:** `platform-lab-9c5b867f-65xpb` on `k8s-worker-01` (container `platform-lab`).
+3. **PID identity:** `/proc/1/cmdline` = `python -m uvicorn src.main:app --host 0.0.0.0 --port 8000` → FastAPI/uvicorn is **PID 1**.
+4. **SIGSTOP attempt (failed on PID 1):**
+   - `bash -c 'kill -STOP 1'` and `os.kill(1, SIGSTOP)` return success but `/proc/1/status` stays `S (sleeping)`.
+   - Same `kill -STOP` on a **child** process correctly yields `T (stopped)`.
+   - Container **PID 1** does not accept SIGSTOP from inside the namespace (init / unkillable semantics). Per lab rules, Deployment/probe edits were **not** used as a substitute.
+5. **Working suspension:** on `k8s-worker-01`:
+   ```bash
+   sudo ctr -n k8s.io tasks pause <containerID>
+   # hold ~75s
+   sudo ctr -n k8s.io tasks resume <containerID>   # best-effort; see liveness note
+   ```
+   Container ID (this run): `b362844ded38f…e0f7`. Task status became **PAUSED**. Processes remain; they do not answer HTTP.
+
+### Readiness probe (unchanged)
+
+| Field | Value |
+|---|---|
+| Path / port / scheme | `/health` · named port `http` · HTTP |
+| initialDelaySeconds | 3 |
+| periodSeconds | 10 |
+| timeoutSeconds | 2 |
+| failureThreshold | 3 |
+| successThreshold | 1 |
+
+After three consecutive timeouts, kubelet sets Ready=False. Liveness uses the **same** `/health` path with period **15s** / failureThreshold **3** (relevant to recovery path below).
+
+### Observed timing
+
+| Event | Elapsed |
+|---|---|
+| `ctr tasks pause` | T0 (~05:55:19Z) |
+| Still Running+Ready (failures accumulating) | 0–~30s |
+| **NotReady** + endpoints **1** + available **1** | **~31.5 s** |
+| Hold while NotReady | through **~73 s** |
+| Recovery to 2/2 Ready + 2 endpoints | **~5.9 s** after resume/recovery start |
+
+### Kubernetes state during failure
+
+| Item | Before | During | After |
+|---|---|---|---|
+| Selected pod | Running 1/1 | **Running 0/1** | Running 1/1 (restartCount **1**) |
+| Other pod (`dfd2m`) | Running 1/1 | Running 1/1 | Running 1/1 |
+| Deployment desired | 2 | **2** | 2 |
+| Deployment available | 2 | **1** | 2 |
+| Active RS `…-9c5b867f` | 2/2/2 | **2 current / 1 ready** (no extra Pod) | 2/2/2 |
+| Endpoints | 2 | **1** (`10.244.36.233` only) | 2 |
+
+**Probe failure message (actual):**
+
+```text
+Readiness probe failed: Get "http://10.244.36.194:8000/health":
+  context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+Liveness probe failed: Get "http://10.244.36.194:8000/health":
+  context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+```
+
+### Service traffic
+
+- Before endpoint removal, a few ingress checks returned **`000`** (timeout) when traffic landed on the paused pod — expected race.
+- After Ready=False / endpoints=1, bounded `/health` checks returned **HTTP 200** via the survivor.
+- `/version` final: **0.1.4**. Digest unchanged.
+
+### Deployment / ReplicaSet
+
+Desired replicas stayed **2**. ReplicaSet **did not** create a third pod: the NotReady pod still counts toward `replicas` / `current`. Available replicas dropped because Ready≠Running.
+
+### KSM / Prometheus
+
+| Metric / PromQL | Observation |
+|---|---|
+| `kube_pod_status_ready{namespace="platform-lab",condition="true",pod="…-65xpb"}` | **1 → 0 → 1** |
+| `kube_deployment_status_replicas_available{namespace="platform-lab",deployment="platform-lab"}` | **2 → 1 → 2** |
+| Samples with available=1 / ready=0 (15s step) | **4** each in the captured window (~05:55:50–05:56:35Z) |
+| `up{job="platform-lab"}` for `65xpb` | **1 → 0 → 1** (direct pod scrape timed out while frozen; **not** the same as Service endpoint removal) |
+| `up` for `dfd2m` | stayed **1** |
+
+Scrape interval remains **30s** (unchanged).
+
+### Grafana
+
+On **Kubernetes Platform VMware** (Last 15 minutes), expect:
+
+- Available replicas: **2 → 1 → 2**
+- Desired replicas: flat **2**
+- Application availability (Service path): mostly UP after isolation
+
+Pod-level readiness may need Explore/`kube_pod_status_ready` if the dashboard lacks a dedicated readiness panel — **do not** edit the dashboard in this milestone.
+
+### HPA / PDB / Argo
+
+| Controller | Role in this experiment |
+|---|---|
+| HPA | Unchanged · did **not** create pods for NotReady |
+| PDB | Unchanged · did **not** restore readiness |
+| Argo CD `platform-lab-local` | Remained **Synced / Healthy** · not a Git drift event |
+
+Readiness is a **kubelet / Endpoints** runtime health path, not GitOps reconciliation.
+
+### Recovery note (liveness interaction)
+
+Holding NotReady ~60–90s overlaps the **liveness** budget (3×15s). In this run the selected pod’s **restartCount went 0 → 1**: kubelet restarted the **same** pod’s container after liveness timeouts. That is still **not** ReplicaSet replacement (same pod name; RS current stayed 2). `ctr resume` was attempted; final Ready came from the restarted container answering `/health` again.
+
+### Limitations
+
+- In-container **SIGSTOP to PID 1** is ineffective on this image/runtime; node-level `ctr tasks pause` was required.
+- Shared `/health` for readiness **and** liveness means a long freeze can become a **container restart**, not only NotReady.
+- Brief ingress timeouts can appear **before** endpoint removal while probes are still accumulating failures.
+- Not a Deployment/probe redesign, not pod delete, not Argo drift, not AWS.
+
+---
+
+## 19. Limitations (summary)
 
 - Single-pod failure with one survivor; not a full outage.
 - Experiment 1’s ~10s dip can be invisible at 30s scrape cadence.
 - Experiment 2 uses temporary cordon (scheduling delay), not production node failure.
-- Calico sandbox cleanup can leave old pods Terminating long after replacement is healthy.
+- Experiment 3 (readiness): PID 1 SIGSTOP blocked; pause + liveness overlap can restart the same container.
+- Calico sandbox cleanup can leave old pods Terminating long after healthy replacements exist.
 - Not an HPA, Argo drift, rollout, or real node-crash test.
 
 ---
 
-## 19. Next Failure Experiment
+## 20. Next Failure Experiment
 
 Candidates for later milestones (separate):
 
 - True node failure / drain with PDB interaction
 - Multi-pod disruption vs PDB
 - Bad image / CrashLoopBackOff recovery
-- Readiness failure without delete
-- AWS parity of the same single-pod heal
+- AWS parity of single-pod / readiness labs
+- Optional: separate readiness vs liveness paths for cleaner freeze demos (would be a **config** change — out of scope here)
 
 ---
 
@@ -440,6 +595,13 @@ kubectl delete pod <one-running-platform-lab-pod> -n platform-lab
 # observe Pending ~75–90s, then ALWAYS:
 kubectl uncordon k8s-worker-01
 kubectl uncordon k8s-worker-02
+
+# Experiment 3 — readiness (SIGSTOP to PID 1 is a no-op; use node pause):
+# on k8s-worker-01, container ID from:
+#   kubectl get pod <pod> -n platform-lab -o jsonpath='{.status.containerStatuses[0].containerID}'
+ssh k8s-worker-01 "sudo ctr -n k8s.io tasks pause <containerID>"
+# observe Running 0/1, endpoints 1, then ALWAYS:
+ssh k8s-worker-01 "sudo ctr -n k8s.io tasks resume <containerID>"
 
 kubectl get pods -n platform-lab -o wide
 kubectl get deploy,endpoints -n platform-lab
