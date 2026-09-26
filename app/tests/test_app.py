@@ -23,17 +23,28 @@ def test_root_returns_application_identity() -> None:
     assert body["name"] == APP_NAME
     assert body["description"] == APP_DESCRIPTION
     assert body["version"] == APP_VERSION
-    assert body["version"] == "0.1.4"
+    assert body["version"] == "0.1.5"
     assert body["environment"] == "local"
     assert body["release"] == APP_RELEASE
     assert body["release"] == "automated-ci-cd"
 
 
 def test_health_returns_healthy() -> None:
+    # Default APP_ENVIRONMENT is "local" (unit tests); VMware lab uses local-gitops.
     response = client.get("/health")
 
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
+
+
+def test_health_fails_when_local_gitops_environment(monkeypatch) -> None:
+    monkeypatch.setenv("APP_ENVIRONMENT", "local-gitops")
+    # Re-import binding used at request time — APP_ENVIRONMENT is module-level.
+    import src.main as main_mod
+
+    monkeypatch.setattr(main_mod, "APP_ENVIRONMENT", "local-gitops")
+    response = client.get("/health")
+    assert response.status_code == 503
 
 
 def test_version_returns_application_version() -> None:
@@ -41,7 +52,7 @@ def test_version_returns_application_version() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"name": APP_NAME, "version": APP_VERSION}
-    assert response.json()["version"] == "0.1.4"
+    assert response.json()["version"] == "0.1.5"
 
 
 def test_info_returns_non_sensitive_metadata() -> None:

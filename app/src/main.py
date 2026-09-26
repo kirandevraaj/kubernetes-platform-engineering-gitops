@@ -4,7 +4,7 @@ import os
 import sys
 from typing import Literal
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
@@ -66,6 +66,13 @@ def read_root() -> ApplicationResponse:
 
 @app.get("/health", response_model=HealthResponse, status_code=200)
 def health() -> HealthResponse:
+    # Intentional 0.1.5 readiness-failure lab: break /health only on VMware
+    # (APP_ENVIRONMENT=local-gitops). AWS overlay uses aws-eks-gitops and stays Ready.
+    if APP_ENVIRONMENT == "local-gitops":
+        raise HTTPException(
+            status_code=503,
+            detail="intentional readiness failure (0.1.5 lab)",
+        )
     return HealthResponse(status="healthy")
 
 
