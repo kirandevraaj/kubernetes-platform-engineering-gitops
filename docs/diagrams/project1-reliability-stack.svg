@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="640" viewBox="0 0 480 640" role="img" aria-label="Reliability stack">
+  <title>Project 1 Reliability Stack</title>
+  <rect width="480" height="640" fill="#f7f8fa"/>
+  <text x="240" y="28" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">Reliability stack + recovery paths</text>
+
+  <rect x="140" y="45" width="200" height="36" rx="6" fill="#ffe8e8" stroke="#a53b3b"/><text x="240" y="68" text-anchor="middle" font-size="12" font-family="Segoe UI">Application /health /metrics</text>
+  <path d="M240 81 V95" stroke="#333" marker-end="url(#a)"/>
+  <rect x="140" y="95" width="200" height="32" rx="4" fill="#fff4e0" stroke="#a57a3b"/><text x="240" y="115" text-anchor="middle" font-size="11" font-family="Segoe UI">Probes (live / ready)</text>
+  <path d="M240 127 V141" stroke="#333"/>
+  <rect x="140" y="141" width="200" height="32" rx="4" fill="#e0f7fa" stroke="#00796b"/><text x="240" y="161" text-anchor="middle" font-size="11" font-family="Segoe UI">Service / Endpoints</text>
+  <path d="M240 173 V187" stroke="#333"/>
+  <rect x="120" y="187" width="240" height="32" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="240" y="207" text-anchor="middle" font-size="11" font-family="Segoe UI">Deployment / RS / SS</text>
+  <path d="M240 219 V233" stroke="#333"/>
+  <rect x="120" y="233" width="240" height="32" rx="4" fill="#e8ffe8" stroke="#3ba55a"/><text x="240" y="253" text-anchor="middle" font-size="11" font-family="Segoe UI">HPA · PDB · topology spread</text>
+  <path d="M240 265 V279" stroke="#333"/>
+  <rect x="140" y="279" width="200" height="32" rx="4" fill="#f3e5f5" stroke="#7b1fa2"/><text x="240" y="299" text-anchor="middle" font-size="11" font-family="Segoe UI">Worker nodes / AZ</text>
+  <path d="M240 311 V325" stroke="#333"/>
+  <rect x="140" y="325" width="200" height="32" rx="4" fill="#e8ffe8" stroke="#3ba55a"/><text x="240" y="345" text-anchor="middle" font-size="11" font-family="Segoe UI">Storage (local-path | EBS)</text>
+  <path d="M240 357 V371" stroke="#333"/>
+  <rect x="120" y="371" width="240" height="32" rx="4" fill="#e0f7fa" stroke="#00796b"/><text x="240" y="391" text-anchor="middle" font-size="11" font-family="Segoe UI">Ingress HA | ALB</text>
+  <path d="M240 403 V417" stroke="#333"/>
+  <rect x="120" y="417" width="240" height="32" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="240" y="437" text-anchor="middle" font-size="11" font-family="Segoe UI">Prometheus scrape</text>
+  <path d="M240 449 V463" stroke="#333"/>
+  <rect x="140" y="463" width="200" height="32" rx="4" fill="#fce4ec" stroke="#ad1457"/><text x="240" y="483" text-anchor="middle" font-size="11" font-family="Segoe UI">Operator + runbook</text>
+  <path d="M240 495 V509" stroke="#333"/>
+  <rect x="120" y="509" width="240" height="36" rx="6" fill="#c8e6c9" stroke="#2e7d32"/><text x="240" y="532" text-anchor="middle" font-size="12" font-weight="700" font-family="Segoe UI">Recovery / verify</text>
+
+  <!-- Side recovery paths -->
+  <rect x="20" y="230" width="90" height="70" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="65" y="252" text-anchor="middle" font-size="10" font-weight="700" font-family="Segoe UI">Argo</text>
+  <text x="65" y="268" text-anchor="middle" font-size="9" font-family="Segoe UI">selfHeal</text>
+  <text x="65" y="282" text-anchor="middle" font-size="9" font-family="Segoe UI">~6s obs.</text>
+  <path d="M110 265 H120" stroke="#6b3ba5" stroke-dasharray="4 3"/>
+
+  <rect x="370" y="230" width="90" height="70" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="415" y="252" text-anchor="middle" font-size="10" font-weight="700" font-family="Segoe UI">Git</text>
+  <text x="415" y="268" text-anchor="middle" font-size="9" font-family="Segoe UI">rollback</text>
+  <text x="415" y="282" text-anchor="middle" font-size="9" font-family="Segoe UI">primary path</text>
+  <path d="M360 265 H350" stroke="#6b3ba5" stroke-dasharray="4 3"/>
+
+  <text x="240" y="580" text-anchor="middle" font-size="10" fill="#555" font-family="Segoe UI">Observed: pod ~10s · EBS worker ~6.3m · ingress 2/2 HA</text>
+  <text x="240" y="598" text-anchor="middle" font-size="10" fill="#555" font-family="Segoe UI">Alert/on-call = design gap</text>
+  <defs><marker id="a" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#333"/></marker></defs>
+</svg>

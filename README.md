@@ -1,197 +1,229 @@
 # Kubernetes Platform Engineering & GitOps Lab
 
-A portfolio project that builds a small platform around a containerized application: Kubernetes delivery, infrastructure as code, CI, GitOps CD, an AWS deployment path, networking, observability, and Python automation.
+End-to-end **Kubernetes platform engineering lab** across **VMware kubeadm** and **AWS EKS**, with Terraform-managed infrastructure, Jenkins CI, GitOps delivery with Argo CD, immutable image promotion, Prometheus/Grafana observability, Kubernetes security, resilience testing, persistent storage, disaster recovery drills, and Python/Ansible automation.
 
-## Project objective
+**Portfolio / lab platform** — not a production customer deployment.
 
-Show how a platform engineer takes an application from source to a running Kubernetes workload, with a repeatable local lab and a separate AWS target. Each layer is added only after the previous one is documented and working.
+**Repository:** [github.com/kirandevraaj/kubernetes-platform-engineering-gitops](https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops)  
+**Image:** [hub.docker.com/r/kirandevraaj/platform-lab](https://hub.docker.com/r/kirandevraaj/platform-lab) · `0.1.4` @ `sha256:1cca2b5964043fe6c9c09f17d7f86a3572a46699602919d15c45c9a069b872ff`
 
-The FastAPI application lives under `app/`, and its container image is published on Docker Hub as `kirandevraaj/platform-lab:0.1.3`. Jenkins CI on Docker Desktop polls GitHub, publishes versioned images when `app/**` changes, and promotes the image tag into **both** GitOps overlays (`local` and `aws`). It does not deploy. Argo CD reconciles each overlay onto its target cluster (VMware and EKS). Observability (Prometheus + Grafana) is GitOps-managed on the local lab in namespace `monitoring`.
+---
 
-## Architecture overview
+## What This Project Demonstrates
 
-```text
-Developer
-   |
-   v
-GitHub
-   |
-   +--> Jenkins CI (pollSCM, app/** gated)
-   |         → unit tests → Docker build → Docker Hub
-   |         → GitOps promote (local + aws overlays)
-   |
-   +--> Argo CD / GitOps
-            ├── platform-lab-local → VMware (ckad-lab)
-            └── platform-lab-aws   → EKS (platform-lab-aws-lab-eks)
-
-Jenkins performs CI and GitOps promotion.
-Argo CD performs Kubernetes deployment and reconciliation.
-```
-
-```mermaid
-flowchart LR
-  developer[Developer]
-  github[GitHub]
-  jenkins[Jenkins CI]
-  hub[Docker Hub]
-  argocdLocal[Argo CD local]
-  argocdAws[Argo CD AWS]
-  vmware[VMware ckad-lab]
-  eks[EKS]
-
-  developer --> github
-  github --> jenkins
-  jenkins --> hub
-  jenkins -->|promote overlays| github
-  github --> argocdLocal
-  github --> argocdAws
-  hub --> vmware
-  hub --> eks
-  argocdLocal --> vmware
-  argocdAws --> eks
-```
-Local runtime observed on 24 September 2026 (read-only):
-
-| Node | Role | Address | OS | Kubernetes | Runtime |
-|---|---|---|---|---|---|
-| k8s-ctrl-01 | control-plane | 192.168.56.10 | Ubuntu 24.04.4 LTS | v1.31.14 | containerd 2.2.1 |
-| k8s-worker-01 | worker | 192.168.56.11 | Ubuntu 24.04.4 LTS | v1.31.14 | containerd 2.2.1 |
-| k8s-worker-02 | worker | 192.168.56.12 | Ubuntu 24.04.4 LTS | v1.31.14 | containerd 2.2.1 |
-
-Platform components already running in the local cluster: Calico v3.30.7 (CNI), CoreDNS, kube-proxy, metrics-server, ingress-nginx (MetalLB LoadBalancer on the local overlay), MetalLB L2 pool `lab-pool`, and the local-path provisioner. The application workload `platform-lab` is deployed in namespace `platform-lab` from `kubernetes/overlays/local`: two replicas of `kirandevraaj/platform-lab:0.1.2` and a ClusterIP Service on port 8000. External HTTP uses Host `platform-lab.local` via the MetalLB VIP. The AWS overlay is not applied.
-
-## Technology stack
-
-Present in the local lab now:
-
-| Area | What is there |
+| Capability | Notes |
 |---|---|
-| Local infrastructure | VMware Workstation Pro on Windows 11 |
-| Node OS | Ubuntu 24.04.4 LTS |
-| Orchestration | Kubernetes v1.31.14 |
-| Node runtime | containerd 2.2.1 |
-| Networking | Calico v3.30.7, ingress-nginx, MetalLB |
-| Application | Python FastAPI service under `app/`, version 0.1.2 (0.1.3 adds `/metrics`), running in namespace `platform-lab` on the local cluster |
-| Published image | `kirandevraaj/platform-lab:0.1.2` on Docker Hub (0.1.3 via Jenkins after this change) |
-| Observability | kube-prometheus-stack via Argo CD (`monitoring`); Grafana LoadBalancer; Prometheus ClusterIP |
+| Dual-environment Kubernetes | VMware `ckad-lab` (1.31.14) + EKS `platform-lab-aws` (1.36.4) |
+| IaC | Terraform for VPC, EKS, node groups, IAM, add-ons |
+| CI | Jenkins: test → build → push → digest → GitOps promote |
+| GitOps | Separate Argo CD control planes; Kustomize overlays |
+| Immutable promotion | Same digest across environments |
+| Observability | Prometheus, Grafana, KSM, node-exporter, Metrics Server |
+| Reliability | HPA, PDB, topology, controlled failure experiments |
+| Networking | MetalLB + ingress-nginx (VMware); ALB IP targets (AWS) |
+| Storage | local-path (VMware); EBS CSI + snapshots (AWS) |
+| Security | RBAC, Pod Security, NetworkPolicy, dedicated SAs |
+| Automation | Python CLI, Boto3 concepts, Ansible (Linux/Jenkins) |
+| DR / ops | Measured RPO/RTO lab drills; runbooks & handbook |
 
-Planned, and not in this repository yet:
+Story: **BUILD → DEPLOY → OBSERVE → SCALE → SECURE → FAIL → RECOVER → AUTOMATE → OPERATE → DOCUMENT**
 
-| Area | Tool |
-|---|---|
-| OpenTelemetry | Application tracing (later) |
-| AWS path | Terraform |
+---
 
-The Jenkins controller and Linux agent run on Docker Desktop (http://127.0.0.1:8080). Job `platform-lab-ci` uses credential `dockerhub-platform-lab` and publishes `kirandevraaj/platform-lab:<APP_VERSION>`. It does not deploy to Kubernetes.
+## Architecture
 
-Docker Desktop client 29.6.1 builds the local image. It is not the cluster runtime. Terraform is not installed.
+![Project 1 reference architecture](docs/diagrams/project1-reference-architecture.svg)
 
-## Environment strategy
+Deep dive: [docs/architecture/project1-reference-architecture.md](docs/architecture/project1-reference-architecture.md) · [ADRs](docs/adr/README.md) · [Portfolio](docs/portfolio/README.md)
 
-Two deployment targets stay separate for the life of this project.
+---
 
-| Target | Purpose | How it is reached |
+## Environments
+
+| | VMware | AWS |
 |---|---|---|
-| Local lab | Day-to-day platform work on the three VMware nodes | SSH and kubectl against `192.168.56.0/24` |
-| AWS | EKS lab (`platform-lab-aws-lab-eks`) via Terraform + `kubernetes/overlays/aws` | AWS credentials and kube context `platform-lab-aws` |
+| Context | `ckad-lab` | `platform-lab-aws` |
+| Kubernetes | **1.31.14** | **1.36.4** (EKS) |
+| Nodes | 3 Ready | 2 × t3.medium |
+| Ingress | MetalLB `192.168.56.200` → ingress-nginx | ALB (target-type **ip**) |
+| Storage | `local-path` | `ebs-gp3` / EBS CSI |
+| Argo CD | **v3.5.3** | **v3.1.0** (separate) |
 
-When those overlays exist, they will describe the same application shape with different infrastructure. A change for one target stays in that target. See [environment strategy](docs/design/environment-strategy.md).
+---
 
-## Implementation status
+## Capability Matrix
 
-1. **Repository baseline.** Completed. Project layout, architecture notes, and a read-only record of the current lab.
-2. **Application and container image.** Completed. The service, tests, and Dockerfile are in `app/`. Current published tag is `kirandevraaj/platform-lab:0.1.2`. The tag `latest` is not used.
-3. **Kubernetes packaging.** Completed. Initially applied on 24 September 2026 with `kubectl apply -k kubernetes/overlays/local`. Ongoing changes are GitOps-only through Argo CD. The AWS overlay has not been applied.
-4. **Jenkins CI pipeline definition.** Completed. `jenkins/Jenkinsfile` checks out the repository, tests `app/tests`, reads `APP_VERSION`, builds and validates `kirandevraaj/platform-lab:<APP_VERSION>`, and pushes that tag. See [jenkins/README.md](jenkins/README.md).
-5. **Jenkins execution and publishing.** Completed. Job `platform-lab-ci` publishes versioned tags with credential `dockerhub-platform-lab`. Image validation reaches the temporary container over the agent Docker network. No `latest` tag. No Kubernetes deploy from CI.
-6. **Argo CD GitOps.** Completed. Argo CD `v3.5.3` is installed in namespace `argocd` on `ckad-lab`. Application `platform-lab-local` watches `kubernetes/overlays/local` on `main` and syncs to namespace `platform-lab` on the in-cluster API. Automated sync, prune, and selfHeal are enabled. See [gitops/README.md](gitops/README.md) and [docs/architecture/gitops-flow.md](docs/architecture/gitops-flow.md).
-7. **Manual CI/CD integration test (0.1.1).** Completed on 24 September 2026. Release `0.1.1` was pushed to GitHub; Jenkins built and published `kirandevraaj/platform-lab:0.1.1`; the local overlay was updated to that tag and pushed; Argo CD reconciled without `kubectl apply`; both pods ran `0.1.1`; `GET /` returned version `0.1.1`, environment `local-gitops`, and release `ci-cd-integration-test`. See [docs/architecture/ci-cd-flow.md](docs/architecture/ci-cd-flow.md).
-8. **Automated CI/CD promotion.** Completed and extended for multi-environment GitOps. `jenkins/Jenkinsfile` uses `pollSCM`, runs build/push/promotion only for `app/**` changes, refuses reused Docker Hub tags, updates **both** `kubernetes/overlays/local` and `kubernetes/overlays/aws` image tags, and pushes with `github-platform-lab`. Loop prevention skips rebuild on GitOps-only commits. First dual-environment release demo is reserved for `0.1.4`. See [jenkins/README.md](jenkins/README.md) and [docs/architecture/ci-cd-flow.md](docs/architecture/ci-cd-flow.md).
-9. **Networking.** Completed for the local lab. Ingress + NetworkPolicy in `kubernetes/base`; local overlay patches `ingress-nginx-controller` to MetalLB **LoadBalancer** (L2). Application Service stays ClusterIP. See [docs/architecture/networking.md](docs/architecture/networking.md).
-10. **Observability.** Completed for the local lab on 24 September 2026. `kube-prometheus-stack` is managed by Argo CD Application `platform-lab-observability`. Grafana is MetalLB LoadBalancer (observed VIP `192.168.56.201`); Prometheus is ClusterIP. Application exposes `/metrics` from version `0.1.3`. ServiceMonitor targets are up. See [docs/architecture/observability.md](docs/architecture/observability.md).
-11. **Reliability & production hardening.** Completed for the local lab. Local overlay adds HPA (CPU 70%, 2–4 replicas), PDB (`minAvailable: 1`), RollingUpdate `maxUnavailable: 0` / `maxSurge: 1`, and soft hostname topology spread. See [docs/architecture/reliability.md](docs/architecture/reliability.md).
-12. **AWS path.** Provisioned and validated: EKS 1.36, AWS Load Balancer Controller, Argo CD, Application `platform-lab-aws` watching `kubernetes/overlays/aws`. VMware lab remains independent.
-13. **Python automation.** Planned. Repeatable checks and operational helpers.
+| Capability | Implementation | Verified |
+|---|---|---|
+| Kubernetes | Yes | Yes |
+| Terraform (AWS) | Yes | Yes (lab apply; no destructive rebuild drill) |
+| Jenkins CI | Yes | Yes |
+| Docker / digest promote | Yes | Yes (`0.1.4`) |
+| Git desired state | Yes | Yes |
+| Argo CD | Yes | Yes |
+| ApplicationSet / App-of-Apps | Yes | Yes (lab apps) |
+| Kustomize overlays | Yes | Yes |
+| Prometheus / Grafana | Yes | Yes (VMware Healthy; AWS see limitations) |
+| KSM / node-exporter | Yes | Yes |
+| Metrics Server | Yes | Yes |
+| HPA | Yes | Yes (VMware 2→4; AWS 2→3) |
+| RBAC / Pod Security | Yes | Yes |
+| NetworkPolicy | Yes | **Partial** (VMware enforced; AWS objects present, enforcement not observed) |
+| EBS CSI + snapshots | Yes | Yes |
+| Python automation CLI | Yes | Yes |
+| Boto3 | Yes | **Partial** (code/docs; live Windows workstation path limited) |
+| Ansible | Yes | **Partial** (Linux/Jenkins; Windows CLI blocked) |
+| DR / RPO-RTO measurements | Yes | **Partial** (selected drills; not full EKS rebuild / AWS Backup restore) |
+| Runbooks / ops handbook | Yes | Yes |
 
-### Project 1 — AWS storage (complete)
+---
 
-20. **AWS EBS-backed persistent storage** ✅ — EBS CSI add-on + Pod Identity, `ebs-gp3`, StatefulSet `storage-demo`, Pod-delete persistence. See [`docs/aws-storage-statefulset.md`](docs/aws-storage-statefulset.md).
-21. **AWS node/AZ storage resilience** ✅ — controlled worker terminate, same-AZ EBS reattach, data preservation, AZ topology Pending demo, temporary same-AZ node group cleaned up. See [`docs/aws-storage-resilience.md`](docs/aws-storage-resilience.md).
-22. **Security / RBAC hardening** ✅ — isolated `security-lab` on VMware + AWS, least-privilege Roles/Bindings, PSA baseline, NetworkPolicy lab, platform-lab SA token disable. See [`docs/security-rbac.md`](docs/security-rbac.md).
+## Technology Stack
 
-Demonstrated (observed, not claimed beyond evidence): same-AZ worker replacement · EBS CSI reattachment · data preservation · AZ topology restriction. **Not** multi-AZ EBS storage.
+Kubernetes · Terraform · Jenkins · Docker · GitHub · Argo CD · Kustomize · Prometheus · Grafana · kube-state-metrics · node-exporter · Metrics Server · Calico · MetalLB · ingress-nginx · AWS LB Controller / ALB · EBS CSI · CSI snapshots · Python · Boto3 · Ansible · Helm · kubectl
 
-### Project 1 — Disaster Recovery (Section 25)
+---
 
-25. **Disaster / Recovery** ✅ — see [`docs/disaster-recovery-master-guide.md`](docs/disaster-recovery-master-guide.md) and [`docs/dr-lab-evidence.md`](docs/dr-lab-evidence.md).
+## CI/CD · GitOps · Infrastructure · Automation
 
-| Item | Status |
+- **Jenkins:** checkout → change detection → test → build → push → digest → promote overlays (GitOps-only changes skip app CI by design).
+- **Argo CD:** reconciles Git → cluster; selfHeal observed (~6s lab).
+- **Terraform:** AWS VPC/EKS/IAM/add-ons (local state — production gap).
+- **Python / Ansible:** operational automation; ops commands are read-only (`platform-automate ops health|triage|report|evidence`).
+
+---
+
+## Observability · Security · Reliability · Storage · DR · Operations
+
+| Area | Pointer |
 |---|---|
-| 25.1 DR fundamentals | Completed |
-| 25.2 RPO/RTO | Completed (lab targets + measured windows) |
-| 25.3 Git recovery | Completed (measured) |
-| 25.4 Argo recovery | Completed (Application delete/recreate measured) |
-| 25.5 Namespace recovery | Completed (measured ≈ 23 s) |
-| 25.6 EBS snapshot recovery | Completed (POINT-A restored; POINT-B excluded; new volume) |
-| 25.7 AWS Backup assessment/test | Documented / assessed; on-demand EKS backup **not** executed |
-| 25.8 Terraform rebuild model | Documented; targeted plan/apply for snapshot-controller only |
-| 25.9 DR runbooks | Completed |
-| 25.10 DR automation | Completed (`platform-automate dr …`) |
-| 25.11 VMware vs AWS DR comparison | Completed (diagram + docs) |
+| Observability | [docs/architecture/observability.md](docs/architecture/observability.md) |
+| Security | [docs/security-rbac.md](docs/security-rbac.md) |
+| Reliability | [docs/architecture/reliability.md](docs/architecture/reliability.md) |
+| Storage | [docs/aws-storage-statefulset.md](docs/aws-storage-statefulset.md) · [docs/vmware-storage-statefulset.md](docs/vmware-storage-statefulset.md) |
+| DR | [docs/disaster-recovery-master-guide.md](docs/disaster-recovery-master-guide.md) |
+| Operations | [docs/operations/README.md](docs/operations/README.md) |
 
-## Published container artifact
+---
 
-Version `0.1.3` is the current published image used by the local lab. The tag `latest` is intentionally unused. The digest is the immutable reference for that artifact.
+## Failure Engineering Performed
 
-| Field | Value |
+| Failure | Observed result |
 |---|---|
-| Image | `kirandevraaj/platform-lab:0.1.3` |
-| Docker Hub | https://hub.docker.com/r/kirandevraaj/platform-lab |
-| Digest | `sha256:b2c2d0d5617c05e2fb36ab186e6ebd8bbd1de7c10a928ade922337f7df18f6ba` |
+| Pod deleted | ReplicaSet recreate ~**10s** (VMware) |
+| Readiness failure | Running ≠ Ready; endpoints drop; no RS replace |
+| Failed rollout `0.1.5` | Old RS kept serving; Git rollback to `0.1.4` digest → Argo recover |
+| Argo drift / selfHeal | Live edit reverted ~**6s** |
+| Argo ComparisonError | Kustomize path error → Unknown until source fixed |
+| Worker (VMware kubelet) | NotReady → capacity drop → recover after kubelet |
+| Worker (AWS) + EBS | Same-AZ reattach; recovery ~**6.3 min** |
+| Ingress SPOF → HA | Single replica SPOF; then 2 replicas + PDB |
+| EBS snapshot restore | Ready ~**72s**; PVC→Running ~**15s**; cross-ns restore failed until same-ns VSC |
+| HPA load | VMware **2→4**; AWS **2→3** |
+| RBAC / PSA denials | Lab experiments Section 22 |
+| Grafana OOM (historical) | Limits raised via GitOps |
+
+**Lab measurements, not production SLAs.**
+
+---
+
+## Measured Results
+
+| Metric | Lab value |
+|---|---|
+| Pod recreation | ~10s |
+| Argo selfHeal | ~6s |
+| Namespace recovery | ~23s |
+| Snapshot Ready | ~72s |
+| Snapshot restore PVC→Running | ~15s |
+| AWS worker/EBS recovery | ~6.3 min |
+
+---
+
+## Known Limitations
+
+Scope boundaries / future production work — not hidden failures:
+
+- AWS `platform-observability-aws`: **Synced/Degraded** at portfolio freeze — Grafana surge Pod **Pending** (`Too many pods` on 2×t3.medium); **1/1 Ready Grafana still serves**; ProgressDeadlineExceeded on new ReplicaSet. **Known final-state limitation.**
+- AWS NetworkPolicy enforcement not observed with current VPC CNI lab setup (objects exist).
+- VMware control-plane scrape endpoints may be locally bound (non-app noise).
+- Windows Ansible CLI blocked; Linux/Jenkins is the execution path.
+- Live Boto3 on Windows workstation not fully exercised.
+- AWS Backup EKS restore **not executed**; full EKS rebuild **not** destructively tested.
+- EBS is **AZ-scoped**; cross-region DR not implemented.
+- No centralized alerting/on-call; no production secret manager; Terraform state is local.
+
+Details: [docs/portfolio/known-limitations.md](docs/portfolio/known-limitations.md)
+
+---
+
+## Repository Structure
 
 ```text
-docker pull kirandevraaj/platform-lab:0.1.3
-docker pull kirandevraaj/platform-lab@sha256:b2c2d0d5617c05e2fb36ab186e6ebd8bbd1de7c10a928ade922337f7df18f6ba
-```
-## Safety note
-
-The local VMware lab and the AWS account are separate deployment targets. Commands, kube contexts, Terraform workspaces, and GitOps applications for one target must not be aimed at the other. Cluster, VM, and network changes wait for explicit approval.
-
-## Layout
-
-```text
-kubernetes-platform-engineering-gitops/
-├── README.md
-├── LICENSE
-├── .gitignore
-├── docs/
-│   ├── architecture/
-│   ├── design/
-│   └── troubleshooting/
-├── app/
-│   ├── src/
-│   └── tests/
-├── kubernetes/
-│   ├── base/
-│   └── overlays/
-│       ├── local/
-│       └── aws/
-├── gitops/
-│   ├── applications/
-│   ├── projects/
-│   └── appsets/
-├── jenkins/
-│   ├── Jenkinsfile
-│   ├── README.md
-│   └── runtime/
-│       ├── compose.yaml
-│       ├── controller/
-│       └── agent/
-├── terraform/
-│   └── aws/
-└── scripts/
+app/           FastAPI application
+automation/    Python + Ansible
+jenkins/       CI/CD
+kubernetes/    workloads, overlays, GitOps apps
+terraform/     AWS infrastructure
+docs/          architecture, ADRs, ops, runbooks, portfolio
 ```
 
-## License
+---
 
-MIT. See [LICENSE](LICENSE).
+## Documentation Map
+
+| Topic | Link |
+|---|---|
+| Architecture | [docs/architecture/project1-reference-architecture.md](docs/architecture/project1-reference-architecture.md) |
+| ADRs | [docs/adr/README.md](docs/adr/README.md) |
+| GitOps / Argo | [docs/argo-advanced-patterns.md](docs/argo-advanced-patterns.md) |
+| Automation | [docs/automation/platform-automation-master-guide.md](docs/automation/platform-automation-master-guide.md) |
+| Security | [docs/security-rbac.md](docs/security-rbac.md) |
+| Storage | [docs/aws-storage-resilience.md](docs/aws-storage-resilience.md) |
+| Observability | [docs/architecture/observability.md](docs/architecture/observability.md) |
+| Reliability | [docs/architecture/reliability.md](docs/architecture/reliability.md) |
+| DR | [docs/disaster-recovery-master-guide.md](docs/disaster-recovery-master-guide.md) |
+| Operations | [docs/operations/README.md](docs/operations/README.md) |
+| Interview | [docs/project1-interview-master-guide.md](docs/project1-interview-master-guide.md) |
+| Portfolio | [docs/portfolio/README.md](docs/portfolio/README.md) |
+| Full index | [docs/README.md](docs/README.md) |
+
+---
+
+## How to Explore (safe)
+
+```bash
+git clone https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+cd kubernetes-platform-engineering-gitops
+# Read docs/architecture/project1-reference-architecture.md
+
+cd automation/python
+python -m venv .venv && .venv/Scripts/activate   # or source .venv/bin/activate
+pip install -e ".[dev]"
+platform-automate doctor
+platform-automate platform verify
+platform-automate ops health    # needs cluster kubeconfig
+```
+
+- **AWS lab execution** requires AWS access / EKS kubeconfig.  
+- **Ansible** requires Linux (or Jenkins agent).  
+- Basic repo exploration does **not** require AWS credentials.
+
+---
+
+## Interview Talking Points
+
+1. Why Jenkins builds but Argo deploys (Git as desired state).  
+2. Tag vs digest promotion (`0.1.4` digest pin).  
+3. VMware MetalLB/ingress vs AWS ALB IP mode.  
+4. EBS AZ topology and ~6.3 min worker recovery.  
+5. Failure engineering: readiness ≠ running; Git rollback over `kubectl rollout undo`.  
+6. Honest limitations (NetworkPolicy on AWS, pod density, DR scope).
+
+Cheat sheet: [docs/portfolio/project1-interview-cheat-sheet.md](docs/portfolio/project1-interview-cheat-sheet.md)
+
+---
+
+## Author
+
+Portfolio project by **Kiran** — Platform Engineering / Kubernetes / GitOps lab evidence in this repository.

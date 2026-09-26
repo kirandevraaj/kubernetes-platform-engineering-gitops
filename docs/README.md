@@ -1,103 +1,116 @@
 # Documentation index
 
-Architecture, design, runbooks, and lab notes for the Kubernetes Platform Engineering & GitOps Lab.
+Master index for the Kubernetes Platform Engineering & GitOps Lab (Project 1).
 
-## Operations (Section 26)
+**Start here:** [Portfolio](portfolio/README.md) · [Reference architecture](architecture/project1-reference-architecture.md) · [Operations](operations/README.md) · [ADRs](adr/README.md)
 
-| Document | Path |
-|---|---|
-| Operations landing page | [operations/README.md](operations/README.md) |
-| Platform Operations Handbook | [operations/platform-operations-handbook.md](operations/platform-operations-handbook.md) |
-| Triage framework | [troubleshooting/triage-framework.md](troubleshooting/triage-framework.md) |
-| Troubleshooting matrix | [troubleshooting/troubleshooting-matrix.md](troubleshooting/troubleshooting-matrix.md) |
-| Daily health checklist | [checklists/daily-platform-health.md](checklists/daily-platform-health.md) |
-| Postmortems | [postmortems/](postmortems/) |
-| Operations interview notes | [operations/operations-interview-notes.md](operations/operations-interview-notes.md) |
+Classification: **Implemented + Verified** · **Partial** · **Documented / Designed** · **Not tested**
 
-Concept → architecture → experiment → runbook → recovery: start at [operations/README.md](operations/README.md).
-
-## Disaster Recovery (Section 25)
-
-| Document | Description |
-|---|---|
-| [Disaster Recovery Master Guide](disaster-recovery-master-guide.md) | End-to-end DR reference (concepts → production → interview) |
-| [DR Fundamentals](disaster-recovery-fundamentals.md) | HA vs backup vs restore vs DR; RPO/RTO; what each plane protects |
-| [DR Baseline Inventory](dr-baseline-inventory.md) | Read-only inventory of VMware + AWS at Section 25 start |
-| [Disaster Scenario Matrix](disaster-scenario-matrix.md) | Failure scenarios, recovery sources, tested vs documented |
-| [AWS Backup for EKS](aws-backup-eks-dr.md) | AWS Backup scope, prerequisites, limitations |
-| [Terraform DR](terraform-dr.md) | Code vs state; local state risks; backup model |
-| [Terraform Recovery Runbook](terraform-recovery-runbook.md) | Conceptual infrastructure rebuild sequence |
-| [Business Continuity](business-continuity.md) | People, credentials, DNS, deps beyond Kubernetes |
-| [DR Interview Notes](disaster-recovery-interview-notes.md) | Concise interview Q&A grounded in this lab |
-
-### DR runbooks
-
-| Runbook | Path |
-|---|---|
-| AWS EKS Disaster Recovery | [runbooks/aws-eks-disaster-recovery.md](runbooks/aws-eks-disaster-recovery.md) |
-| EBS Storage Recovery | [runbooks/ebs-storage-recovery.md](runbooks/ebs-storage-recovery.md) |
-| Git / Argo Recovery | [runbooks/git-argo-recovery.md](runbooks/git-argo-recovery.md) |
-| Terraform Infrastructure Recovery | [runbooks/terraform-infrastructure-recovery.md](runbooks/terraform-infrastructure-recovery.md) |
-
-### DR diagrams
-
-| Diagram | Path |
-|---|---|
-| DR dependency graph | [diagrams/dr-dependency-graph.svg](diagrams/dr-dependency-graph.svg) |
-| DR architecture | [diagrams/disaster-recovery-architecture.svg](diagrams/disaster-recovery-architecture.svg) |
-| EKS recovery flow | [diagrams/eks-recovery-flow.svg](diagrams/eks-recovery-flow.svg) |
-| EBS snapshot recovery | [diagrams/ebs-snapshot-recovery.svg](diagrams/ebs-snapshot-recovery.svg) |
-| VMware vs AWS DR | [diagrams/vmware-vs-aws-dr.svg](diagrams/vmware-vs-aws-dr.svg) |
+---
 
 ## Architecture
 
 | Document | Path |
 |---|---|
-| Architecture overview | [architecture/architecture-overview.md](architecture/architecture-overview.md) |
-| GitOps flow | [architecture/gitops-flow.md](architecture/gitops-flow.md) |
-| CI/CD flow | [architecture/ci-cd-flow.md](architecture/ci-cd-flow.md) |
-| Networking | [architecture/networking.md](architecture/networking.md) |
+| Project 1 reference architecture | [architecture/project1-reference-architecture.md](architecture/project1-reference-architecture.md) |
+| Platform version inventory | [architecture/platform-version-inventory.md](architecture/platform-version-inventory.md) |
+| Ownership boundaries | [architecture/ownership-boundaries.md](architecture/ownership-boundaries.md) |
+| Tool boundaries | [architecture/tool-boundaries.md](architecture/tool-boundaries.md) |
+| Cost awareness | [architecture/cost-awareness.md](architecture/cost-awareness.md) |
+| Final security review | [architecture/final-security-review.md](architecture/final-security-review.md) |
+| Architecture overview (lab notes) | [architecture/architecture-overview.md](architecture/architecture-overview.md) |
+| GitOps / CI/CD / networking / observability / reliability | [architecture/](architecture/) |
+
+### Diagrams (portfolio)
+
+| Diagram | Path |
+|---|---|
+| Reference architecture | [diagrams/project1-reference-architecture.svg](diagrams/project1-reference-architecture.svg) |
+| Control vs data plane | [diagrams/project1-control-and-data-plane.svg](diagrams/project1-control-and-data-plane.svg) |
+| Automation boundaries | [diagrams/project1-automation-boundaries.svg](diagrams/project1-automation-boundaries.svg) |
+| Reliability stack | [diagrams/project1-reliability-stack.svg](diagrams/project1-reliability-stack.svg) |
+| Security architecture | [diagrams/project1-security-architecture.svg](diagrams/project1-security-architecture.svg) |
+| DR architecture | [diagrams/project1-dr-architecture.svg](diagrams/project1-dr-architecture.svg) |
+
+---
+
+## ADRs
+
+[adr/README.md](adr/README.md) — Terraform, EKS, GitOps, digests, Kustomize, observability, ALB vs ingress, EBS CSI, RBAC, automation boundaries, DR model, ingress HA, local-path vs EBS.
+
+---
+
+## Foundation / GitOps / Observability / Security / Storage
+
+| Topic | Authoritative |
+|---|---|
+| Argo advanced | [argo-advanced-patterns.md](argo-advanced-patterns.md) |
+| Security / RBAC | [security-rbac.md](security-rbac.md) |
+| AWS EBS storage | [aws-storage-statefulset.md](aws-storage-statefulset.md) · [aws-storage-resilience.md](aws-storage-resilience.md) |
+| VMware storage | [vmware-storage-statefulset.md](vmware-storage-statefulset.md) |
+| Networking anatomy | [vmware-networking-anatomy.md](vmware-networking-anatomy.md) |
 | Observability | [architecture/observability.md](architecture/observability.md) |
-| Reliability | [architecture/reliability.md](architecture/reliability.md) |
-| Argo GitOps reference | [architecture/argo-gitops-reference.md](architecture/argo-gitops-reference.md) |
+
+---
+
+## Automation
+
+| Document | Path |
+|---|---|
+| Platform automation master guide | [automation/platform-automation-master-guide.md](automation/platform-automation-master-guide.md) |
+| Interview notes | [automation-interview-notes.md](automation-interview-notes.md) |
+
+---
+
+## Disaster Recovery
+
+| Document | Path |
+|---|---|
+| DR master guide | [disaster-recovery-master-guide.md](disaster-recovery-master-guide.md) |
+| DR lab evidence | [dr-lab-evidence.md](dr-lab-evidence.md) |
+| Runbook index | [runbooks/disaster-recovery-index.md](runbooks/disaster-recovery-index.md) |
+
+---
+
+## Operations
+
+| Document | Path |
+|---|---|
+| Operations landing | [operations/README.md](operations/README.md) |
+| Platform operations handbook | [operations/platform-operations-handbook.md](operations/platform-operations-handbook.md) |
+| Interview notes | [operations/operations-interview-notes.md](operations/operations-interview-notes.md) |
+
+---
+
+## Runbooks · Checklists · Postmortems · Troubleshooting
+
+| Area | Path |
+|---|---|
+| Runbooks | [runbooks/](runbooks/) |
+| Checklists | [checklists/](checklists/) |
+| Postmortems | [postmortems/](postmortems/) |
+| Triage / matrix | [troubleshooting/triage-framework.md](troubleshooting/triage-framework.md) · [troubleshooting/troubleshooting-matrix.md](troubleshooting/troubleshooting-matrix.md) |
+
+---
+
+## Portfolio · Evidence · Interview
+
+| Document | Path |
+|---|---|
+| Portfolio landing | [portfolio/README.md](portfolio/README.md) |
+| Evidence index | [evidence/README.md](evidence/README.md) |
+| Interview master guide | [project1-interview-master-guide.md](project1-interview-master-guide.md) |
+| Timeline | [project-timeline.md](project-timeline.md) |
+| Engineering journey | [project-engineering-journey.md](project-engineering-journey.md) |
+| AWS obs degraded note | [portfolio/aws-observability-degraded-final-state.md](portfolio/aws-observability-degraded-final-state.md) |
+
+---
 
 ## Design
 
 | Document | Path |
 |---|---|
 | Environment strategy | [design/environment-strategy.md](design/environment-strategy.md) |
-| Architecture decisions | [design/architecture-decisions.md](design/architecture-decisions.md) |
+| Architecture decisions (early) | [design/architecture-decisions.md](design/architecture-decisions.md) |
 
-## Platform labs (selected)
-
-| Topic | Path |
-|---|---|
-| Security / RBAC | [security-rbac.md](security-rbac.md) |
-| AWS EBS StatefulSet | [aws-storage-statefulset.md](aws-storage-statefulset.md) |
-| AWS storage resilience | [aws-storage-resilience.md](aws-storage-resilience.md) |
-| Argo advanced patterns | [argo-advanced-patterns.md](argo-advanced-patterns.md) |
-| Platform automation master guide | [automation/platform-automation-master-guide.md](automation/platform-automation-master-guide.md) |
-| Toolchain inventory | [toolchain-inventory.md](toolchain-inventory.md) |
-
-## Operations (Section 26)
-
-| Document | Description |
-|---|---|
-| Operations index | [operations/README.md](operations/README.md) |
-| Platform Operations Handbook | [operations/platform-operations-handbook.md](operations/platform-operations-handbook.md) |
-| Platform inventory | [operations/platform-inventory.md](operations/platform-inventory.md) |
-| Golden signals | [operations/golden-signals.md](operations/golden-signals.md) |
-| Triage framework | [troubleshooting/triage-framework.md](troubleshooting/triage-framework.md) |
-| Troubleshooting matrix | [troubleshooting/troubleshooting-matrix.md](troubleshooting/troubleshooting-matrix.md) |
-| Runbook template | [runbooks/runbook-template.md](runbooks/runbook-template.md) |
-| Daily / shift checklists | [checklists/daily-platform-health.md](checklists/daily-platform-health.md) |
-
-DR operational timings link [operations/rpo-rto-operational-guide.md](operations/rpo-rto-operational-guide.md) to Section 25 [dr-lab-evidence.md](dr-lab-evidence.md) (authoritative drill detail).
-
-## Troubleshooting
-
-| Document | Path |
-|---|---|
-| Common issues | [troubleshooting/common-issues.md](troubleshooting/common-issues.md) |
-| Triage framework | [troubleshooting/triage-framework.md](troubleshooting/triage-framework.md) |
-| Troubleshooting matrix | [troubleshooting/troubleshooting-matrix.md](troubleshooting/troubleshooting-matrix.md) |
+Prefer numbered ADRs under [adr/](adr/) for decision rationale going forward.

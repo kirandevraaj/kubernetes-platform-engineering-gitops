@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="520" viewBox="0 0 720 520" role="img" aria-label="Security architecture">
+  <title>Project 1 Security Architecture</title>
+  <rect width="720" height="520" fill="#f7f8fa"/>
+  <text x="360" y="28" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700">Security architecture (layers)</text>
+
+  <!-- K8s column -->
+  <rect x="40" y="50" width="300" height="420" rx="8" fill="#ffffff" stroke="#3b6ea5" stroke-width="2"/>
+  <text x="190" y="78" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" fill="#3b6ea5">Kubernetes authorization plane</text>
+
+  <rect x="70" y="95" width="240" height="34" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="190" y="116" text-anchor="middle" font-size="11" font-family="Segoe UI">Identity (User / ServiceAccount)</text>
+  <path d="M190 129 V145" stroke="#333"/>
+  <rect x="70" y="145" width="240" height="34" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="190" y="166" text-anchor="middle" font-size="11" font-family="Segoe UI">RBAC (Role / Binding)</text>
+  <path d="M190 179 V195" stroke="#333"/>
+  <rect x="70" y="195" width="240" height="34" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="190" y="216" text-anchor="middle" font-size="11" font-family="Segoe UI">Pod Security Admission</text>
+  <path d="M190 229 V245" stroke="#333"/>
+  <rect x="70" y="245" width="240" height="34" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="190" y="266" text-anchor="middle" font-size="11" font-family="Segoe UI">SecurityContext / SA token mount</text>
+  <path d="M190 279 V295" stroke="#333"/>
+  <rect x="70" y="295" width="240" height="34" rx="4" fill="#fff3e0" stroke="#ef6c00"/><text x="190" y="316" text-anchor="middle" font-size="11" font-family="Segoe UI">NetworkPolicy (CNI-dependent)</text>
+  <text x="190" y="350" text-anchor="middle" font-size="10" fill="#2e7d32" font-family="Segoe UI">VMware Calico: enforced (observed)</text>
+  <text x="190" y="368" text-anchor="middle" font-size="10" fill="#c62828" font-family="Segoe UI">AWS VPC CNI: not enforced (observed)</text>
+  <path d="M190 385 V401" stroke="#333"/>
+  <rect x="70" y="401" width="240" height="34" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="190" y="422" text-anchor="middle" font-size="11" font-family="Segoe UI">Secrets (cluster Secret objects)</text>
+
+  <!-- AWS column -->
+  <rect x="380" y="50" width="300" height="420" rx="8" fill="#ffffff" stroke="#ff9800" stroke-width="2"/>
+  <text x="530" y="78" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" fill="#e65100">AWS authorization plane</text>
+
+  <rect x="410" y="120" width="240" height="34" rx="4" fill="#fff8e1" stroke="#ff9800"/><text x="530" y="141" text-anchor="middle" font-size="11" font-family="Segoe UI">IAM users / roles (operators)</text>
+  <path d="M530 154 V170" stroke="#333"/>
+  <rect x="410" y="170" width="240" height="34" rx="4" fill="#fff8e1" stroke="#ff9800"/><text x="530" y="191" text-anchor="middle" font-size="11" font-family="Segoe UI">EKS access entries / aws-auth</text>
+  <path d="M530 204 V220" stroke="#333"/>
+  <rect x="410" y="220" width="240" height="34" rx="4" fill="#fff8e1" stroke="#ff9800"/><text x="530" y="241" text-anchor="middle" font-size="11" font-family="Segoe UI">Node instance profile</text>
+  <path d="M530 254 V270" stroke="#333"/>
+  <rect x="410" y="270" width="240" height="34" rx="4" fill="#fff8e1" stroke="#ff9800"/><text x="530" y="291" text-anchor="middle" font-size="11" font-family="Segoe UI">Pod Identity / IRSA → IAM role</text>
+  <path d="M530 304 V320" stroke="#333"/>
+  <rect x="410" y="320" width="240" height="34" rx="4" fill="#fff8e1" stroke="#ff9800"/><text x="530" y="341" text-anchor="middle" font-size="11" font-family="Segoe UI">AWS API authorization</text>
+
+  <text x="530" y="390" text-anchor="middle" font-size="10" fill="#555" font-family="Segoe UI">RBAC in cluster ≠ IAM for AWS APIs</text>
+
+  <!-- External -->
+  <rect x="200" y="480" width="320" height="28" rx="4" fill="#fce4ec" stroke="#ad1457"/>
+  <text x="360" y="498" text-anchor="middle" font-size="10" font-family="Segoe UI">External: Jenkins creds · GitHub · Docker Hub (not in Git)</text>
+</svg>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="720" viewBox="0 0 980 720" role="img" aria-label="Project 1 reference architecture">
+  <title>Project 1 Reference Architecture</title>
+  <rect width="980" height="720" fill="#f7f8fa"/>
+  <text x="490" y="28" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#1a1a1a">Project 1 Reference Architecture (portfolio)</text>
+  <text x="490" y="48" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#555">Control / management flow (dashed) vs data plane (solid) — Observed lab, not production SLA</text>
+
+  <!-- Developer / Git -->
+  <rect x="420" y="62" width="140" height="36" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="490" y="85" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13">Developer</text>
+  <path d="M490 98 V118" stroke="#333" stroke-width="1.5"/>
+  <rect x="420" y="118" width="140" height="36" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="490" y="141" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13">GitHub / Git</text>
+
+  <!-- Jenkins / Argo split -->
+  <path d="M490 154 V174" stroke="#333"/>
+  <path d="M320 174 H660" stroke="#333"/>
+  <path d="M320 174 V200" stroke="#333" stroke-dasharray="6 4"/>
+  <path d="M660 174 V200" stroke="#333" stroke-dasharray="6 4"/>
+  <rect x="240" y="200" width="160" height="48" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="320" y="222" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13">Jenkins CI</text>
+  <text x="320" y="238" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10">build / test / promote</text>
+  <rect x="580" y="200" width="160" height="48" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="660" y="222" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13">Argo CD</text>
+  <text x="660" y="238" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10">GitOps reconcile</text>
+
+  <rect x="260" y="268" width="120" height="32" rx="4" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="320" y="288" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11">Docker Hub</text>
+  <path d="M320 256 V268" stroke="#333" stroke-dasharray="6 4"/>
+  <path d="M660 248 V290" stroke="#333" stroke-dasharray="6 4"/>
+
+  <!-- Clusters -->
+  <rect x="660" y="290" width="180" height="36" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="750" y="313" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12">AppProject / Applications</text>
+  <path d="M750 326 V350" stroke="#333" stroke-dasharray="6 4"/>
+  <path d="M420 350 H750" stroke="#333" stroke-dasharray="6 4"/>
+  <path d="M420 350 V370" stroke="#333" stroke-dasharray="6 4"/>
+  <path d="M750 350 V370" stroke="#333" stroke-dasharray="6 4"/>
+
+  <rect x="280" y="370" width="280" height="200" rx="8" fill="#ffffff" stroke="#3b6ea5" stroke-width="2"/>
+  <text x="420" y="392" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">VMware ckad-lab</text>
+  <text x="420" y="410" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10">K8s 1.31.14 · Argo 3.5.3</text>
+  <rect x="300" y="420" width="110" height="28" rx="4" fill="#e0f7fa" stroke="#00796b"/><text x="355" y="438" text-anchor="middle" font-size="10" font-family="Segoe UI">MetalLB VIP</text>
+  <rect x="420" y="420" width="110" height="28" rx="4" fill="#e0f7fa" stroke="#00796b"/><text x="475" y="438" text-anchor="middle" font-size="10" font-family="Segoe UI">ingress-nginx</text>
+  <rect x="300" y="458" width="230" height="28" rx="4" fill="#ffe8e8" stroke="#a53b3b"/><text x="415" y="476" text-anchor="middle" font-size="10" font-family="Segoe UI">Pods platform-lab (digest 0.1.4)</text>
+  <rect x="300" y="496" width="230" height="28" rx="4" fill="#e8ffe8" stroke="#3ba55a"/><text x="415" y="514" text-anchor="middle" font-size="10" font-family="Segoe UI">local-path storage</text>
+  <rect x="300" y="534" width="230" height="28" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="415" y="552" text-anchor="middle" font-size="10" font-family="Segoe UI">Prometheus / Grafana</text>
+
+  <rect x="600" y="370" width="280" height="200" rx="8" fill="#ffffff" stroke="#ff9800" stroke-width="2"/>
+  <text x="740" y="392" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">AWS EKS</text>
+  <text x="740" y="410" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10">K8s 1.36.4 · Argo 3.1.0 · ap-south-1</text>
+  <rect x="620" y="420" width="110" height="28" rx="4" fill="#e0f7fa" stroke="#00796b"/><text x="675" y="438" text-anchor="middle" font-size="10" font-family="Segoe UI">ALB (IP targets)</text>
+  <rect x="740" y="420" width="120" height="28" rx="4" fill="#e0f7fa" stroke="#00796b"/><text x="800" y="438" text-anchor="middle" font-size="10" font-family="Segoe UI">VPC CNI</text>
+  <rect x="620" y="458" width="240" height="28" rx="4" fill="#ffe8e8" stroke="#a53b3b"/><text x="740" y="476" text-anchor="middle" font-size="10" font-family="Segoe UI">Pods platform-lab (same digest)</text>
+  <rect x="620" y="496" width="240" height="28" rx="4" fill="#e8ffe8" stroke="#3ba55a"/><text x="740" y="514" text-anchor="middle" font-size="10" font-family="Segoe UI">EBS CSI (AZ-scoped)</text>
+  <rect x="620" y="534" width="240" height="28" rx="4" fill="#e8f1ff" stroke="#3b6ea5"/><text x="740" y="552" text-anchor="middle" font-size="10" font-family="Segoe UI">observability stack</text>
+
+  <!-- Data plane client -->
+  <rect x="40" y="400" width="100" height="36" rx="6" fill="#fce4ec" stroke="#ad1457"/>
+  <text x="90" y="423" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12">Client</text>
+  <path d="M140 418 H280" stroke="#ad1457" stroke-width="2"/>
+  <text x="210" y="408" text-anchor="middle" font-size="9" fill="#ad1457" font-family="Segoe UI">HTTP data plane</text>
+  <path d="M90 436 V580 H420" stroke="#ad1457" stroke-width="1.5" fill="none"/>
+  <path d="M90 580 H740" stroke="#ad1457" stroke-width="1.5"/>
+
+  <!-- Automation sidebar -->
+  <text x="40" y="620" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#5d4037">Automation (bounded)</text>
+  <rect x="40" y="630" width="88" height="26" rx="4" fill="#efebe9" stroke="#5d4037"/><text x="84" y="647" text-anchor="middle" font-size="10" font-family="Segoe UI">Terraform</text>
+  <rect x="136" y="630" width="72" height="26" rx="4" fill="#efebe9" stroke="#5d4037"/><text x="172" y="647" text-anchor="middle" font-size="10" font-family="Segoe UI">Python</text>
+  <rect x="216" y="630" width="72" height="26" rx="4" fill="#efebe9" stroke="#5d4037"/><text x="252" y="647" text-anchor="middle" font-size="10" font-family="Segoe UI">Ansible</text>
+  <rect x="296" y="630" width="100" height="26" rx="4" fill="#efebe9" stroke="#5d4037"/><text x="346" y="647" text-anchor="middle" font-size="10" font-family="Segoe UI">Runbooks</text>
+
+  <!-- DR note -->
+  <rect x="520" y="600" width="420" height="52" rx="6" fill="#fffde7" stroke="#f9a825"/>
+  <text x="730" y="620" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11">DR: Git + Terraform code + EBS snapshots (tested) · AWS Backup EKS = assessed only</text>
+  <text x="730" y="638" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#555">Security: RBAC/PSA observed · AWS NP enforcement not observed</text>
+</svg>
