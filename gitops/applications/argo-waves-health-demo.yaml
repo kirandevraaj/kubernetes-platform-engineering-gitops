@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-waves-health-demo
+  namespace: argocd
+  labels:
+    platform-lab.io/lab: argo-advanced
+spec:
+  project: platform-advanced-lab
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/argo-advanced-lab/waves-health
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-advanced-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
