@@ -34,6 +34,8 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: argo-nested-test
       server: https://kubernetes.default.svc
+    - namespace: argo-advanced-cluster-demo
+      server: https://kubernetes.default.svc
     # Child Applications / ApplicationSets live in the Argo CD namespace
     - namespace: argocd
       server: https://kubernetes.default.svc

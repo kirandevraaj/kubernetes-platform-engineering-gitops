@@ -25,7 +25,7 @@ spec:
             platform-lab.io/advanced-lab: "true"
         values:
           path: kubernetes/argo-advanced-apps/dev
-          namespace: argo-advanced-dev
+          namespace: argo-advanced-cluster-demo
   template:
     metadata:
       name: 'cluster-advanced-{{.name}}'
