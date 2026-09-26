@@ -1,0 +1,81 @@
+# Child Applications managed by platform-app-of-apps (parent does NOT manage workloads).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-child-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/part-of: platform-app-of-apps
+    platform-lab.io/lab: argo-advanced
+spec:
+  project: platform-advanced-lab
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/argo-app-of-apps-workloads/config
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-child-config
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-child-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/part-of: platform-app-of-apps
+    platform-lab.io/lab: argo-advanced
+spec:
+  project: platform-advanced-lab
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/argo-app-of-apps-workloads/service
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-child-service
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-child-workload
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    app.kubernetes.io/part-of: platform-app-of-apps
+    platform-lab.io/lab: argo-advanced
+spec:
+  project: platform-advanced-lab
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/argo-app-of-apps-workloads/workload
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-child-workload
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

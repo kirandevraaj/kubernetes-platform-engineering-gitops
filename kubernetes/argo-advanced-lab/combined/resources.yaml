@@ -1,0 +1,225 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argo-advanced-lab
+  labels:
+    app.kubernetes.io/name: argo-advanced-lab
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/lab: argo-advanced
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+# PreSync validation (phase = PreSync, wave optional)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: argo-pre-sync-check
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded,HookFailed
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: argo-pre-sync-check
+    app.kubernetes.io/part-of: argo-advanced-lab
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: argo-pre-sync-check
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: check
+          image: public.ecr.aws/docker/library/busybox:1.36.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              echo "PreSync wave -1: harmless namespace validation"
+              exit 0
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+---
+# Sync phase, wave -1
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-demo-config
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: argo-order-demo
+    app.kubernetes.io/part-of: argo-advanced-lab
+data:
+  demo.message: "Combined phases + waves + hooks"
+  demo.phase: "combined"
+---
+# Sync phase, wave 0
+apiVersion: v1
+kind: Service
+metadata:
+  name: argo-order-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/name: argo-order-demo
+    app.kubernetes.io/part-of: argo-advanced-lab
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: argo-order-demo
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+# Sync phase, wave 1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-order-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    app.kubernetes.io/name: argo-order-demo
+    app.kubernetes.io/part-of: argo-advanced-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argo-order-demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: argo-order-demo
+        app.kubernetes.io/part-of: argo-advanced-lab
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          image: nginxinc/nginx-unprivileged:1.27-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DEMO_MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: argo-demo-config
+                  key: demo.message
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/cache/nginx
+            - name: run
+              mountPath: /var/run
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
+---
+# PostSync verification (phase = PostSync, wave 2)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: argo-post-sync-check
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded,HookFailed
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    app.kubernetes.io/name: argo-post-sync-check
+    app.kubernetes.io/part-of: argo-advanced-lab
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: argo-post-sync-check
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: check
+          image: public.ecr.aws/docker/library/busybox:1.36.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              echo "PostSync wave 2: verifying combined sync sequence"
+              exit 0
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi

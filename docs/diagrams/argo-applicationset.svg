@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="420" viewBox="0 0 760 420" role="img" aria-label="ApplicationSet generation">
+  <title>ApplicationSet generation</title>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .gen{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <text x="380" y="28" text-anchor="middle" class="t">ApplicationSet Generation</text>
+  <rect x="60" y="60" width="180" height="70" class="gen"/>
+  <text x="150" y="90" text-anchor="middle" class="l">Generator</text>
+  <text x="150" y="110" text-anchor="middle" class="s">list / git / cluster</text>
+  <path class="line" d="M240 95 H300"/>
+  <rect x="300" y="60" width="180" height="70" class="box"/>
+  <text x="390" y="90" text-anchor="middle" class="l">Parameters</text>
+  <text x="390" y="110" text-anchor="middle" class="s">env, path, cluster&</text>
+  <path class="line" d="M480 95 H540"/>
+  <rect x="540" y="60" width="180" height="70" class="box"/>
+  <text x="630" y="90" text-anchor="middle" class="l">Template</text>
+  <text x="630" y="110" text-anchor="middle" class="s">goTemplate + options</text>
+  <path class="line" d="M630 130 V170"/>
+  <rect x="200" y="170" width="360" height="50" class="box"/>
+  <text x="380" y="200" text-anchor="middle" class="l">Generated Applications (owned by ApplicationSet)</text>
+  <path class="line" d="M260 220 V260"/>
+  <path class="line" d="M380 220 V260"/>
+  <path class="line" d="M500 220 V260"/>
+  <path class="line" d="M260 260 H500"/>
+  <rect x="160" y="260" width="140" height="50" class="box"/>
+  <text x="230" y="290" text-anchor="middle" class="l">dev App</text>
+  <rect x="310" y="260" width="140" height="50" class="box"/>
+  <text x="380" y="290" text-anchor="middle" class="l">test App</text>
+  <rect x="460" y="260" width="140" height="50" class="box"/>
+  <text x="530" y="290" text-anchor="middle" class="l">stage App</text>
+  <path class="line" d="M380 310 V350"/>
+  <rect x="240" y="350" width="280" height="40" class="box"/>
+  <text x="380" y="375" text-anchor="middle" class="l">Kubernetes resources</text>
+</svg>

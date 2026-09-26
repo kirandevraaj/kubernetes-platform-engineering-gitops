@@ -1,0 +1,24 @@
+# Sync-options demonstration notes (manifests themselves are ordinary).
+# The Application `platform-argo-advanced-lab` enables:
+#   CreateNamespace=true
+#   ApplyOutOfSyncOnly=true
+#   PruneLast=true
+#   ServerSideApply=true
+#
+# Destructive options (Replace=true, Force=true) are documented only —
+# never enabled on production-like Applications in this lab.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-sync-options-notes
+  namespace: argo-advanced-lab
+  labels:
+    app.kubernetes.io/name: argo-sync-options-notes
+    app.kubernetes.io/part-of: argo-advanced-lab
+data:
+  CreateNamespace: "Create destination namespace if missing"
+  ApplyOutOfSyncOnly: "Skip apply for resources already Synced"
+  PruneLast: "Prune deleted resources after other sync actions"
+  ServerSideApply: "Use Kubernetes SSA instead of client-side apply"
+  Replace: "DOCUMENTED ONLY — full object replace; do not use on live platform"
+  Force: "DOCUMENTED ONLY — force conflict resolution; do not use on live platform"

@@ -1,0 +1,50 @@
+# Cluster generator lab.
+# Project 1 runs separate Argo CD instances (VMware v3.5.3 and AWS v3.1.0).
+# Neither registers the other as a cluster Secret, so a multi-cluster Cluster
+# generator is not available without cross-cluster credentials.
+#
+# This ApplicationSet selects ONLY secrets labeled:
+#   platform-lab.io/advanced-lab=true
+# A lab-only in-cluster Secret with that label is applied during validation.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-advanced-cluster-set
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-advanced-cluster-set
+    platform-lab.io/lab: argo-advanced
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            platform-lab.io/advanced-lab: "true"
+        values:
+          path: kubernetes/argo-advanced-apps/dev
+          namespace: argo-advanced-dev
+  template:
+    metadata:
+      name: 'cluster-advanced-{{.name}}'
+      labels:
+        platform-lab.io/lab: argo-advanced
+        platform-lab.io/generator: cluster
+    spec:
+      project: platform-advanced-lab
+      source:
+        repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+        targetRevision: main
+        path: '{{.values.path}}'
+      destination:
+        server: '{{.server}}'
+        namespace: '{{.values.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true

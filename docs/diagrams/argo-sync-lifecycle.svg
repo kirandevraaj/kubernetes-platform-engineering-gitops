@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="620" viewBox="0 0 420 620" role="img" aria-label="Argo CD sync lifecycle">
+  <title>Argo CD sync lifecycle</title>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .hook{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .ok{fill:#ecfdf5;stroke:#047857;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;fill:#0f172a}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <text x="210" y="28" text-anchor="middle" class="t">Argo CD Sync Lifecycle</text>
+  <rect x="110" y="44" width="200" height="36" class="box"/><text x="210" y="66" text-anchor="middle" class="l">Git change</text>
+  <path class="line" d="M210 80 V98"/>
+  <rect x="110" y="98" width="200" height="36" class="box"/><text x="210" y="120" text-anchor="middle" class="l">Refresh</text>
+  <path class="line" d="M210 134 V152"/>
+  <rect x="110" y="152" width="200" height="36" class="box"/><text x="210" y="174" text-anchor="middle" class="l">Diff</text>
+  <path class="line" d="M210 188 V206"/>
+  <rect x="110" y="206" width="200" height="36" class="hook"/><text x="210" y="228" text-anchor="middle" class="l">PreSync hooks</text>
+  <path class="line" d="M210 242 V260"/>
+  <rect x="110" y="260" width="200" height="36" class="box"/><text x="210" y="282" text-anchor="middle" class="l">Sync waves</text>
+  <path class="line" d="M210 296 V314"/>
+  <rect x="110" y="314" width="200" height="36" class="box"/><text x="210" y="336" text-anchor="middle" class="l">Resource health</text>
+  <path class="line" d="M210 350 V368"/>
+  <rect x="110" y="368" width="200" height="36" class="hook"/><text x="210" y="390" text-anchor="middle" class="l">PostSync hooks</text>
+  <path class="line" d="M210 404 V422"/>
+  <rect x="110" y="422" width="200" height="44" class="ok"/><text x="210" y="448" text-anchor="middle" class="l">Synced / Healthy</text>
+  <text x="210" y="500" text-anchor="middle" class="l">SyncFail hooks run only if sync fails</text>
+  <text x="210" y="540" text-anchor="middle" class="l">Order: phase ’ wave ’ kind ’ name</text>
+</svg>

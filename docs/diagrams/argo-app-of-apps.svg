@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-label="App-of-Apps pattern">
+  <title>App-of-Apps pattern</title>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .parent{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <text x="360" y="28" text-anchor="middle" class="t">App-of-Apps Composition</text>
+  <rect x="240" y="50" width="240" height="50" class="parent"/>
+  <text x="360" y="72" text-anchor="middle" class="l">Parent: platform-app-of-apps</text>
+  <text x="360" y="90" text-anchor="middle" class="s">manages Application manifests only</text>
+  <path class="line" d="M360 100 V130"/>
+  <path class="line" d="M140 160 V130 H580 V160"/>
+  <rect x="40" y="160" width="200" height="70" class="box"/>
+  <text x="140" y="188" text-anchor="middle" class="l">app-child-config</text>
+  <text x="140" y="208" text-anchor="middle" class="s">wave -1</text>
+  <rect x="260" y="160" width="200" height="70" class="box"/>
+  <text x="360" y="188" text-anchor="middle" class="l">app-child-service</text>
+  <text x="360" y="208" text-anchor="middle" class="s">wave 0</text>
+  <rect x="480" y="160" width="200" height="70" class="box"/>
+  <text x="580" y="188" text-anchor="middle" class="l">app-child-workload</text>
+  <text x="580" y="208" text-anchor="middle" class="s">wave 1</text>
+  <path class="line" d="M140 230 V270"/>
+  <path class="line" d="M360 230 V270"/>
+  <path class="line" d="M580 230 V270"/>
+  <rect x="40" y="270" width="200" height="50" class="box"/>
+  <text x="140" y="300" text-anchor="middle" class="l">ConfigMap resources</text>
+  <rect x="260" y="270" width="200" height="50" class="box"/>
+  <text x="360" y="300" text-anchor="middle" class="l">Service resources</text>
+  <rect x="480" y="270" width="200" height="50" class="box"/>
+  <text x="580" y="300" text-anchor="middle" class="l">Deployment resources</text>
+  <text x="360" y="360" text-anchor="middle" class="s">Composition pattern  security still comes from AppProject + RBAC</text>
+  <text x="360" y="390" text-anchor="middle" class="s">Avoid recursion: child must never manage the parent</text>
+</svg>

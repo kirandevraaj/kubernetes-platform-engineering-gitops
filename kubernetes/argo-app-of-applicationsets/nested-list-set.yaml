@@ -1,0 +1,46 @@
+# Nested ApplicationSet managed by platform-app-of-applicationsets.
+# Uses dedicated namespaces so it does not compete with platform-advanced-set.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-nested-list-set
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-nested-list-set
+    platform-lab.io/lab: argo-advanced
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - list:
+        elements:
+          - env: nested-dev
+            path: kubernetes/argo-advanced-apps/dev
+            namespace: argo-nested-dev
+          - env: nested-test
+            path: kubernetes/argo-advanced-apps/test
+            namespace: argo-nested-test
+  template:
+    metadata:
+      name: 'nested-advanced-{{.env}}'
+      labels:
+        platform-lab.io/lab: argo-advanced
+        platform-lab.io/env: '{{.env}}'
+        platform-lab.io/generator: nested-list
+    spec:
+      project: platform-advanced-lab
+      source:
+        repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+        targetRevision: main
+        path: '{{.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true

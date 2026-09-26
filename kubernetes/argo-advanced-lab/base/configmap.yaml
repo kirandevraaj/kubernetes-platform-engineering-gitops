@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-demo-config
+  labels:
+    app.kubernetes.io/name: argo-order-demo
+    app.kubernetes.io/part-of: argo-advanced-lab
+data:
+  demo.message: "Advanced Argo CD lab baseline"
+  demo.phase: "baseline"

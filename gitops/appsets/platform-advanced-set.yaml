@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-advanced-set
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-advanced-set
+    platform-lab.io/lab: argo-advanced
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: argo-advanced-dev
+          - env: test
+            namespace: argo-advanced-test
+          - env: stage
+            namespace: argo-advanced-stage
+  template:
+    metadata:
+      name: 'argo-advanced-{{.env}}'
+      labels:
+        platform-lab.io/lab: argo-advanced
+        platform-lab.io/env: '{{.env}}'
+        platform-lab.io/generator: list
+    spec:
+      project: platform-advanced-lab
+      source:
+        repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+        targetRevision: main
+        path: 'kubernetes/argo-advanced-apps/{{.env}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true

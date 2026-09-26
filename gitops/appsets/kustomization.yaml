@@ -1,0 +1,9 @@
+# ApplicationSet manifests applied during the advanced lab.
+# Steady-state: list + env (+ cluster when labeled secret exists) + nested (via parent).
+# Git generator set is applied only during the Git-generator experiment.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - platform-advanced-set.yaml
+  - platform-advanced-env-set.yaml
+  - platform-advanced-cluster-set.yaml

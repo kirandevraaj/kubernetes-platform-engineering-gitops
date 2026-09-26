@@ -1,0 +1,53 @@
+# Multi-environment conceptual model (isolated demos — does NOT replace platform-lab-*).
+# Both Applications target the VMware in-cluster API with distinct namespaces/paths.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-advanced-env-set
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-advanced-env-set
+    platform-lab.io/lab: argo-advanced
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - list:
+        elements:
+          - name: advanced-platform-vmware
+            environment: local
+            cluster: ckad-lab
+            namespace: argo-advanced-vmware
+            path: kubernetes/argo-advanced-apps/dev
+          - name: advanced-platform-aws
+            environment: aws
+            cluster: platform-lab-aws
+            namespace: argo-advanced-aws
+            path: kubernetes/argo-advanced-apps/stage
+  template:
+    metadata:
+      name: '{{.name}}'
+      labels:
+        platform-lab.io/lab: argo-advanced
+        platform-lab.io/environment: '{{.environment}}'
+        platform-lab.io/cluster: '{{.cluster}}'
+        platform-lab.io/generator: env-list
+    spec:
+      project: platform-advanced-lab
+      source:
+        repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+        targetRevision: main
+        path: '{{.path}}'
+      destination:
+        # Learning demo only: both run on VMware Argo CD in-cluster.
+        # Real AWS workloads continue to use the separate EKS Argo CD.
+        server: https://kubernetes.default.svc
+        namespace: '{{.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true

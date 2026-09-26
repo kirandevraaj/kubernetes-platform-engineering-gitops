@@ -1,0 +1,78 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-advanced-lab
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-advanced-lab
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/lab: argo-advanced
+spec:
+  description: Isolated Advanced Argo CD GitOps Patterns lab (learning only)
+  sourceRepos:
+    - https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+  destinations:
+    - namespace: argo-advanced-lab
+      server: https://kubernetes.default.svc
+    - namespace: argo-advanced-dev
+      server: https://kubernetes.default.svc
+    - namespace: argo-advanced-test
+      server: https://kubernetes.default.svc
+    - namespace: argo-advanced-stage
+      server: https://kubernetes.default.svc
+    - namespace: argo-child-config
+      server: https://kubernetes.default.svc
+    - namespace: argo-child-service
+      server: https://kubernetes.default.svc
+    - namespace: argo-child-workload
+      server: https://kubernetes.default.svc
+    - namespace: argo-advanced-vmware
+      server: https://kubernetes.default.svc
+    - namespace: argo-advanced-aws
+      server: https://kubernetes.default.svc
+    - namespace: argo-nested-dev
+      server: https://kubernetes.default.svc
+    - namespace: argo-nested-test
+      server: https://kubernetes.default.svc
+    # Child Applications / ApplicationSets live in the Argo CD namespace
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+  # Destination for cluster-generator lab Secret is still in-cluster only.
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ServiceAccount
+    - group: ""
+      kind: Pod
+    - group: apps
+      kind: Deployment
+    - group: batch
+      kind: Job
+    - group: argoproj.io
+      kind: Application
+    - group: argoproj.io
+      kind: ApplicationSet
+  # Lab-only project role: read vs sync (no admin, no cluster-wide power)
+  roles:
+    - name: lab-readonly
+      description: Read Applications in this project (conceptual RBAC demo)
+      policies:
+        - p, proj:platform-advanced-lab:lab-readonly, applications, get, platform-advanced-lab/*, allow
+      groups: []
+    - name: lab-syncer
+      description: Sync Applications in this project without create/delete/admin
+      policies:
+        - p, proj:platform-advanced-lab:lab-syncer, applications, get, platform-advanced-lab/*, allow
+        - p, proj:platform-advanced-lab:lab-syncer, applications, sync, platform-advanced-lab/*, allow
+      groups: []
+  # Sync windows are managed experimentally; empty by default (non-blocking).
+  # A temporary deny window may be applied during Phase 31 validation, then removed.
+  syncWindows: []
+  orphanedResources:
+    warn: true

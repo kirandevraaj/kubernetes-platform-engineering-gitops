@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argo-child-config
+  labels:
+    app.kubernetes.io/name: argo-child-config
+    platform-lab.io/lab: argo-advanced
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: child-config
+  namespace: argo-child-config
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/name: child-config
+data:
+  owner: app-child-config
+  message: "App-of-Apps child: config only"

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-label="Advanced Argo CD GitOps reference">
+  <title>Advanced Argo CD GitOps reference</title>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:8}
+      .sec{fill:#eff6ff;stroke:#1d4ed8;stroke-width:2;rx:8}
+      .warn{fill:#fff7ed;stroke:#c2410c;stroke-width:2;rx:8}
+      .t{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;fill:#0f172a}
+      .l{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;fill:#0f172a}
+      .s{font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;fill:#475569}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <text x="490" y="28" text-anchor="middle" class="t">Advanced Argo CD GitOps Reference</text>
+  <rect x="400" y="44" width="180" height="40" class="box"/>
+  <text x="490" y="68" text-anchor="middle" class="l">Git (source of truth)</text>
+  <path class="line" d="M490 84 V110"/>
+  <rect x="250" y="110" width="200" height="48" class="sec"/>
+  <text x="350" y="132" text-anchor="middle" class="l">ApplicationSet</text>
+  <text x="350" y="148" text-anchor="middle" class="s">generate Applications</text>
+  <rect x="530" y="110" width="200" height="48" class="sec"/>
+  <text x="630" y="132" text-anchor="middle" class="l">App-of-Apps</text>
+  <text x="630" y="148" text-anchor="middle" class="s">compose Applications</text>
+  <path class="line" d="M350 158 V190"/>
+  <path class="line" d="M630 158 V190"/>
+  <path class="line" d="M630 190 H720"/>
+  <rect x="720" y="170" width="200" height="40" class="box"/>
+  <text x="820" y="195" text-anchor="middle" class="l">Child Apps</text>
+  <rect x="250" y="190" width="480" height="44" class="box"/>
+  <text x="490" y="217" text-anchor="middle" class="l">Applications (desired state per target)</text>
+  <path class="line" d="M490 234 V260"/>
+  <rect x="180" y="260" width="200" height="48" class="sec"/>
+  <text x="280" y="282" text-anchor="middle" class="l">Sync Waves</text>
+  <text x="280" y="298" text-anchor="middle" class="s">ordering inside phase</text>
+  <rect x="420" y="260" width="200" height="48" class="sec"/>
+  <text x="520" y="282" text-anchor="middle" class="l">Hooks</text>
+  <text x="520" y="298" text-anchor="middle" class="s">PreSync / PostSync / SyncFail</text>
+  <rect x="660" y="260" width="200" height="48" class="sec"/>
+  <text x="760" y="282" text-anchor="middle" class="l">Sync Options</text>
+  <text x="760" y="298" text-anchor="middle" class="s">how sync applies/prunes</text>
+  <path class="line" d="M280 308 V340"/>
+  <path class="line" d="M520 308 V340"/>
+  <path class="line" d="M760 308 V340"/>
+  <path class="line" d="M280 340 H760"/>
+  <path class="line" d="M520 340 V360"/>
+  <rect x="400" y="360" width="180" height="40" class="box"/>
+  <text x="490" y="385" text-anchor="middle" class="l">Kubernetes</text>
+  <path class="line" d="M490 400 V430"/>
+  <rect x="300" y="430" width="380" height="50" class="warn"/>
+  <text x="490" y="452" text-anchor="middle" class="l">AppProject security boundary</text>
+  <text x="490" y="468" text-anchor="middle" class="s">source repos · destinations · resource kinds</text>
+  <rect x="40" y="110" width="160" height="90" class="box"/>
+  <text x="120" y="140" text-anchor="middle" class="l">RBAC</text>
+  <text x="120" y="158" text-anchor="middle" class="s">WHO may operate</text>
+  <text x="120" y="176" text-anchor="middle" class="s">on Applications</text>
+  <rect x="40" y="220" width="160" height="90" class="box"/>
+  <text x="120" y="250" text-anchor="middle" class="l">Sync Windows</text>
+  <text x="120" y="268" text-anchor="middle" class="s">WHEN sync may run</text>
+  <text x="120" y="286" text-anchor="middle" class="s">(project schedule)</text>
+  <text x="490" y="530" text-anchor="middle" class="s">Patterns solve different problems  do not combine merely because they exist</text>
+</svg>

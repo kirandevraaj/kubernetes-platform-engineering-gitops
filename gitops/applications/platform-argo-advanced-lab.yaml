@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-argo-advanced-lab
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-argo-advanced-lab
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/lab: argo-advanced
+spec:
+  project: platform-advanced-lab
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/argo-advanced-lab/combined
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-advanced-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - PruneLast=true
+      - ServerSideApply=true
