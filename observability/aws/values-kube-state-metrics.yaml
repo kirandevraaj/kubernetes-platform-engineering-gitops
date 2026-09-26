@@ -51,6 +51,9 @@ collectors:
   - endpointslices
   - horizontalpodautoscalers
   - statefulsets
+  # Storage lab observability (platform-storage-aws / ebs-gp3).
+  - persistentvolumeclaims
+  - persistentvolumes
 
 prometheus:
   monitor:

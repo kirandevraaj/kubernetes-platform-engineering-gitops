@@ -24,7 +24,7 @@ Kubernetes v1.31.14. Container runtime is containerd 2.2.1. Control-plane compon
 | Metrics | metrics-server |
 | Ingress | ingress-nginx; controller Service exposed as MetalLB LoadBalancer on the local overlay (was NodePort before Step 7.5) |
 | Load balancer addresses | MetalLB v0.16.1 L2, pool `lab-pool` `192.168.56.200-192.168.56.210` |
-| Storage | local-path provisioner (`local-path-storage`) |
+| Storage | local-path provisioner (`local-path-storage`); see also AWS EBS CSI lab in [`docs/aws-storage-statefulset.md`](../aws-storage-statefulset.md) and VMware StatefulSet lab in [`docs/vmware-storage-statefulset.md`](../vmware-storage-statefulset.md) |
 
 Namespace `platform-lab` holds the application deployed from `kubernetes/overlays/local` on 24 September 2026. Other namespaces in use: `calico-apiserver`, `calico-system`, `default`, `ingress-nginx`, `kube-node-lease`, `kube-public`, `kube-system`, `local-path-storage`, `metallb-system`, `tigera-operator`.
 
