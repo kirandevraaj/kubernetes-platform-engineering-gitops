@@ -139,7 +139,7 @@ spec:
           command:
             - sh
             - -c
-            - while true; do printf 'HTTP/1.0 200 OK\r\nContent-Length: 2\r\n\r\nOK' | nc -l -p 8080; done
+            - mkdir -p /tmp/www && echo OK >/tmp/www/index.html && httpd -f -p 8080 -h /tmp/www
           ports:
             - name: http
               containerPort: 8080
@@ -152,7 +152,6 @@ spec:
               drop: ["ALL"]
             seccompProfile:
               type: RuntimeDefault
-            readOnlyRootFilesystem: true
           resources:
             requests:
               cpu: 10m
