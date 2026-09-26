@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-storage-vmware
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-storage-vmware
+    app.kubernetes.io/part-of: platform-lab
+spec:
+  description: VMware local-path StatefulSet storage lab (isolated from platform-lab)
+  sourceRepos:
+    - https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+  destinations:
+    - namespace: storage-lab
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: PersistentVolumeClaim
+    - group: apps
+      kind: StatefulSet
+  orphanedResources:
+    warn: true

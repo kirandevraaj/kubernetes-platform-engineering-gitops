@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="780" viewBox="0 0 920 780" role="img" aria-label="VMware StatefulSet storage architecture">
+  <title>VMware Persistent Storage  StatefulSet to local-path</title>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#334155"/>
+    </marker>
+    <style>
+      .box { fill:#f8fafc; stroke:#334155; stroke-width:2; rx:8; }
+      .warn { fill:#fff7ed; stroke:#c2410c; stroke-width:2; rx:8; }
+      .ok { fill:#ecfdf5; stroke:#047857; stroke-width:2; rx:8; }
+      .title { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:18px; font-weight:700; fill:#0f172a; }
+      .label { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:14px; font-weight:600; fill:#0f172a; }
+      .sub { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:12px; fill:#475569; }
+      .warn-t { font-family:Segoe UI,Helvetica,Arial,sans-serif; font-size:13px; font-weight:700; fill:#9a3412; }
+      .line { stroke:#334155; stroke-width:2; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <text x="460" y="36" text-anchor="middle" class="title">VMware Storage Lab  StatefulSet Persistence</text>
+
+  <rect x="340" y="56" width="240" height="48" class="box"/>
+  <text x="460" y="78" text-anchor="middle" class="label">User / Operator</text>
+  <text x="460" y="94" text-anchor="middle" class="sub">kubectl / Argo CD GitOps</text>
+  <path class="line" d="M460 104 V128"/>
+
+  <rect x="340" y="128" width="240" height="48" class="box"/>
+  <text x="460" y="150" text-anchor="middle" class="label">StatefulSet</text>
+  <text x="460" y="166" text-anchor="middle" class="sub">storage-demo · replicas=1</text>
+  <path class="line" d="M460 176 V200"/>
+
+  <rect x="340" y="200" width="240" height="48" class="box"/>
+  <text x="460" y="222" text-anchor="middle" class="label">Pod-0</text>
+  <text x="460" y="238" text-anchor="middle" class="sub">storage-demo-0</text>
+  <path class="line" d="M460 248 V272"/>
+
+  <rect x="340" y="272" width="240" height="48" class="box"/>
+  <text x="460" y="294" text-anchor="middle" class="label">PVC</text>
+  <text x="460" y="310" text-anchor="middle" class="sub">data-storage-demo-0 · 1Gi RWO</text>
+  <path class="line" d="M460 320 V344"/>
+
+  <rect x="340" y="344" width="240" height="48" class="box"/>
+  <text x="460" y="366" text-anchor="middle" class="label">PV</text>
+  <text x="460" y="382" text-anchor="middle" class="sub">dynamically provisioned</text>
+  <path class="line" d="M460 392 V416"/>
+
+  <rect x="340" y="416" width="240" height="48" class="box"/>
+  <text x="460" y="438" text-anchor="middle" class="label">StorageClass</text>
+  <text x="460" y="454" text-anchor="middle" class="sub">local-path · WaitForFirstConsumer</text>
+  <path class="line" d="M460 464 V488"/>
+
+  <rect x="300" y="488" width="320" height="56" class="box"/>
+  <text x="460" y="512" text-anchor="middle" class="label">VMware local-path storage</text>
+  <text x="460" y="530" text-anchor="middle" class="sub">rancher.io/local-path · /opt/local-path-provisioner</text>
+  <path class="line" d="M460 544 V568"/>
+
+  <rect x="300" y="568" width="320" height="56" class="box"/>
+  <text x="460" y="592" text-anchor="middle" class="label">Worker node filesystem</text>
+  <text x="460" y="610" text-anchor="middle" class="sub">hostPath on the scheduled worker</text>
+
+  <rect x="40" y="656" width="400" height="96" class="ok"/>
+  <text x="60" y="684" class="label">Data survives Pod recreation</text>
+  <text x="60" y="706" class="sub">Delete Pod-0 ’ StatefulSet recreates Pod-0</text>
+  <text x="60" y="726" class="sub">Same PVC ’ same PV ’ state.txt remains</text>
+
+  <rect x="480" y="656" width="400" height="96" class="warn"/>
+  <text x="500" y="684" class="warn-t">LOCAL-PATH STORAGE IS NODE-LOCAL</text>
+  <text x="500" y="706" class="sub">PV has required nodeAffinity (hostname)</text>
+  <text x="500" y="726" class="sub">Node loss ` automatic data mobility</text>
+</svg>

@@ -70,6 +70,19 @@ See [docs/aws-lightweight-observability.md](../docs/aws-lightweight-observabilit
 
 The destination server is the in-cluster Kubernetes API of the same cluster that hosts Argo CD (`ckad-lab` → `https://192.168.56.10:6443`). The Application does not reference `docker-desktop` and does not target AWS.
 
+## VMware Storage Lab Application
+
+| Field | Value |
+|---|---|
+| Manifest | `gitops/applications/platform-storage-vmware.yaml` |
+| Project | `platform-storage-vmware` (`gitops/projects/platform-storage-vmware.yaml`) |
+| Path | `kubernetes/storage-lab` |
+| Destination namespace | `storage-lab` |
+| Sync | automated, `prune: true`, `selfHeal: true` |
+| Workload | StatefulSet `storage-demo` + ClusterIP Service + `volumeClaimTemplates` → `local-path` |
+
+Isolated from `platform-lab-local`. Uses the existing default StorageClass `local-path` only — does not install CSI drivers or modify existing PVs/PVCs.
+
 ## AWS Application (EKS — Terraform-bootstrapped)
 
 | Field | Value |
@@ -112,6 +125,8 @@ kubectl --context=ckad-lab apply -f gitops/projects/platform-lab.yaml
 kubectl --context=ckad-lab apply -f gitops/applications/platform-lab-local.yaml
 kubectl --context=ckad-lab apply -f gitops/projects/platform-lab-observability.yaml
 kubectl --context=ckad-lab apply -f gitops/applications/platform-lab-observability.yaml
+kubectl --context=ckad-lab apply -f gitops/projects/platform-storage-vmware.yaml
+kubectl --context=ckad-lab apply -f gitops/applications/platform-storage-vmware.yaml
 kubectl --context=ckad-lab get application -n argocd
 ```
 

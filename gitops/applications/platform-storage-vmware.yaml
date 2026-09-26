@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-storage-vmware
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-storage-vmware
+    app.kubernetes.io/instance: platform-storage-vmware
+    app.kubernetes.io/part-of: platform-lab
+spec:
+  project: platform-storage-vmware
+  source:
+    repoURL: https://github.com/kirandevraaj/kubernetes-platform-engineering-gitops.git
+    targetRevision: main
+    path: kubernetes/storage-lab
+  destination:
+    # In-cluster API of the VMware lab (ckad-lab). Never target AWS/EKS.
+    server: https://kubernetes.default.svc
+    namespace: storage-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

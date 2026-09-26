@@ -1,0 +1,223 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-storage-vmware-grafana-dashboard
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: kubernetes-storage-vmware
+    app.kubernetes.io/part-of: platform-lab
+    platform-lab.io/target: local
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: Kubernetes Platform
+data:
+  kubernetes-storage-vmware.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "title": "StatefulSet desired replicas",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+          "id": 1,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "expr": "kube_statefulset_replicas{namespace=\"storage-lab\",statefulset=\"storage-demo\"}",
+              "legendFormat": "desired",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "StatefulSet ready replicas",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+          "id": 2,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "expr": "kube_statefulset_status_replicas_ready{namespace=\"storage-lab\",statefulset=\"storage-demo\"}",
+              "legendFormat": "ready",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "Pod ready",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+          "id": 3,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "expr": "kube_pod_status_ready{namespace=\"storage-lab\",pod=\"storage-demo-0\",condition=\"true\"}",
+              "legendFormat": "ready",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "PVC Bound",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+          "id": 4,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "options": { "0": { "text": "Unbound" }, "1": { "text": "Bound" } }, "type": "value" }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "expr": "kube_persistentvolumeclaim_status_phase{namespace=\"storage-lab\",persistentvolumeclaim=\"data-storage-demo-0\",phase=\"Bound\"}",
+              "legendFormat": "bound",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "Pod phase (Running=1)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+          "id": 5,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": true },
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "kube_pod_status_phase{namespace=\"storage-lab\",pod=\"storage-demo-0\",phase=\"Running\"}",
+              "legendFormat": "Running",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "title": "Ready replicas over time",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+          "id": 6,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": true },
+              "min": 0
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "kube_statefulset_replicas{namespace=\"storage-lab\",statefulset=\"storage-demo\"}",
+              "legendFormat": "desired",
+              "refId": "A"
+            },
+            {
+              "expr": "kube_statefulset_status_replicas_ready{namespace=\"storage-lab\",statefulset=\"storage-demo\"}",
+              "legendFormat": "ready",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "title": "Pod info (node)",
+          "type": "table",
+          "gridPos": { "h": 6, "w": 24, "x": 0, "y": 12 },
+          "id": 7,
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "options": { "showHeader": true },
+          "targets": [
+            {
+              "expr": "kube_pod_info{namespace=\"storage-lab\",pod=\"storage-demo-0\"}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["storage", "statefulset", "vmware", "local-path"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "timezone": "browser",
+      "title": "Kubernetes Storage VMware",
+      "uid": "kubernetes-storage-vmware",
+      "version": 1
+    }

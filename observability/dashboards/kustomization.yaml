@@ -4,3 +4,4 @@ namespace: monitoring
 resources:
   - platform-lab-dashboard.yaml
   - kubernetes-platform-vmware-dashboard.yaml
+  - kubernetes-storage-vmware-dashboard.yaml

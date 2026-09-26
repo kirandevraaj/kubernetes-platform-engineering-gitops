@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: storage-demo
+  namespace: storage-lab
+  labels:
+    app.kubernetes.io/name: storage-demo
+    app.kubernetes.io/instance: storage-demo
+    app.kubernetes.io/part-of: storage-lab
+    app.kubernetes.io/component: stateful
+spec:
+  serviceName: storage-demo
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: storage-demo
+      app.kubernetes.io/instance: storage-demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: storage-demo
+        app.kubernetes.io/instance: storage-demo
+        app.kubernetes.io/part-of: storage-lab
+        app.kubernetes.io/component: stateful
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          # Write state once onto the PVC; do not overwrite on Pod recreation.
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              STATE_FILE=/data/state.txt
+              if [ ! -f "$STATE_FILE" ]; then
+                NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                printf 'Storage persistence test\nTest-ID: vmware-storage-lab-001\nPod: %s\nNamespace: %s\nNode: %s\nCreated: %s\n' \
+                  "$POD_NAME" "$POD_NAMESPACE" "$NODE_NAME" "$NOW" > "$STATE_FILE"
+                echo "Created ${STATE_FILE}"
+              else
+                echo "Preserved existing ${STATE_FILE}"
+              fi
+              ln -sfn /data /usr/share/nginx/html/data
+              exec nginx -g 'daemon off;'
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app.kubernetes.io/name: storage-demo
+          app.kubernetes.io/instance: storage-demo
+          app.kubernetes.io/part-of: storage-lab
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 1Gi
