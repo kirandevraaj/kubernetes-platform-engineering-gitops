@@ -316,10 +316,12 @@ Scheduling + PV topology + EBS AZ must agree. This lab kept the Pod on a worker 
 | `kube_statefulset_status_replicas_ready` | **1** |
 | `kube_pod_status_ready{…storage-demo-0}` | **1** |
 | `kube_pod_status_phase{phase="Running"}` | **1** |
+| `kube_persistentvolumeclaim_status_phase{phase="Bound"}` | **1** (after enabling PVC/PV collectors) |
+| `kube_persistentvolume_status_phase{phase="Bound"}` | **1** (join with `kube_persistentvolume_info{storageclass="ebs-gp3"}`) |
 | `kube_pod_info{…}` | node = `ip-10-50-52-64…` |
 | `kube_pod_spec_volumes_persistentvolumeclaims_info` | PVC `data-storage-demo-0` mounted |
 
-PVC/PV **phase** series require KSM collectors `persistentvolumeclaims` / `persistentvolumes` (enabled for this lab). File contents are **not** visible in Prometheus — validated with `kubectl exec`.
+PVC/PV phase series require KSM collectors `persistentvolumeclaims` / `persistentvolumes` (enabled for this lab). File contents are **not** visible in Prometheus — validated with `kubectl exec`.
 
 EBS attach state and volume type/size are verified via **EC2 `describe-volumes`**, not Prometheus.
 

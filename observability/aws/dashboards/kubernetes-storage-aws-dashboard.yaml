@@ -168,7 +168,7 @@ data:
           },
           "targets": [
             {
-              "expr": "kube_persistentvolume_status_phase{storageclass=\"ebs-gp3\",phase=\"Bound\"}",
+              "expr": "max(kube_persistentvolume_status_phase{phase=\"Bound\"} and on(persistentvolume) kube_persistentvolume_info{storageclass=\"ebs-gp3\"})",
               "legendFormat": "bound",
               "refId": "A"
             }
