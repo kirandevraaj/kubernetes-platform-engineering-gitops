@@ -76,13 +76,13 @@ MetalLB annotation on ingress Service: `metallb.io/ip-allocated-from-pool: lab-p
 | `10.244.36.194` (`…-65xpb`) | worker-01 | true |
 | `10.244.118.97` (`…-rhnrf`) | worker-02 | true |
 
-**ingress-nginx-controller** (critical):
+**ingress-nginx-controller** (historical finding from this investigation — **resolved**; see §8 and [vmware-ingress-ha.md](./vmware-ingress-ha.md)):
 
 | Pod IP | Node | Ready |
 |---|---|---|
 | `10.244.118.86` (`ingress-nginx-controller-bd6958564-m2pvm`) | **worker-02 only** | true |
 
-There is **exactly one** ingress controller endpoint. Losing worker-02 removes **all** ingress Service backends.
+At investigation time there was **exactly one** ingress controller endpoint. Losing worker-02 removed **all** ingress Service backends. That SPOF was fixed by raising ingress to **2 replicas** with soft topology spread across worker-01 / worker-02.
 
 ---
 
@@ -117,12 +117,14 @@ All three speakers are eligible; one speaker wins L2 leadership per Service.
 |---|---|
 | Chart / image | ingress-nginx **4.15.1** / controller **v1.15.1** |
 | Workload type | **Deployment** (not DaemonSet) |
-| Replicas | **1** |
-| Node placement | **`k8s-worker-02` only** |
-| Affinity / topology spread | none observed (os=linux nodeSelector only) |
+| Replicas | **2** (was **1** at investigation — SPOF fixed; see [vmware-ingress-ha.md](./vmware-ingress-ha.md)) |
+| Node placement | **worker-01 + worker-02** (was worker-02 only) |
+| Affinity / topology spread | soft `topologySpreadConstraints` on `kubernetes.io/hostname` (`ScheduleAnyway`) |
+| PDB | `ingress-nginx-controller` · `minAvailable: 1` |
 | Service `externalTrafficPolicy` | **`Cluster`** |
 | Service `internalTrafficPolicy` | Cluster |
 | sessionAffinity | None |
+| GitOps | Argo `platform-lab-local` owns HA Deployment fields + PDB + MetalLB Service patch; Helm release retained |
 
 ---
 
@@ -161,8 +163,8 @@ Service/ingress-nginx-controller (LoadBalancer)
   externalTrafficPolicy=Cluster
    │  kube-proxy iptables
    ▼
-Pod ingress-nginx-controller …-m2pvm
-  10.244.118.86 on k8s-worker-02   ← SINGLE REPLICA
+Pod ingress-nginx-controller (replicas=2 after HA fix)
+  worker-01 + worker-02
    │  Ingress rule host/path
    ▼
 Service/platform-lab (ClusterIP 10.107.132.189:8000)
@@ -174,6 +176,7 @@ Pod …-65xpb            Pod …-rhnrf
 k8s-worker-01          k8s-worker-02
 ```
 
+> Historical note: at first investigation the path terminated at a **single** ingress Pod on worker-02 (`…-m2pvm` / `10.244.118.86`). That SPOF is documented above and fixed in [vmware-ingress-ha.md](./vmware-ingress-ha.md).
 ---
 
 ## 11. Internal Service Path
@@ -333,12 +336,16 @@ Separate concerns:
 
 ## 19. Candidate Future Failure Experiments
 
-Document only — **do not implement in this milestone**:
+Completed after this anatomy doc:
 
-1. Fail the node hosting the **sole** ingress controller; confirm VIP path dies while app survivor lives (controlled validation of this finding).  
-2. Raise ingress-nginx to **≥2 replicas** with topology spread across workers; re-test single-worker loss.  
+1. ~~Fail the node hosting the sole ingress controller~~ — validated; then fixed via HA.  
+2. ~~Raise ingress-nginx to ≥2 replicas with topology spread; re-test single-worker loss~~ — done in [vmware-ingress-ha.md](./vmware-ingress-ha.md) (worker-01 and worker-02 kubelet-stop tests both kept external `/health` available).
+
+Still open:
+
 3. Compare MetalLB announce node vs ingress endpoint node under `externalTrafficPolicy=Local` (would be a config change — future decision).  
-4. Grafana VIP (`192.168.56.201`) resilience (also LB via MetalLB).
+4. Grafana VIP (`192.168.56.201`) resilience (also LB via MetalLB).  
+5. Full VM power-off vs kubelet stop for measured ARP/MetalLB interrupt.
 
 ---
 
@@ -363,8 +370,8 @@ Document only — **do not implement in this milestone**:
          externalTrafficPolicy=Cluster
                           |
                           v
-         ingress-nginx Pod (replicas=1)
-         10.244.118.86 @ k8s-worker-02
+         ingress-nginx Pods (replicas=2; was 1 at first investigation)
+         worker-01 + worker-02 (topology spread)
                           |
                           v
          Ingress/platform-lab (class nginx)
