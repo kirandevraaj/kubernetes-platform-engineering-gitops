@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-label="Project 1 application lifecycle">
+  <title>Project 1 application lifecycle - FastAPI to rollback</title>
+  <style>
+    text { font-family: "Segoe UI", Arial, sans-serif; fill: #222; }
+    .h { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 11px; fill: #555; }
+    .lane { font-size: 12px; font-weight: 700; }
+    .b { font-size: 12.5px; font-weight: 700; }
+    .s { font-size: 10px; fill: #444; }
+    .lbl { font-size: 9.5px; fill: #555; font-style: italic; }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a53b3b"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="720" fill="#f7f8fa"/>
+  <text x="560" y="30" text-anchor="middle" class="h">Project 1 - application lifecycle (build, deliver, run, observe, scale, fail, roll back)</text>
+  <text x="560" y="48" text-anchor="middle" class="sub">Jenkins never runs kubectl apply. Git holds the desired digest; Argo CD reconciles each cluster separately.</text>
+
+  <!-- Lane labels -->
+  <text x="30" y="76" class="lane" fill="#3b6ea5">1. BUILD (CI)</text>
+  <text x="30" y="196" class="lane" fill="#6b3ba5">2. DELIVER + RUN (CD, data path)</text>
+  <text x="30" y="326" class="lane" fill="#3ba55a">3. OBSERVE + SCALE</text>
+  <text x="30" y="456" class="lane" fill="#a53b3b">4. FAIL + ROLL BACK (0.1.5 lab)</text>
+
+  <!-- Row 1: build -->
+  <rect x="30" y="86" width="150" height="58" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="105" y="108" text-anchor="middle" class="b">FastAPI app</text>
+  <text x="105" y="124" text-anchor="middle" class="s">app/src/main.py</text>
+  <text x="105" y="137" text-anchor="middle" class="s">/health /version /metrics</text>
+
+  <rect x="206" y="86" width="150" height="58" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="281" y="108" text-anchor="middle" class="b">Dockerfile</text>
+  <text x="281" y="124" text-anchor="middle" class="s">python slim, non-root</text>
+  <text x="281" y="137" text-anchor="middle" class="s">uid 10001, port 8000</text>
+
+  <rect x="382" y="86" width="150" height="58" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="457" y="108" text-anchor="middle" class="b">Jenkins CI</text>
+  <text x="457" y="124" text-anchor="middle" class="s">detect app change, test,</text>
+  <text x="457" y="137" text-anchor="middle" class="s">build, validate image</text>
+
+  <rect x="558" y="86" width="150" height="58" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="633" y="108" text-anchor="middle" class="b">Docker Hub</text>
+  <text x="633" y="124" text-anchor="middle" class="s">kirandevraaj/platform-lab</text>
+  <text x="633" y="137" text-anchor="middle" class="s">version tag, never latest</text>
+
+  <rect x="734" y="86" width="150" height="58" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+  <text x="809" y="108" text-anchor="middle" class="b">Digest captured</text>
+  <text x="809" y="124" text-anchor="middle" class="s">sha256 from RepoDigests</text>
+  <text x="809" y="137" text-anchor="middle" class="s">fail closed if missing</text>
+
+  <rect x="910" y="86" width="170" height="58" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="995" y="108" text-anchor="middle" class="b">GitOps promotion</text>
+  <text x="995" y="124" text-anchor="middle" class="s">commit digest into</text>
+  <text x="995" y="137" text-anchor="middle" class="s">overlays/local + overlays/aws</text>
+
+  <path d="M180 115 H204" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M356 115 H380" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M532 115 H556" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M708 115 H732" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M884 115 H908" stroke="#333" marker-end="url(#arr)"/>
+
+  <!-- Row 2: deliver + run (right to left) -->
+  <rect x="910" y="206" width="170" height="58" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="995" y="228" text-anchor="middle" class="b">Argo CD</text>
+  <text x="995" y="244" text-anchor="middle" class="s">VMware v3.5.3 | AWS v3.1.0</text>
+  <text x="995" y="257" text-anchor="middle" class="s">automated sync, selfHeal, prune</text>
+
+  <rect x="734" y="206" width="150" height="58" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="809" y="228" text-anchor="middle" class="b">Deployment</text>
+  <text x="809" y="244" text-anchor="middle" class="s">RollingUpdate</text>
+  <text x="809" y="257" text-anchor="middle" class="s">maxSurge 1, maxUnavailable 0</text>
+
+  <rect x="558" y="206" width="150" height="58" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="633" y="228" text-anchor="middle" class="b">Pods (2 replicas)</text>
+  <text x="633" y="244" text-anchor="middle" class="s">readiness + liveness</text>
+  <text x="633" y="257" text-anchor="middle" class="s">probes on /health</text>
+
+  <rect x="382" y="206" width="150" height="58" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="457" y="228" text-anchor="middle" class="b">Service</text>
+  <text x="457" y="244" text-anchor="middle" class="s">ClusterIP :8000</text>
+  <text x="457" y="257" text-anchor="middle" class="s">endpoints = Ready pods</text>
+
+  <rect x="206" y="206" width="150" height="58" rx="6" fill="#e0f7fa" stroke="#00796b"/>
+  <text x="281" y="222" text-anchor="middle" class="b">Ingress entry</text>
+  <text x="281" y="236" text-anchor="middle" class="s">VMware: MetalLB VIP .200</text>
+  <text x="281" y="248" text-anchor="middle" class="s">+ ingress-nginx (2 replicas)</text>
+  <text x="281" y="260" text-anchor="middle" class="s">AWS: ALB target-type ip</text>
+
+  <rect x="30" y="206" width="150" height="58" rx="6" fill="#fce4ec" stroke="#ad1457"/>
+  <text x="105" y="228" text-anchor="middle" class="b">Client</text>
+  <text x="105" y="244" text-anchor="middle" class="s">Host platform-lab.local</text>
+  <text x="105" y="257" text-anchor="middle" class="s">(VMware) / ALB DNS (AWS)</text>
+
+  <path d="M995 144 V204" stroke="#333" marker-end="url(#arr)"/>
+  <text x="1002" y="178" class="lbl">Argo polls Git</text>
+  <path d="M910 235 H886" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M734 235 H710" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M532 235 H556" stroke="#ad1457" marker-end="url(#arr)"/>
+  <path d="M356 235 H380" stroke="#ad1457" marker-end="url(#arr)"/>
+  <path d="M180 235 H204" stroke="#ad1457" marker-end="url(#arr)"/>
+  <text x="192" y="282" class="lbl" fill="#ad1457">HTTP request path (pink arrows) runs client to pod</text>
+
+  <!-- Row 3: observe + scale -->
+  <rect x="30" y="336" width="150" height="58" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="105" y="358" text-anchor="middle" class="b">Grafana</text>
+  <text x="105" y="374" text-anchor="middle" class="s">dashboards as code</text>
+  <text x="105" y="387" text-anchor="middle" class="s">(ConfigMaps via Argo)</text>
+
+  <rect x="206" y="336" width="150" height="58" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="281" y="358" text-anchor="middle" class="b">Prometheus</text>
+  <text x="281" y="374" text-anchor="middle" class="s">scrape /metrics every 30s</text>
+  <text x="281" y="387" text-anchor="middle" class="s">+ KSM + node-exporter</text>
+
+  <rect x="558" y="336" width="150" height="58" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="633" y="358" text-anchor="middle" class="b">Metrics Server</text>
+  <text x="633" y="374" text-anchor="middle" class="s">kubelet resource metrics</text>
+  <text x="633" y="387" text-anchor="middle" class="s">kubectl top, HPA input</text>
+
+  <rect x="734" y="336" width="150" height="58" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="809" y="358" text-anchor="middle" class="b">HPA</text>
+  <text x="809" y="374" text-anchor="middle" class="s">min 2 / max 4, CPU 70%</text>
+  <text x="809" y="387" text-anchor="middle" class="s">AWS load test: 2 to 3</text>
+
+  <path d="M600 264 L300 334" stroke="#3ba55a" marker-end="url(#arr)"/>
+  <text x="392" y="306" class="lbl">scrape /metrics</text>
+  <path d="M206 365 H182" stroke="#3ba55a" marker-end="url(#arr)"/>
+  <path d="M633 264 V334" stroke="#3ba55a" marker-end="url(#arr)"/>
+  <path d="M708 365 H732" stroke="#3ba55a" marker-end="url(#arr)"/>
+  <path d="M809 336 V266" stroke="#3ba55a" marker-end="url(#arr)"/>
+  <text x="816" y="305" class="lbl">scales replicas</text>
+  <text x="206" y="414" class="lbl">Two separate metric paths: Prometheus feeds dashboards; Metrics Server feeds HPA.</text>
+
+  <!-- Row 4: fail + roll back -->
+  <rect x="910" y="336" width="170" height="58" rx="6" fill="#ffe8e8" stroke="#a53b3b"/>
+  <text x="995" y="358" text-anchor="middle" class="b">Bad release 0.1.5</text>
+  <text x="995" y="374" text-anchor="middle" class="s">/health 503 on VMware only</text>
+  <text x="995" y="387" text-anchor="middle" class="s">new ReplicaSet 0/1 Ready</text>
+
+  <rect x="910" y="466" width="170" height="70" rx="6" fill="#ffe8e8" stroke="#a53b3b"/>
+  <text x="995" y="488" text-anchor="middle" class="b">Readiness gate holds</text>
+  <text x="995" y="504" text-anchor="middle" class="s">old ReplicaSet 2/2 keeps</text>
+  <text x="995" y="517" text-anchor="middle" class="s">serving 0.1.4; Argo shows</text>
+  <text x="995" y="530" text-anchor="middle" class="s">Synced + Degraded</text>
+
+  <rect x="690" y="466" width="194" height="70" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="787" y="488" text-anchor="middle" class="b">Git rollback</text>
+  <text x="787" y="504" text-anchor="middle" class="s">302a506: re-pin 0.1.4 digest</text>
+  <text x="787" y="517" text-anchor="middle" class="s">95820c8: revert app source</text>
+  <text x="787" y="530" text-anchor="middle" class="s">no kubectl rollout undo</text>
+
+  <path d="M995 264 V334" stroke="#a53b3b" stroke-dasharray="5 3" marker-end="url(#arrRed)"/>
+  <text x="1002" y="305" class="lbl" fill="#a53b3b">0.1.5 synced</text>
+  <path d="M995 394 V464" stroke="#a53b3b" marker-end="url(#arrRed)"/>
+  <path d="M910 501 H886" stroke="#6b3ba5" marker-end="url(#arr)"/>
+  <path d="M787 536 V552 H1102 V115 H1082" fill="none" stroke="#6b3ba5" stroke-dasharray="6 3" marker-end="url(#arr)"/>
+  <text x="675" y="495" text-anchor="end" class="lbl" fill="#6b3ba5">Rollback is a Git commit (dashed path back to GitOps promotion);</text>
+  <text x="675" y="509" text-anchor="end" class="lbl" fill="#6b3ba5">Argo CD reconciles the known-good digest. Reconcile observed ~6s.</text>
+
+  <!-- Legend / facts -->
+  <rect x="30" y="566" width="1050" height="130" rx="6" fill="#ffffff" stroke="#999"/>
+  <text x="45" y="588" class="b">What to remember (all values observed in Project 1 lab docs)</text>
+  <text x="45" y="608" class="s">- Release version names the logical release; the sha256 digest identifies the immutable artifact. 0.1.4 @ sha256:1cca2b59...872ff ran in both environments.</text>
+  <text x="45" y="626" class="s">- Jenkins promotion commits only kubernetes/overlays/local/kustomization.yaml and kubernetes/overlays/aws/kustomization.yaml; overlay-only commits skip app CI (loop prevention).</text>
+  <text x="45" y="644" class="s">- Running is not Ready: a pod that fails readiness leaves Service endpoints; maxUnavailable 0 keeps the old ReplicaSet serving during a bad rollout.</text>
+  <text x="45" y="662" class="s">- Pod delete on VMware: replacement Ready in about 10.4s. AWS HPA load test: 2 to 3 replicas about 65s after load start. Scale-down took about 5-6 min.</text>
+  <text x="45" y="680" class="s">- Sources: ci-cd-flow.md, vmware-pod-self-healing.md, vmware-rollout-failure-rollback.md, aws-hpa-observability-load-test.md, ADR 004.</text>
+</svg>

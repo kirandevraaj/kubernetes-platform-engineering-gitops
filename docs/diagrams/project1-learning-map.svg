@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="840" viewBox="0 0 1100 840" role="img" aria-label="Project 1 learning map">
+  <title>Project 1 visual learning map</title>
+  <style>
+    text { font-family: "Segoe UI", Arial, sans-serif; fill: #222; }
+    .h { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 11px; fill: #555; }
+    .b { font-size: 13px; font-weight: 700; }
+    .st { font-size: 10px; fill: #555; }
+    .sb { font-size: 11.5px; font-weight: 700; }
+    .ss { font-size: 10px; fill: #444; }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+    <marker id="arrK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b3ba5"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#999"/>
+    </marker>
+  </defs>
+  <rect width="1100" height="840" fill="#f7f8fa"/>
+  <text x="550" y="30" text-anchor="middle" class="h">Project 1 - visual learning map</text>
+  <text x="550" y="48" text-anchor="middle" class="sub">Centre column = conceptual learning order (stage numbers show when each happened in Git history). Side boxes = the tool that implements the layer.</text>
+
+  <!-- Centre column -->
+  <g>
+    <rect x="420" y="70"  width="260" height="38" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/><text x="550" y="86"  text-anchor="middle" class="b">Foundation</text><text x="550" y="101" text-anchor="middle" class="st">Stage 1</text>
+    <rect x="420" y="120" width="260" height="38" rx="6" fill="#fff4e0" stroke="#a57a3b"/><text x="550" y="136" text-anchor="middle" class="b">Application</text><text x="550" y="151" text-anchor="middle" class="st">Stages 2-3</text>
+    <rect x="420" y="170" width="260" height="38" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/><text x="550" y="186" text-anchor="middle" class="b">CI/CD</text><text x="550" y="201" text-anchor="middle" class="st">Stages 4, 6, 11</text>
+    <rect x="420" y="220" width="260" height="38" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/><text x="550" y="236" text-anchor="middle" class="b">GitOps</text><text x="550" y="251" text-anchor="middle" class="st">Stages 5, 6, 11, 21</text>
+    <rect x="420" y="270" width="260" height="38" rx="6" fill="#fff0e0" stroke="#e65100"/><text x="550" y="286" text-anchor="middle" class="b">Cloud</text><text x="550" y="301" text-anchor="middle" class="st">Stages 10-11</text>
+    <rect x="420" y="320" width="260" height="38" rx="6" fill="#e8ffe8" stroke="#3ba55a"/><text x="550" y="336" text-anchor="middle" class="b">Observability</text><text x="550" y="351" text-anchor="middle" class="st">Stages 8, 12, 13</text>
+    <rect x="420" y="370" width="260" height="38" rx="6" fill="#ffe8e8" stroke="#a53b3b"/><text x="550" y="386" text-anchor="middle" class="b">Reliability</text><text x="550" y="401" text-anchor="middle" class="st">Stages 9, 14, 15, 16</text>
+    <rect x="420" y="420" width="260" height="38" rx="6" fill="#e0f7fa" stroke="#00796b"/><text x="550" y="436" text-anchor="middle" class="b">Networking</text><text x="550" y="451" text-anchor="middle" class="st">Stages 7, 17</text>
+    <rect x="420" y="470" width="260" height="38" rx="6" fill="#fff8e1" stroke="#a58a3b"/><text x="550" y="486" text-anchor="middle" class="b">Storage</text><text x="550" y="501" text-anchor="middle" class="st">Stages 18-19</text>
+    <rect x="420" y="520" width="260" height="38" rx="6" fill="#fce4ec" stroke="#ad1457"/><text x="550" y="536" text-anchor="middle" class="b">Security</text><text x="550" y="551" text-anchor="middle" class="st">Stage 20</text>
+    <rect x="420" y="570" width="260" height="38" rx="6" fill="#e0f7fa" stroke="#00796b"/><text x="550" y="586" text-anchor="middle" class="b">Automation</text><text x="550" y="601" text-anchor="middle" class="st">Stage 22</text>
+    <rect x="420" y="620" width="260" height="38" rx="6" fill="#fff8e1" stroke="#a58a3b"/><text x="550" y="636" text-anchor="middle" class="b">DR</text><text x="550" y="651" text-anchor="middle" class="st">Stage 23</text>
+    <rect x="420" y="670" width="260" height="38" rx="6" fill="#eceff1" stroke="#455a64"/><text x="550" y="686" text-anchor="middle" class="b">Operations</text><text x="550" y="701" text-anchor="middle" class="st">Stages 24, 26</text>
+    <rect x="420" y="720" width="260" height="38" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/><text x="550" y="736" text-anchor="middle" class="b">Portfolio</text><text x="550" y="751" text-anchor="middle" class="st">Stage 25</text>
+
+    <path d="M550 108 V118" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 158 V168" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 208 V218" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 258 V268" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 308 V318" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 358 V368" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 408 V418" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 458 V468" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 508 V518" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 558 V568" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 608 V618" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 658 V668" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M550 708 V718" stroke="#333" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- Left side boxes -->
+  <g>
+    <rect x="60" y="70" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="210" y="86" text-anchor="middle" class="sb">kubeadm cluster</text><text x="210" y="101" text-anchor="middle" class="ss">containerd, Calico, CoreDNS, kube-proxy</text>
+    <path d="M362 89 H418" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+
+    <rect x="60" y="170" width="300" height="38" rx="5" fill="#e8f1ff" stroke="#6b3ba5" stroke-width="2"/><text x="210" y="186" text-anchor="middle" class="sb">Jenkins</text><text x="210" y="201" text-anchor="middle" class="ss">CI: test, build, push, capture digest, promote</text>
+    <path d="M362 189 H418" stroke="#6b3ba5" stroke-width="2" marker-start="url(#arrK)" marker-end="url(#arrK)"/>
+
+    <rect x="60" y="220" width="300" height="38" rx="5" fill="#f0e8ff" stroke="#6b3ba5" stroke-width="2"/><text x="210" y="236" text-anchor="middle" class="sb">Argo CD + Kustomize</text><text x="210" y="251" text-anchor="middle" class="ss">GitOps: reconcile overlays, selfHeal, AppSets</text>
+    <path d="M362 239 H418" stroke="#6b3ba5" stroke-width="2" marker-start="url(#arrK)" marker-end="url(#arrK)"/>
+
+    <rect x="60" y="420" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="210" y="436" text-anchor="middle" class="sb">MetalLB + ingress-nginx | ALB</text><text x="210" y="451" text-anchor="middle" class="ss">VMware VIP 192.168.56.200 | AWS target-type ip</text>
+    <path d="M362 439 H418" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+
+    <rect x="60" y="520" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="210" y="536" text-anchor="middle" class="sb">RBAC, Pod Security, NetworkPolicy</text><text x="210" y="551" text-anchor="middle" class="ss">enforcement observed on Calico, not on AWS VPC CNI</text>
+    <path d="M362 539 H418" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+
+    <rect x="60" y="570" width="300" height="38" rx="5" fill="#e0f7fa" stroke="#6b3ba5" stroke-width="2"/><text x="210" y="586" text-anchor="middle" class="sb">Python  &lt;-&gt;  APIs</text><text x="210" y="601" text-anchor="middle" class="ss">platform-automate: Kubernetes API, AWS (Boto3)</text>
+    <path d="M362 589 H418" stroke="#6b3ba5" stroke-width="2" marker-start="url(#arrK)" marker-end="url(#arrK)"/>
+
+    <rect x="60" y="670" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="210" y="686" text-anchor="middle" class="sb">Runbooks, triage, postmortems</text><text x="210" y="701" text-anchor="middle" class="ss">evidence before mutation; teardown/cleanup records</text>
+    <path d="M362 689 H418" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+  </g>
+
+  <!-- Right side boxes -->
+  <g>
+    <rect x="740" y="120" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="890" y="136" text-anchor="middle" class="sb">FastAPI + Docker</text><text x="890" y="151" text-anchor="middle" class="ss">non-root image; tag names release, digest pins it</text>
+    <path d="M682 139 H738" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+
+    <rect x="740" y="270" width="300" height="38" rx="5" fill="#fff0e0" stroke="#6b3ba5" stroke-width="2"/><text x="890" y="286" text-anchor="middle" class="sb">Terraform  &lt;-&gt;  AWS</text><text x="890" y="301" text-anchor="middle" class="ss">VPC, EKS, node groups, IAM, add-ons</text>
+    <path d="M682 289 H738" stroke="#6b3ba5" stroke-width="2" marker-start="url(#arrK)" marker-end="url(#arrK)"/>
+
+    <rect x="740" y="320" width="300" height="38" rx="5" fill="#e8ffe8" stroke="#6b3ba5" stroke-width="2"/><text x="890" y="336" text-anchor="middle" class="sb">Prometheus / Grafana</text><text x="890" y="351" text-anchor="middle" class="ss">+ KSM, node-exporter; Metrics Server feeds HPA</text>
+    <path d="M682 339 H738" stroke="#6b3ba5" stroke-width="2" marker-start="url(#arrK)" marker-end="url(#arrK)"/>
+
+    <rect x="740" y="370" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="890" y="386" text-anchor="middle" class="sb">HPA, PDB, probes, rollouts</text><text x="890" y="401" text-anchor="middle" class="ss">pod, readiness, rollout, node failure experiments</text>
+    <path d="M682 389 H738" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+
+    <rect x="740" y="470" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="890" y="486" text-anchor="middle" class="sb">local-path | EBS CSI + snapshots</text><text x="890" y="501" text-anchor="middle" class="ss">node-local vs AZ-scoped persistence</text>
+    <path d="M682 489 H738" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+
+    <rect x="740" y="570" width="300" height="38" rx="5" fill="#e0f7fa" stroke="#6b3ba5" stroke-width="2"/><text x="890" y="586" text-anchor="middle" class="sb">Ansible  &lt;-&gt;  operational automation</text><text x="890" y="601" text-anchor="middle" class="ss">idempotent playbooks and roles (Linux / Jenkins)</text>
+    <path d="M682 589 H738" stroke="#6b3ba5" stroke-width="2" marker-start="url(#arrK)" marker-end="url(#arrK)"/>
+
+    <rect x="740" y="620" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="890" y="636" text-anchor="middle" class="sb">Git + Terraform + snapshots</text><text x="890" y="651" text-anchor="middle" class="ss">measured drills; not a full rebuild</text>
+    <path d="M682 639 H738" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+
+    <rect x="740" y="720" width="300" height="38" rx="5" fill="#ffffff" stroke="#999"/><text x="890" y="736" text-anchor="middle" class="sb">ADRs, reference architecture</text><text x="890" y="751" text-anchor="middle" class="ss">portfolio packaging + this revisit guide</text>
+    <path d="M682 739 H738" stroke="#999" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+  </g>
+
+  <text x="550" y="790" text-anchor="middle" class="sub">Bold purple links = core tool-to-layer relationships (Jenkins-CI, Argo-GitOps, Terraform-AWS, Prometheus/Grafana-observability, Python-APIs, Ansible-ops automation).</text>
+  <text x="550" y="808" text-anchor="middle" class="sub">Chronology differs from learning order: e.g. ingress + MetalLB (Stage 7) came before observability (Stage 8). Full timeline: docs/portfolio/project1-revisit-guide.md.</text>
+</svg>

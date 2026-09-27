@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="780" viewBox="0 0 1120 780" role="img" aria-label="Project 1 final study architecture">
+  <title>Project 1 final study architecture - control, data, management, automation, observability</title>
+  <style>
+    text { font-family: "Segoe UI", Arial, sans-serif; fill: #222; }
+    .h { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 11px; fill: #555; }
+    .lt { font-size: 12.5px; font-weight: 700; }
+    .ls { font-size: 10px; fill: #555; }
+    .b { font-size: 12px; font-weight: 700; }
+    .s { font-size: 10px; fill: #444; }
+    .n { font-size: 10px; fill: #555; font-style: italic; }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="780" fill="#f7f8fa"/>
+  <text x="560" y="30" text-anchor="middle" class="h">Project 1 - final study architecture (conceptual)</text>
+  <text x="560" y="48" text-anchor="middle" class="sub">Five flows that never mix: CI builds artifacts, CD reconciles Git, users hit the data plane, Terraform manages AWS, automation calls APIs.</text>
+
+  <!-- Lane 1: CI -->
+  <rect x="20" y="66" width="1080" height="96" rx="8" fill="#ffffff" stroke="#3b6ea5"/>
+  <rect x="20" y="66" width="180" height="96" rx="8" fill="#e8f1ff" stroke="#3b6ea5"/>
+  <text x="110" y="104" text-anchor="middle" class="lt" fill="#3b6ea5">CONTROL: CI</text>
+  <text x="110" y="122" text-anchor="middle" class="ls">builds artifacts,</text>
+  <text x="110" y="135" text-anchor="middle" class="ls">never deploys</text>
+  <rect x="220" y="92" width="150" height="44" rx="5" fill="#e8f1ff" stroke="#3b6ea5"/><text x="295" y="112" text-anchor="middle" class="b">Developer</text><text x="295" y="126" text-anchor="middle" class="s">commit to app/</text>
+  <rect x="400" y="92" width="150" height="44" rx="5" fill="#e8f1ff" stroke="#3b6ea5"/><text x="475" y="112" text-anchor="middle" class="b">GitHub (main)</text><text x="475" y="126" text-anchor="middle" class="s">source + desired state</text>
+  <rect x="580" y="92" width="150" height="44" rx="5" fill="#e8f1ff" stroke="#3b6ea5"/><text x="655" y="112" text-anchor="middle" class="b">Jenkins</text><text x="655" y="126" text-anchor="middle" class="s">test, build, push</text>
+  <rect x="760" y="92" width="150" height="44" rx="5" fill="#fff4e0" stroke="#a57a3b"/><text x="835" y="112" text-anchor="middle" class="b">Docker Hub</text><text x="835" y="126" text-anchor="middle" class="s">image tag + sha256 digest</text>
+  <rect x="940" y="92" width="150" height="44" rx="5" fill="#f0e8ff" stroke="#6b3ba5"/><text x="1015" y="112" text-anchor="middle" class="b">Overlay commit</text><text x="1015" y="126" text-anchor="middle" class="s">digest pinned in Git</text>
+  <path d="M370 114 H398" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M550 114 H578" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M730 114 H758" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M910 114 H938" stroke="#333" marker-end="url(#arr)"/>
+  <text x="560" y="154" text-anchor="middle" class="n">Jenkins pushes the promotion commit back to GitHub; overlay-only commits skip app CI (loop prevention).</text>
+
+  <!-- Lane 2: CD -->
+  <rect x="20" y="176" width="1080" height="96" rx="8" fill="#ffffff" stroke="#6b3ba5"/>
+  <rect x="20" y="176" width="180" height="96" rx="8" fill="#f0e8ff" stroke="#6b3ba5"/>
+  <text x="110" y="214" text-anchor="middle" class="lt" fill="#6b3ba5">CONTROL: CD</text>
+  <text x="110" y="232" text-anchor="middle" class="ls">GitOps reconciliation</text>
+  <text x="110" y="245" text-anchor="middle" class="ls">(pull, not push)</text>
+  <rect x="220" y="202" width="150" height="44" rx="5" fill="#f0e8ff" stroke="#6b3ba5"/><text x="295" y="222" text-anchor="middle" class="b">Git overlays</text><text x="295" y="236" text-anchor="middle" class="s">kubernetes/overlays/*</text>
+  <rect x="400" y="202" width="150" height="44" rx="5" fill="#f0e8ff" stroke="#6b3ba5"/><text x="475" y="222" text-anchor="middle" class="b">Argo CD</text><text x="475" y="236" text-anchor="middle" class="s">one instance per cluster</text>
+  <rect x="580" y="202" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="655" y="222" text-anchor="middle" class="b">Kubernetes API</text><text x="655" y="236" text-anchor="middle" class="s">ckad-lab | EKS</text>
+  <rect x="760" y="202" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="835" y="222" text-anchor="middle" class="b">Live objects</text><text x="835" y="236" text-anchor="middle" class="s">Deployment, Service, HPA</text>
+  <rect x="940" y="202" width="150" height="44" rx="5" fill="#fff8e1" stroke="#a58a3b"/><text x="1015" y="222" text-anchor="middle" class="b">AppProject</text><text x="1015" y="236" text-anchor="middle" class="s">allowed repos/destinations</text>
+  <path d="M370 224 H398" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M550 224 H578" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M730 224 H758" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M940 224 H912" stroke="#999" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <text x="560" y="264" text-anchor="middle" class="n">VMware Argo CD v3.5.3 and AWS Argo CD v3.1.0 were separate control planes; selfHeal reverts live drift.</text>
+
+  <!-- Lane 3: Data plane -->
+  <rect x="20" y="286" width="1080" height="96" rx="8" fill="#ffffff" stroke="#ad1457"/>
+  <rect x="20" y="286" width="180" height="96" rx="8" fill="#fce4ec" stroke="#ad1457"/>
+  <text x="110" y="324" text-anchor="middle" class="lt" fill="#ad1457">DATA PLANE</text>
+  <text x="110" y="342" text-anchor="middle" class="ls">user HTTP traffic</text>
+  <text x="110" y="355" text-anchor="middle" class="ls">only</text>
+  <rect x="220" y="312" width="150" height="44" rx="5" fill="#fce4ec" stroke="#ad1457"/><text x="295" y="332" text-anchor="middle" class="b">Client</text><text x="295" y="346" text-anchor="middle" class="s">HTTP</text>
+  <rect x="400" y="312" width="150" height="44" rx="5" fill="#e0f7fa" stroke="#00796b"/><text x="475" y="332" text-anchor="middle" class="b">VIP / ALB</text><text x="475" y="346" text-anchor="middle" class="s">MetalLB .200 | AWS ALB</text>
+  <rect x="580" y="312" width="150" height="44" rx="5" fill="#e0f7fa" stroke="#00796b"/><text x="655" y="332" text-anchor="middle" class="b">ingress-nginx</text><text x="655" y="346" text-anchor="middle" class="s">VMware only, 2 replicas</text>
+  <rect x="760" y="312" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="835" y="332" text-anchor="middle" class="b">Service</text><text x="835" y="346" text-anchor="middle" class="s">ClusterIP :8000</text>
+  <rect x="940" y="312" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="1015" y="332" text-anchor="middle" class="b">Pod :8000</text><text x="1015" y="346" text-anchor="middle" class="s">FastAPI 0.1.4 digest</text>
+  <path d="M370 334 H398" stroke="#ad1457" marker-end="url(#arr)"/>
+  <path d="M550 334 H578" stroke="#ad1457" marker-end="url(#arr)"/>
+  <path d="M730 334 H758" stroke="#ad1457" marker-end="url(#arr)"/>
+  <path d="M910 334 H938" stroke="#ad1457" marker-end="url(#arr)"/>
+  <text x="560" y="374" text-anchor="middle" class="n">AWS path skips ingress-nginx: ALB (target-type ip) sends traffic straight to pod IPs. Terraform and Argo CD are never HTTP hops.</text>
+
+  <!-- Lane 4: Management -->
+  <rect x="20" y="396" width="1080" height="96" rx="8" fill="#ffffff" stroke="#e65100"/>
+  <rect x="20" y="396" width="180" height="96" rx="8" fill="#fff0e0" stroke="#e65100"/>
+  <text x="110" y="434" text-anchor="middle" class="lt" fill="#e65100">MANAGEMENT: IaC</text>
+  <text x="110" y="452" text-anchor="middle" class="ls">AWS infrastructure</text>
+  <text x="110" y="465" text-anchor="middle" class="ls">lifecycle</text>
+  <rect x="220" y="422" width="150" height="44" rx="5" fill="#fff0e0" stroke="#e65100"/><text x="295" y="442" text-anchor="middle" class="b">Terraform</text><text x="295" y="456" text-anchor="middle" class="s">terraform/aws (local state)</text>
+  <rect x="400" y="422" width="150" height="44" rx="5" fill="#fff0e0" stroke="#e65100"/><text x="475" y="442" text-anchor="middle" class="b">VPC</text><text x="475" y="456" text-anchor="middle" class="s">10.50.0.0/16, 2 AZs, 1 NAT</text>
+  <rect x="580" y="422" width="150" height="44" rx="5" fill="#fff0e0" stroke="#e65100"/><text x="655" y="442" text-anchor="middle" class="b">EKS + node group</text><text x="655" y="456" text-anchor="middle" class="s">1.36, 2 x t3.medium</text>
+  <rect x="760" y="422" width="150" height="44" rx="5" fill="#fff0e0" stroke="#e65100"/><text x="835" y="442" text-anchor="middle" class="b">IAM</text><text x="835" y="456" text-anchor="middle" class="s">roles, Pod Identity</text>
+  <rect x="940" y="422" width="150" height="44" rx="5" fill="#fff0e0" stroke="#e65100"/><text x="1015" y="442" text-anchor="middle" class="b">Add-ons</text><text x="1015" y="456" text-anchor="middle" class="s">LBC, EBS CSI, snapshots</text>
+  <path d="M370 444 H398" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M550 444 H578" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M730 444 H758" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M910 444 H938" stroke="#333" marker-end="url(#arr)"/>
+  <text x="560" y="484" text-anchor="middle" class="n">Terraform also bootstrapped AWS Argo CD. It does not describe the VMware VMs. AWS runtime destroyed 2026-09-26; source kept.</text>
+
+  <!-- Lane 5: Automation -->
+  <rect x="20" y="506" width="1080" height="96" rx="8" fill="#ffffff" stroke="#00796b"/>
+  <rect x="20" y="506" width="180" height="96" rx="8" fill="#e0f7fa" stroke="#00796b"/>
+  <text x="110" y="544" text-anchor="middle" class="lt" fill="#00796b">AUTOMATION</text>
+  <text x="110" y="562" text-anchor="middle" class="ls">custom logic and</text>
+  <text x="110" y="575" text-anchor="middle" class="ls">host configuration</text>
+  <rect x="220" y="532" width="150" height="44" rx="5" fill="#e0f7fa" stroke="#00796b"/><text x="295" y="552" text-anchor="middle" class="b">Python CLI</text><text x="295" y="566" text-anchor="middle" class="s">platform-automate</text>
+  <rect x="400" y="532" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="475" y="552" text-anchor="middle" class="b">APIs</text><text x="475" y="566" text-anchor="middle" class="s">Kubernetes, AWS (Boto3)</text>
+  <rect x="760" y="532" width="150" height="44" rx="5" fill="#e0f7fa" stroke="#00796b"/><text x="835" y="552" text-anchor="middle" class="b">Ansible</text><text x="835" y="566" text-anchor="middle" class="s">playbooks + roles</text>
+  <rect x="940" y="532" width="150" height="44" rx="5" fill="#eceff1" stroke="#455a64"/><text x="1015" y="552" text-anchor="middle" class="b">Systems</text><text x="1015" y="566" text-anchor="middle" class="s">Linux, Jenkins agent</text>
+  <rect x="580" y="532" width="150" height="44" rx="5" fill="#fff8e1" stroke="#a58a3b"/><text x="655" y="552" text-anchor="middle" class="b">Guard rails</text><text x="655" y="566" text-anchor="middle" class="s">--dry-run, --confirm</text>
+  <path d="M370 554 H398" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M910 554 H938" stroke="#333" marker-end="url(#arr)"/>
+  <text x="560" y="594" text-anchor="middle" class="n">ops commands are read-only; only automation-lab may be mutated. Ansible ran on Linux/Jenkins (Windows CLI blocked).</text>
+
+  <!-- Lane 6: Observability -->
+  <rect x="20" y="616" width="1080" height="96" rx="8" fill="#ffffff" stroke="#3ba55a"/>
+  <rect x="20" y="616" width="180" height="96" rx="8" fill="#e8ffe8" stroke="#3ba55a"/>
+  <text x="110" y="654" text-anchor="middle" class="lt" fill="#3ba55a">OBSERVABILITY</text>
+  <text x="110" y="672" text-anchor="middle" class="ls">two separate</text>
+  <text x="110" y="685" text-anchor="middle" class="ls">metric paths</text>
+  <rect x="220" y="642" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="295" y="662" text-anchor="middle" class="b">/metrics + KSM</text><text x="295" y="676" text-anchor="middle" class="s">+ node-exporter</text>
+  <rect x="400" y="642" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="475" y="662" text-anchor="middle" class="b">Prometheus</text><text x="475" y="676" text-anchor="middle" class="s">scrape every 30s</text>
+  <rect x="580" y="642" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="655" y="662" text-anchor="middle" class="b">Grafana</text><text x="655" y="676" text-anchor="middle" class="s">dashboards (humans)</text>
+  <rect x="760" y="642" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="835" y="662" text-anchor="middle" class="b">Metrics Server</text><text x="835" y="676" text-anchor="middle" class="s">kubelet resource metrics</text>
+  <rect x="940" y="642" width="150" height="44" rx="5" fill="#e8ffe8" stroke="#3ba55a"/><text x="1015" y="662" text-anchor="middle" class="b">HPA / kubectl top</text><text x="1015" y="676" text-anchor="middle" class="s">machines + operators</text>
+  <path d="M370 664 H398" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M550 664 H578" stroke="#333" marker-end="url(#arr)"/>
+  <path d="M910 664 H938" stroke="#333" marker-end="url(#arr)"/>
+  <text x="560" y="704" text-anchor="middle" class="n">Fixing Prometheus does not fix HPA. Metrics Server is still running on the current VMware base lab; Prometheus/Grafana were removed.</text>
+
+  <text x="560" y="740" text-anchor="middle" class="sub">Historical architecture (VMware full platform + AWS EKS). Current runtime: VMware basic kubeadm lab only. See docs/portfolio/project1-environment-map.md.</text>
+  <text x="560" y="758" text-anchor="middle" class="sub">Sources: architecture/project1-reference-architecture.md, architecture/tool-boundaries.md, ADR 001-013.</text>
+</svg>

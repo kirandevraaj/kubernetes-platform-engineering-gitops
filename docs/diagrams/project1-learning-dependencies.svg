@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="820" viewBox="0 0 1000 820" role="img" aria-label="Project 1 learning dependencies">
+  <title>Project 1 learning dependencies</title>
+  <style>
+    text { font-family: "Segoe UI", Arial, sans-serif; fill: #222; }
+    .h { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 11px; fill: #555; }
+    .b { font-size: 13px; font-weight: 700; }
+    .s { font-size: 10.5px; fill: #444; }
+    .ct { font-size: 12px; font-weight: 700; fill: #6b3ba5; }
+    .cs { font-size: 10.5px; fill: #333; }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="820" fill="#f7f8fa"/>
+  <text x="500" y="32" text-anchor="middle" class="h">Project 1 - learning dependencies</text>
+  <text x="500" y="50" text-anchor="middle" class="sub">Study top to bottom. Each layer assumes the ones above it. Right-hand cards list prerequisites for the hardest topics.</text>
+
+  <!-- Chain -->
+  <g>
+    <rect x="60" y="70" width="260" height="42" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+    <text x="190" y="88" text-anchor="middle" class="b">Kubernetes</text>
+    <text x="190" y="104" text-anchor="middle" class="s">Pods, Deployments, Services, probes</text>
+
+    <rect x="60" y="132" width="260" height="42" rx="6" fill="#fff4e0" stroke="#a57a3b"/>
+    <text x="190" y="150" text-anchor="middle" class="b">Docker</text>
+    <text x="190" y="166" text-anchor="middle" class="s">FastAPI image, tag vs digest</text>
+
+    <rect x="60" y="194" width="260" height="42" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
+    <text x="190" y="212" text-anchor="middle" class="b">CI/CD</text>
+    <text x="190" y="228" text-anchor="middle" class="s">Jenkins test, build, push, promote</text>
+
+    <rect x="60" y="256" width="260" height="42" rx="6" fill="#f0e8ff" stroke="#6b3ba5"/>
+    <text x="190" y="274" text-anchor="middle" class="b">GitOps</text>
+    <text x="190" y="290" text-anchor="middle" class="s">Git + Argo CD + Kustomize overlays</text>
+
+    <rect x="60" y="318" width="260" height="42" rx="6" fill="#fff0e0" stroke="#e65100"/>
+    <text x="190" y="336" text-anchor="middle" class="b">Cloud / IaC</text>
+    <text x="190" y="352" text-anchor="middle" class="s">Terraform, AWS VPC, EKS, IAM</text>
+
+    <rect x="60" y="380" width="260" height="42" rx="6" fill="#e8ffe8" stroke="#3ba55a"/>
+    <text x="190" y="398" text-anchor="middle" class="b">Observability</text>
+    <text x="190" y="414" text-anchor="middle" class="s">Metrics Server, Prometheus, Grafana, KSM</text>
+
+    <rect x="60" y="442" width="260" height="42" rx="6" fill="#ffe8e8" stroke="#a53b3b"/>
+    <text x="190" y="460" text-anchor="middle" class="b">Reliability</text>
+    <text x="190" y="476" text-anchor="middle" class="s">HPA, PDB, rollouts, failure tests</text>
+
+    <rect x="60" y="504" width="260" height="42" rx="6" fill="#fce4ec" stroke="#ad1457"/>
+    <text x="190" y="522" text-anchor="middle" class="b">Security</text>
+    <text x="190" y="538" text-anchor="middle" class="s">RBAC, Pod Security, NetworkPolicy</text>
+
+    <rect x="60" y="566" width="260" height="42" rx="6" fill="#e0f7fa" stroke="#00796b"/>
+    <text x="190" y="584" text-anchor="middle" class="b">Automation</text>
+    <text x="190" y="600" text-anchor="middle" class="s">Python platform-automate, Ansible</text>
+
+    <rect x="60" y="628" width="260" height="42" rx="6" fill="#fff8e1" stroke="#a58a3b"/>
+    <text x="190" y="646" text-anchor="middle" class="b">Disaster Recovery</text>
+    <text x="190" y="662" text-anchor="middle" class="s">Git + Terraform + snapshots + runbooks</text>
+
+    <rect x="60" y="690" width="260" height="42" rx="6" fill="#eceff1" stroke="#455a64"/>
+    <text x="190" y="708" text-anchor="middle" class="b">Operations</text>
+    <text x="190" y="724" text-anchor="middle" class="s">Triage, runbooks, postmortems</text>
+
+    <path d="M190 112 V130" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 174 V192" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 236 V254" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 298 V316" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 360 V378" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 422 V440" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 484 V502" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 546 V564" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 608 V626" stroke="#333" marker-end="url(#arr)"/>
+    <path d="M190 670 V688" stroke="#333" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- Prerequisite cards -->
+  <g>
+    <rect x="430" y="70" width="520" height="88" rx="6" fill="#ffffff" stroke="#6b3ba5"/>
+    <text x="445" y="90" class="ct">Advanced Argo CD (Stage 21) requires</text>
+    <text x="445" y="108" class="cs">- Argo Application and AppProject basics (Stage 5)</text>
+    <text x="445" y="124" class="cs">- Kustomize base/overlays (Stage 3)</text>
+    <text x="445" y="140" class="cs">- Sync lifecycle: phases, waves, hooks, health</text>
+
+    <rect x="430" y="170" width="520" height="88" rx="6" fill="#ffffff" stroke="#6b3ba5"/>
+    <text x="445" y="190" class="ct">EBS CSI storage (Stage 19) requires</text>
+    <text x="445" y="208" class="cs">- PVC / PV / StorageClass / StatefulSet (Stage 18, local-path first)</text>
+    <text x="445" y="224" class="cs">- EKS + IAM from Terraform (Stage 10), CSI driver concept</text>
+    <text x="445" y="240" class="cs">- AZ topology: an EBS volume lives in exactly one AZ</text>
+
+    <rect x="430" y="270" width="520" height="88" rx="6" fill="#ffffff" stroke="#6b3ba5"/>
+    <text x="445" y="290" class="ct">HPA (Stages 9, 12) requires</text>
+    <text x="445" y="308" class="cs">- Metrics Server (resource metrics API), not Prometheus</text>
+    <text x="445" y="324" class="cs">- CPU requests on the Deployment (70% of 50m request)</text>
+    <text x="445" y="340" class="cs">- Deployment / ReplicaSet behaviour; Argo ignores /spec/replicas</text>
+
+    <rect x="430" y="370" width="520" height="88" rx="6" fill="#ffffff" stroke="#6b3ba5"/>
+    <text x="445" y="390" class="ct">Ingress HA (Stages 16-17) requires</text>
+    <text x="445" y="408" class="cs">- Service endpoints and readiness (Stage 14)</text>
+    <text x="445" y="424" class="cs">- MetalLB L2 VIP + ingress-nginx (Stage 7)</text>
+    <text x="445" y="440" class="cs">- Node failure behaviour, taints, PDB, topology spread</text>
+
+    <rect x="430" y="470" width="520" height="88" rx="6" fill="#ffffff" stroke="#6b3ba5"/>
+    <text x="445" y="490" class="ct">Python / Ansible (Stage 22) requires</text>
+    <text x="445" y="508" class="cs">- Linux, SSH, REST APIs, exit codes</text>
+    <text x="445" y="524" class="cs">- Kubernetes API and AWS API (Boto3) concepts</text>
+    <text x="445" y="540" class="cs">- Idempotency and tool boundaries vs Terraform and Argo CD</text>
+
+    <rect x="430" y="570" width="520" height="104" rx="6" fill="#ffffff" stroke="#6b3ba5"/>
+    <text x="445" y="590" class="ct">Disaster Recovery (Stage 23) requires</text>
+    <text x="445" y="608" class="cs">- GitOps recovery (Git is desired state) and Argo sync</text>
+    <text x="445" y="624" class="cs">- Terraform lifecycle (plan, state, rebuild concept)</text>
+    <text x="445" y="640" class="cs">- EBS storage + CSI snapshots (Stage 19)</text>
+    <text x="445" y="656" class="cs">- Backup vs restore vs DR; measured RTO / RPO</text>
+
+    <path d="M430 114 H340 V277 H322" fill="none" stroke="#9c7fc9" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+    <path d="M430 214 H352 V339 H322" fill="none" stroke="#9c7fc9" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+    <path d="M430 314 H364 V458 H322" fill="none" stroke="#9c7fc9" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+    <path d="M430 414 H376 V470 H322" fill="none" stroke="#9c7fc9" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+    <path d="M430 514 H388 V587 H322" fill="none" stroke="#9c7fc9" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+    <path d="M430 622 H400 V649 H322" fill="none" stroke="#9c7fc9" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  </g>
+
+  <text x="500" y="770" text-anchor="middle" class="sub">Networking (Stages 7, 16-17) and Storage (Stages 18-19) sit between Observability and Security in practice; see project1-learning-map.svg.</text>
+  <text x="500" y="790" text-anchor="middle" class="sub">Source: docs/portfolio/project1-revisit-guide.md - stage numbers follow repository commit history.</text>
+</svg>
