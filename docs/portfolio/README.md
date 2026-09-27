@@ -16,6 +16,8 @@ Landing page for recruiter / hiring-manager / engineer navigation.
 | [documentation-map.md](./documentation-map.md) | Nav model |
 | [project1-demo-script.md](./project1-demo-script.md) | 10-minute demo |
 | [screenshot-plan.md](./screenshot-plan.md) | Safe screenshots |
+| [svg-compatibility-report.md](./svg-compatibility-report.md) | Diagram SVG audit and GitHub rendering fix |
+| [svg-authoring-guidelines.md](./svg-authoring-guidelines.md) | Rules and test workflow for diagrams |
 | [project1-interview-cheat-sheet.md](./project1-interview-cheat-sheet.md) | One-pager |
 | [linkedin-featured-project1.md](./linkedin-featured-project1.md) | LinkedIn #1 |
 | [linkedin-featured-project2.md](./linkedin-featured-project2.md) | LinkedIn #2 |

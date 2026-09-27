@@ -1,7 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480" role="img" aria-label="Platform runbook map">
+  <title>Platform runbook map</title>
   <rect width="900" height="480" fill="#f7f8fa"/>
-  <text x="24" y="32" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#1a1a1a">Platform runbook map</text>
-  <g font-family="Segoe UI, Arial, sans-serif" font-size="12">
+  <text x="24" y="32" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#1a1a1a">Platform runbook map</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="12">
     <rect x="30" y="60" width="160" height="80" rx="6" fill="#e8f1ff" stroke="#3b6ea5"/>
     <text x="70" y="90">Application</text>
     <text x="45" y="110">unhealthy, pod, rollout</text>
@@ -30,5 +32,5 @@
     <text x="730" y="210">DR</text>
     <text x="670" y="230">EKS, EBS, Git/Argo, RPO</text>
   </g>
-  <text x="24" y="320" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#555">See docs/operations/README.md for full links</text>
+  <text x="24" y="320" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#555">See docs/operations/README.md for full links</text>
 </svg>
