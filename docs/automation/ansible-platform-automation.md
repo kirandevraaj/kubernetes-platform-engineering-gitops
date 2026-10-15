@@ -215,7 +215,7 @@ Use collections for describe/info modules first. Creating VPC/EKS/ALB remains **
 
 ## CI/CD
 
-Jenkins automation pipeline stages: checkout → Python tests → ruff → ansible-lint → check/diff dry-run → plan → optional confirmed lab apply → verify → archive.
+Jenkins automation pipeline stages: checkout → toolchain preflight → ruff → mypy → Python tests → ansible-lint → doctor (all offline and required) → optional read-only cluster preflight/plan/dry-run → optional confirmed lab apply → wait → verify → archive. See [jenkins/README.md](../../jenkins/README.md#automation-lab-pipeline-jenkinsfileautomation-lab).
 
 Jenkins still **does not** kubectl-apply `platform-lab`. If Ansible/Python changes Git desired state for `automation-lab`, Argo CD reconciles — same GitOps boundary as app digests.
 

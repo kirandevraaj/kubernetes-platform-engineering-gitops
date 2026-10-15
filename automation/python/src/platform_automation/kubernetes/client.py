@@ -76,9 +76,12 @@ def _unreachable(
 ) -> APIError | AutomationTimeoutError:
     reason = getattr(exc, "reason", None) or exc
     where = f"Kubernetes API {host}" + (f" (context {context})" if context else "")
-    if isinstance(reason, urllib3.exceptions.TimeoutError) or isinstance(
-        exc, urllib3.exceptions.TimeoutError
-    ):
+    # NewConnectionError (refused, DNS) subclasses ConnectTimeoutError in urllib3 2.x.
+    timed_out = not isinstance(reason, urllib3.exceptions.NewConnectionError) and (
+        isinstance(reason, urllib3.exceptions.TimeoutError)
+        or isinstance(exc, urllib3.exceptions.TimeoutError)
+    )
+    if timed_out:
         return AutomationTimeoutError(
             f"{where} did not respond within {timeout[0]:g}s connect / {timeout[1]:g}s read. "
             f"{_TROUBLESHOOT}"

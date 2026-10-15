@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import socket
-import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -280,15 +279,13 @@ def test_refused_connection_fails_fast_and_clearly():
     facade = KubernetesFacade(api_client=BoundedApiClient(configuration, request_timeout=5))
 
     started = time.monotonic()
-    with pytest.raises((APIError, AutomationTimeoutError)) as excinfo:
+    with pytest.raises(APIError) as excinfo:
         facade.core.read_namespace("automation-lab")
     assert time.monotonic() - started < BOUND_SECONDS
+    assert "unreachable" in str(excinfo.value)
+    assert "did not respond" not in str(excinfo.value)
     assert "kubernetes preflight" in str(excinfo.value)
-    if sys.platform != "win32":
-        # Windows can surface a refused loopback connect as a connect timeout.
-        assert isinstance(excinfo.value, APIError)
-        assert "unreachable" in str(excinfo.value)
-        assert excinfo.value.retryable is True
+    assert excinfo.value.retryable is True
 
 
 def test_preflight_maps_forbidden_to_authentication_error():

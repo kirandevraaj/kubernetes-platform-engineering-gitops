@@ -14,8 +14,18 @@ cd automation/python
 ```powershell
 .\.venv\Scripts\platform-automate.exe version
 .\.venv\Scripts\platform-automate.exe doctor
-.\.venv\Scripts\platform-automate.exe platform plan --dry-run
+.\.venv\Scripts\platform-automate.exe --timeout 10 kubernetes preflight
+.\.venv\Scripts\platform-automate.exe platform plan
+.\.venv\Scripts\platform-automate.exe kubernetes ensure --dry-run
 ```
+
+`version` and `doctor` are offline. `kubernetes preflight`, `platform plan` and
+`kubernetes ensure --dry-run` are read-only but **do** call the Kubernetes API from the
+current kubeconfig context; `--dry-run` means "no writes", not "no cluster". Each API call
+is bounded by `--timeout` (default 30 s, connect ≤ 10 s, no retries) and an unreachable
+API exits 5 (unreachable) or 6 (timed out) instead of hanging. `platform verify` exits 4
+when the demo pods are missing or not Ready. See the
+[command reference](../../docs/automation/automation-command-reference.md#exit-code-quick-map).
 
 ## Safety
 
@@ -38,6 +48,11 @@ cd automation/python
 
 GitHub Actions runs the same unit tests, `ruff check` and `mypy` on every pull request
 (`.github/workflows/ci.yml`).
+
+Unit tests are offline: `tests/conftest.py` points `KUBECONFIG` and the AWS config and
+credential files at missing paths and clears AWS and `PLATFORM_*` variables, so no test can
+reach a real cluster or AWS account. Kubernetes behaviour is tested against a local fake
+API server (`tests/unit/test_kubernetes_dry_run.py`).
 
 Live tests are skipped unless `--live` is passed.
 

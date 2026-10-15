@@ -176,7 +176,7 @@ Pyramid:
 2. **Adapter contract** — mock `ApiException` / `ClientError`  
 3. **Integration (opt-in)** — real `ckad-lab` read-only doctor against `automation-lab`  
 
-Jenkins automation pipeline: unit → ruff → ansible-lint → dry-run → plan → (lab) apply → verify → archive reports. No secrets in logs or artifacts.
+Jenkins automation pipeline: ruff → mypy → unit → ansible-lint (offline, required) → optional read-only preflight → plan → `ensure --dry-run` → (lab) apply → wait → verify → archive reports. No secrets in logs or artifacts. See [jenkins/README.md](../../jenkins/README.md#automation-lab-pipeline-jenkinsfileautomation-lab).
 
 ---
 

@@ -25,8 +25,10 @@ CLI workflow (`--environment` is `vmware` or `aws`; global flags may go before o
 
 ```powershell
 platform-automate doctor
+platform-automate --timeout 10 kubernetes preflight
 platform-automate platform inventory --environment vmware
-platform-automate platform plan --dry-run
+platform-automate platform plan
+platform-automate kubernetes ensure --dry-run
 # DANGEROUS without review — requires confirm; lab namespace only:
 platform-automate platform reconcile --confirm --environment vmware
 platform-automate platform verify
@@ -34,6 +36,19 @@ platform-automate report
 ```
 
 `kubernetes ensure`, `kubernetes delete` and `platform apply`/`reconcile` refuse to mutate without `--confirm` (or run as a preview with `--dry-run`). `ansible --playbook ...` requires `--check` or `--confirm`.
+
+**Dry-run is not offline.** What each command touches:
+
+| Command | Kubernetes API | Writes |
+|---------|----------------|--------|
+| `doctor` | None (reads the local kubeconfig file only) | None |
+| `kubernetes preflight` | `GET /version`, read namespace `automation-lab` | None |
+| `platform plan` (with or without `--dry-run`) | List pods in `automation-lab` | None |
+| `kubernetes ensure --dry-run` | Read ConfigMap, Deployment and Service to compute would-create / would-update | None, even when a read fails |
+| `kubernetes ensure` without `--confirm` | None (refused before connecting, exit 3) | None |
+| `kubernetes ensure --confirm` | Read, then create/patch in `automation-lab` | Yes |
+
+Every API call is bounded by `--timeout` (connect ≤ 10 s, no retries). An unreachable API exits 5 or 6 with a message pointing at `kubernetes preflight`; it never hangs or exits 0. `platform plan` reports RBAC/HTTP errors in its output but exits non-zero on connectivity failures. See [kubernetes-api-failure](../runbooks/kubernetes-api-failure.md#connectivity-timeouts).
 
 ---
 
@@ -124,7 +139,7 @@ ansible lab -i inventory/hosts.yml -m ansible.builtin.ping
 ansible lab -i inventory/hosts.yml -m ansible.builtin.setup
 ansible-playbook -i inventory/hosts.yml playbooks/lab_validate.yml --syntax-check
 ansible-playbook -i inventory/hosts.yml playbooks/lab_validate.yml --check --diff
-ansible-lint
+ansible-lint --offline playbooks   # uses .ansible-lint; needs the collections installed above
 ```
 
 **Apply (lab localhost only):**
@@ -159,14 +174,18 @@ Promotion commits for app digests are **Jenkins-owned**. Manual overlay digest e
 
 ## Exit code quick map
 
+From `automation/python/src/platform_automation/errors.py`:
+
 | Code | Meaning |
 |------|---------|
 | 0 | OK / verify PASS |
-| 2 | Config/CLI validation |
-| 3 | Auth/RBAC/IAM |
-| 4 | Verify FAIL |
-| 5 | Partial failure |
-| 124 | Timeout |
+| 1 | Other automation error |
+| 2 | Configuration (bad config file, invalid timeout) |
+| 3 | Validation (namespace outside allow-list, missing `--confirm`) |
+| 4 | Command failed / `platform verify` FAIL / Ansible rc ≠ 0 |
+| 5 | API error, including Kubernetes API unreachable |
+| 6 | Timeout (API did not respond, `kubernetes wait` not Ready) |
+| 7 | Authentication/authorization (kubeconfig, 401/403, AWS credentials) |
 
 ---
 
