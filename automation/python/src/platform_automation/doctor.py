@@ -44,7 +44,7 @@ def run_doctor(settings: Settings) -> dict[str, Any]:
     except Exception as exc:  # noqa: BLE001
         python_imports["ansible_runner"] = f"UNAVAILABLE ({exc.__class__.__name__})"
 
-    kube = {"status": "SKIPPED"}
+    kube: dict[str, Any] = {"status": "SKIPPED"}
     try:
         from platform_automation.kubernetes.client import get_current_context, list_context_names
 
