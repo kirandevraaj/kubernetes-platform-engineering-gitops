@@ -1,0 +1,12 @@
+# ansible-lint config for the Section 24 lab. Run from automation/ansible after
+# installing the pinned collections:
+#   ansible-galaxy collection install -r collections/requirements.yml -p collections
+#   ansible-lint --offline playbooks
+# Jenkins (jenkins/Jenkinsfile.automation-lab) and GitHub Actions run exactly this.
+
+offline: true
+
+# Reported as warnings, not hidden: the lesson playbooks deliberately share
+# automation/ansible/files and automation/ansible/templates through ../ paths.
+warn_list:
+  - no-relative-paths

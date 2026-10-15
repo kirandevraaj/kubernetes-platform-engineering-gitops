@@ -34,7 +34,8 @@
         content: "delegation demo completed on localhost\n"
         mode: "0644"
 
-    - name: Optional read-only ping to VMware workers (skipped if empty group)
+    # Best-effort reachability demo: an absent or down worker must not fail the lesson.
+    - name: Optional read-only ping to VMware workers (skipped if empty group)  # noqa: ignore-errors
       ansible.builtin.ping:
       delegate_to: "{{ item }}"
       loop: "{{ groups['vmware_workers'] | default([]) }}"

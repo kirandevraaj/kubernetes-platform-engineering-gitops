@@ -13,9 +13,9 @@ from platform_automation import __version__
 from platform_automation.config import load_settings
 from platform_automation.controller import PlatformController
 from platform_automation.doctor import run_doctor
-from platform_automation.errors import AutomationError, exit_code_for
+from platform_automation.errors import AutomationError, CommandError, exit_code_for
 from platform_automation.logging import setup_logging
-from platform_automation.validation import require_confirm
+from platform_automation.validation import require_confirm, require_namespace
 
 
 def _print(data: Any) -> None:
@@ -73,6 +73,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     k = sub.add_parser("kubernetes", help="Kubernetes operations")
     k_sub = k.add_subparsers(dest="k_command", required=True)
+    leaf(
+        k_sub,
+        "preflight",
+        help="Read-only: bounded API reachability + namespace read check (no writes)",
+    )
     leaf(k_sub, "nodes")
     leaf(k_sub, "namespaces")
     pods = leaf(k_sub, "pods")
@@ -177,7 +182,7 @@ def _settings_from_args(args: argparse.Namespace):
 def _k8s_facade(settings):
     from platform_automation.kubernetes.client import KubernetesFacade
 
-    return KubernetesFacade(context=settings.kube_context())
+    return KubernetesFacade(context=settings.kube_context(), request_timeout=settings.timeout)
 
 
 def _aws_facade(settings):
@@ -204,8 +209,14 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "kubernetes":
             if args.k_command == "ensure" and not settings.dry_run:
                 require_confirm(settings.confirm, "kubernetes ensure")
+            if args.k_command == "preflight":
+                require_namespace(settings.namespace)
             facade = _k8s_facade(settings)
-            if args.k_command == "nodes":
+            if args.k_command == "preflight":
+                payload = facade.preflight(settings.namespace)
+                payload["context"] = settings.kube_context()
+                _print(payload)
+            elif args.k_command == "nodes":
                 _print(facade.list_nodes())
             elif args.k_command == "namespaces":
                 _print(facade.list_namespaces())
@@ -311,7 +322,10 @@ def main(argv: list[str] | None = None) -> int:
                 "verify": controller.verify,
                 "reconcile": controller.reconcile,
             }
-            _print(dispatch[args.p_command]())
+            result = dispatch[args.p_command]()
+            _print(result)
+            if args.p_command == "verify" and result.get("status") != "PASS":
+                return CommandError.exit_code
             return 0
 
         if args.command == "report":

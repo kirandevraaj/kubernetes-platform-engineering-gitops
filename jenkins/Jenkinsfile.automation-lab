@@ -1,7 +1,14 @@
 // Lab-only automation pipeline. Does NOT replace jenkins/Jenkinsfile.
 // Credentials remain in Jenkins credential store — never in Git.
-// Scope: lint/unit/dry-run/plan against automation-lab only.
 // Jenkins must NOT kubectl-apply production app desired state (GitOps boundary).
+//
+// Every check is required: a failing command or a missing tool fails the build.
+// Nothing is wrapped in `|| true`. jenkins/scripts/run_check.py prints
+// PASSED / FAILED / MISSING REQUIRED TOOL per check and appends it to
+// automation/reports/check-summary.txt (archived).
+//
+// Offline by default. Only the parameter-gated stages contact the automation-lab
+// Kubernetes API, and every API call is bounded by --timeout. See jenkins/README.md.
 
 pipeline {
     agent { label 'linux && docker' }
@@ -9,11 +16,28 @@ pipeline {
     options {
         disableConcurrentBuilds()
         timestamps()
+        timeout(time: 45, unit: 'MINUTES')
+    }
+
+    parameters {
+        booleanParam(
+            name: 'RUN_CLUSTER_DRY_RUN',
+            defaultValue: false,
+            description: 'Read-only: bounded preflight, plan and kubernetes ensure --dry-run against the automation-lab Kubernetes API. Needs a kubeconfig on the agent; fails the build if the API is unreachable.'
+        )
+        booleanParam(
+            name: 'RUN_LIVE_LAB',
+            defaultValue: false,
+            description: 'Mutate automation-lab only (platform apply --confirm). Always runs the cluster dry-run first.'
+        )
     }
 
     environment {
         VENV = 'automation/python/.venv'
         REPORT_DIR = 'automation/reports'
+        CHECK_SUMMARY = 'automation/reports/check-summary.txt'
+        INSTALL_HINT = 'pip install -e "automation/python[dev]" (pinned in automation/python/pyproject.toml)'
+        KUBE_TIMEOUT_SECONDS = '20'
     }
 
     stages {
@@ -23,14 +47,36 @@ pipeline {
             }
         }
 
+        stage('Agent toolchain preflight') {
+            steps {
+                sh '''
+                    set -eu
+                    mkdir -p "${REPORT_DIR}"
+                    rm -f "${CHECK_SUMMARY}"
+                    for tool in python3 git; do
+                      if ! command -v "$tool" >/dev/null 2>&1; then
+                        echo "MISSING REQUIRED TOOL: $tool. Add it to jenkins/runtime/agent/Dockerfile."
+                        exit 1
+                      fi
+                    done
+                    python3 -c 'import sys; v = sys.version.split()[0]; print("python3", v); sys.exit(0 if sys.version_info >= (3, 12) else "MISSING REQUIRED TOOL: Python >= 3.12 is required by automation/python; agent has " + v)'
+                    if ! python3 -c 'import ensurepip, venv' >/dev/null 2>&1; then
+                      echo "MISSING REQUIRED TOOL: python3-venv. Add it to jenkins/runtime/agent/Dockerfile."
+                      exit 1
+                    fi
+                '''
+            }
+        }
+
         stage('Python venv + install') {
             steps {
                 sh '''
                     set -eu
-                    python3 -m venv "${VENV}"
+                    python3 -m venv --clear "${VENV}"
                     . "${VENV}/bin/activate"
-                    pip install -U pip
-                    pip install -e "automation/python[dev]"
+                    python -m pip install --disable-pip-version-check -U pip
+                    python -m pip install --disable-pip-version-check -e "automation/python[dev]"
+                    platform-automate version
                 '''
             }
         }
@@ -40,17 +86,36 @@ pipeline {
                 sh '''
                     set -eu
                     . "${VENV}/bin/activate"
-                    ruff check automation/python/src automation/python/tests || true
+                    python jenkins/scripts/run_check.py --name ruff --required \
+                      --cwd automation/python --summary-file "${CHECK_SUMMARY}" \
+                      --install-hint "${INSTALL_HINT}" \
+                      -- ruff check src tests
                 '''
             }
         }
 
-        stage('Unit tests') {
+        stage('Mypy') {
             steps {
                 sh '''
                     set -eu
                     . "${VENV}/bin/activate"
-                    pytest automation/python/tests/unit -q --junitxml=automation/reports/pytest-unit.xml
+                    python jenkins/scripts/run_check.py --name mypy --required \
+                      --cwd automation/python --summary-file "${CHECK_SUMMARY}" \
+                      --install-hint "${INSTALL_HINT}" \
+                      -- mypy src
+                '''
+            }
+        }
+
+        stage('Unit tests (offline)') {
+            steps {
+                sh '''
+                    set -eu
+                    . "${VENV}/bin/activate"
+                    python jenkins/scripts/run_check.py --name pytest --required \
+                      --cwd automation/python --summary-file "${CHECK_SUMMARY}" \
+                      --install-hint "${INSTALL_HINT}" \
+                      -- pytest -q --junitxml=../reports/pytest-unit.xml
                 '''
             }
         }
@@ -60,49 +125,81 @@ pipeline {
                 sh '''
                     set -eu
                     . "${VENV}/bin/activate"
-                    if command -v ansible-lint >/dev/null 2>&1; then
-                      ansible-lint automation/ansible/playbooks || true
-                    else
-                      echo "ansible-lint not available; skipping"
-                    fi
+                    # Pinned collections must be installed for syntax checks to resolve
+                    # kubernetes.core / amazon.aws modules (needs Ansible Galaxy access).
+                    python jenkins/scripts/run_check.py --name ansible-collections --required \
+                      --cwd automation/ansible --timeout 600 --summary-file "${CHECK_SUMMARY}" \
+                      --install-hint "${INSTALL_HINT}" \
+                      -- ansible-galaxy collection install -r collections/requirements.yml -p collections
+                    python jenkins/scripts/run_check.py --name ansible-lint --required \
+                      --cwd automation/ansible --timeout 600 --summary-file "${CHECK_SUMMARY}" \
+                      --install-hint "${INSTALL_HINT}" \
+                      -- ansible-lint --offline playbooks
                 '''
             }
         }
 
-        stage('Doctor + dry-run plan') {
+        stage('Offline CLI checks') {
             steps {
                 sh '''
                     set -eu
                     . "${VENV}/bin/activate"
+                    # doctor reads the local kubeconfig file (if any); it never calls a Kubernetes API.
                     platform-automate doctor
-                    platform-automate platform plan
-                    platform-automate kubernetes ensure --dry-run || true
+                '''
+            }
+        }
+
+        stage('Cluster dry-run (automation-lab API, read-only)') {
+            when {
+                expression { return params.RUN_CLUSTER_DRY_RUN || params.RUN_LIVE_LAB }
+            }
+            options {
+                timeout(time: 5, unit: 'MINUTES')
+            }
+            steps {
+                sh '''
+                    set -eu
+                    . "${VENV}/bin/activate"
+                    # Needs a kubeconfig on the agent (KUBECONFIG or ~/.kube/config) whose
+                    # context reaches automation-lab. Reads only; each API call is bounded.
+                    platform-automate --timeout "${KUBE_TIMEOUT_SECONDS}" kubernetes preflight
+                    platform-automate --timeout "${KUBE_TIMEOUT_SECONDS}" platform plan
+                    platform-automate --timeout "${KUBE_TIMEOUT_SECONDS}" kubernetes ensure --dry-run
                 '''
             }
         }
 
         stage('Live lab (gated)') {
             when {
-                expression { return params.RUN_LIVE_LAB == true }
+                expression { return params.RUN_LIVE_LAB }
+            }
+            options {
+                timeout(time: 10, unit: 'MINUTES')
             }
             steps {
                 sh '''
                     set -eu
                     . "${VENV}/bin/activate"
-                    platform-automate platform apply --confirm
-                    platform-automate platform verify
+                    platform-automate --timeout "${KUBE_TIMEOUT_SECONDS}" platform apply --confirm
+                    platform-automate --timeout 180 kubernetes wait
+                    platform-automate --timeout "${KUBE_TIMEOUT_SECONDS}" platform verify
                     platform-automate report
                 '''
             }
         }
     }
 
-    parameters {
-        booleanParam(name: 'RUN_LIVE_LAB', defaultValue: false, description: 'Mutate automation-lab only')
-    }
-
     post {
         always {
+            script {
+                if (fileExists(env.CHECK_SUMMARY)) {
+                    echo "Check summary:\n${readFile(env.CHECK_SUMMARY)}"
+                }
+                if (!(params.RUN_CLUSTER_DRY_RUN || params.RUN_LIVE_LAB)) {
+                    echo 'Cluster-backed stages were SKIPPED (RUN_CLUSTER_DRY_RUN=false, RUN_LIVE_LAB=false); no Kubernetes API was contacted.'
+                }
+            }
             archiveArtifacts artifacts: 'automation/reports/**', allowEmptyArchive: true
             junit allowEmptyResults: true, testResults: 'automation/reports/pytest-unit.xml'
         }

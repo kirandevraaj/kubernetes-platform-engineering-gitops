@@ -1,5 +1,6 @@
 ---
 galaxy_info:
+  author: kirandevraaj
   role_name: platform_node
   description: Read-only node facts role for Section 24 Ansible lab
   license: MIT
