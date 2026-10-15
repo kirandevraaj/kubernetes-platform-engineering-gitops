@@ -14,25 +14,26 @@ cd automation\python
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install -r requirements.txt
-python -c "import kubernetes, boto3, ansible_runner; print('ok')"
+pip install -e ".[dev]"
+python -c "import kubernetes, boto3; print('ok')"
 pytest -q
-ruff check .
-ruff format --check .
-mypy platform_automate
+ruff check src tests
+mypy src
 ```
 
-Doctor-style (once CLI exists):
+CLI workflow (`--environment` is `vmware` or `aws`; global flags may go before or after the subcommand):
 
 ```powershell
 platform-automate doctor
-platform-automate inventory --environment lab
-platform-automate plan --dry-run
+platform-automate platform inventory --environment vmware
+platform-automate platform plan --dry-run
 # DANGEROUS without review — requires confirm; lab namespace only:
-platform-automate reconcile --confirm --environment lab
-platform-automate verify
+platform-automate platform reconcile --confirm --environment vmware
+platform-automate platform verify
 platform-automate report
 ```
+
+`kubernetes ensure`, `kubernetes delete` and `platform apply`/`reconcile` refuse to mutate without `--confirm` (or run as a preview with `--dry-run`). `ansible --playbook ...` requires `--check` or `--confirm`.
 
 ---
 

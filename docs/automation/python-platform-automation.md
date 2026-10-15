@@ -73,11 +73,11 @@ Expose a single console narrative:
 
 ```text
 platform-automate doctor
-platform-automate inventory
-platform-automate validate
-platform-automate plan
-platform-automate reconcile --confirm
-platform-automate verify
+platform-automate platform inventory
+platform-automate platform validate
+platform-automate platform plan
+platform-automate platform reconcile --confirm
+platform-automate platform verify
 platform-automate report
 ```
 

@@ -160,13 +160,19 @@ Details: [docs/portfolio/known-limitations.md](docs/portfolio/known-limitations.
 ## Repository Structure
 
 ```text
-app/           FastAPI application
-automation/    Python + Ansible
-jenkins/       CI/CD
-kubernetes/    workloads, overlays, GitOps apps
-terraform/     AWS infrastructure
-docs/          architecture, ADRs, ops, runbooks, portfolio
+app/            FastAPI application
+automation/     Python + Ansible
+jenkins/        CI/CD
+kubernetes/     workloads, Kustomize overlays, Argo CD lab manifests
+gitops/         Argo CD Applications, AppProjects, ApplicationSets
+observability/  kube-prometheus-stack values and Grafana dashboards
+terraform/      AWS infrastructure
+tools/          isolated AWS/Terraform/kubectl workstation image
+docs/           architecture, ADRs, ops, runbooks, portfolio
+.github/        GitHub Actions static validation (no cluster or AWS access)
 ```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs offline checks only: app and automation unit tests, ruff and mypy, `terraform fmt -check` and `terraform validate` with `-backend=false`, `kustomize build` of every Kustomize root, and a relative-link check over tracked Markdown. It never applies Terraform, touches a cluster or pushes images; Jenkins remains the image build and GitOps promotion path.
 
 ---
 
