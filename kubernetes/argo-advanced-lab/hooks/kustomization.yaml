@@ -2,5 +2,5 @@
 kind: Kustomization
 namespace: argo-advanced-lab
 resources:
-  - ../waves/resources.yaml
+  - ../waves
   - jobs.yaml
