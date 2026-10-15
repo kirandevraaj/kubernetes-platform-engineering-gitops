@@ -11,4 +11,4 @@ def translate_botocore_error(exc: BaseException) -> Exception:
     message = str(exc)
     if code in {"UnrecognizedClientException", "InvalidClientTokenId", "ExpiredToken"}:
         return AuthenticationError(message)
-    return APIError(message, details={"code": code})
+    return APIError(f"AWS error ({code}): {message}" if code else message)

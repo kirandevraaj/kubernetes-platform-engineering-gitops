@@ -1,0 +1,114 @@
+# Offline validation only. No AWS credentials, kubeconfig, registry login or
+# cluster access is available or needed here; Jenkins owns image build and
+# GitOps promotion, Argo CD owns deployment.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: App tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: app/requirements-dev.txt
+      - run: python -m pip install -r app/requirements-dev.txt
+      - run: python -m pytest app/tests -q
+      - name: APP_VERSION is an immutable semver tag (used as the Docker Hub tag by Jenkins)
+        run: |
+          python - <<'PY'
+          import ast, re
+          from pathlib import Path
+          tree = ast.parse(Path("app/src/__init__.py").read_text(encoding="utf-8"))
+          version = next(
+              ast.literal_eval(node.value)
+              for node in tree.body
+              if isinstance(node, ast.Assign)
+              and any(getattr(t, "id", None) == "APP_VERSION" for t in node.targets)
+          )
+          if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+              raise SystemExit(f"APP_VERSION {version!r} is not MAJOR.MINOR.PATCH")
+          print(f"APP_VERSION={version}")
+          PY
+
+  automation:
+    name: Automation tests and lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation/python
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: automation/python/pyproject.toml
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest -q
+      - run: ruff check src tests
+      - run: mypy src
+
+  terraform:
+    name: Terraform fmt and validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/aws
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1.16.0"
+          terraform_wrapper: false
+      - run: terraform fmt -check -recursive -diff
+      - run: terraform init -backend=false -input=false -lockfile=readonly
+      - run: terraform validate
+
+  kustomize:
+    name: Kustomize builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # argo-advanced-lab/syncfail-demo renders cleanly; its failure is
+      # intentional at Argo CD sync time, not at build time.
+      - name: Build every Kustomize root
+        run: |
+          set -euo pipefail
+          kubectl version --client
+          status=0
+          while IFS= read -r file; do
+            dir="$(dirname "$file")"
+            if kubectl kustomize "$dir" > /dev/null; then
+              echo "ok   $dir"
+            else
+              echo "FAIL $dir"
+              status=1
+            fi
+          done < <(git ls-files '*kustomization.yaml' '*kustomization.yml' '*Kustomization')
+          exit "$status"
+
+  docs:
+    name: Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python .github/scripts/check_markdown_links.py

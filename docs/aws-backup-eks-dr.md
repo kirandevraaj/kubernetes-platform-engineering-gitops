@@ -94,7 +94,7 @@ AWS Backup restore workflows for EKS generally support:
 
 ## 5. Inventory findings (Section 25 — assessment time)
 
-Evidence collected via [`scripts/_dr_inventory.sh`](../scripts/_dr_inventory.sh) pattern (run inside `platform-aws-tools`):
+Evidence collected with a local, uncommitted inventory script (`scripts/_dr_inventory.sh` pattern) run inside `platform-aws-tools`:
 
 | Check | Result |
 |-------|--------|

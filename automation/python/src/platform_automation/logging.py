@@ -129,7 +129,7 @@ class OperationLogger:
         )
         return self
 
-    def __exit__(self, exc_type, exc, tb) -> None:  # type: ignore[no-untyped-def]
+    def __exit__(self, exc_type, exc, tb) -> None:
         duration = round(time.perf_counter() - self._start, 4)
         if exc is not None:
             self.result = "error"

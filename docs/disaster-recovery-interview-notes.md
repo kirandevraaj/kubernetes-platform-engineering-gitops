@@ -240,7 +240,7 @@ AWS account/IAM, Terraform state location, **GitHub**, **Docker Hub**, workstati
 
 ## 34. How do you automate DR?
 
-Candidates: scripted **`platform-automate dr verify`** (planned), inventory checks (`scripts/_dr_inventory.sh`), Terraform plan in CI, Argo health checks, snapshot age alarms, AWS Backup on-demand jobs. Automation must respect **confirm gates** and **allow-lists**—same discipline as Section 24 automation. Full auto-rebuild **not** implemented.
+Candidates: scripted **`platform-automate dr verify`** (implemented as an aggregate of operator-supplied pass/fail results; it does not query the cluster), inventory checks (a local `scripts/_dr_inventory.sh` helper, not committed), Terraform plan in CI, Argo health checks, snapshot age alarms, AWS Backup on-demand jobs. Automation must respect **confirm gates** and **allow-lists**—same discipline as Section 24 automation. Full auto-rebuild **not** implemented.
 
 ---
 

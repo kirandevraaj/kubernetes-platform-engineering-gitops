@@ -2,8 +2,8 @@
 
 **Date:** 2026-09-26  
 **Region:** ap-south-1  
-**Account:** 202191872326  
-**Identity:** `arn:aws:iam::202191872326:user/kiran-admin`  
+**Account:** lab AWS account (12-digit ID redacted)  
+**Identity:** IAM user `kiran-admin` in that account (ARN redacted)  
 **Git HEAD at teardown:** `7c8e84d` (portfolio freeze; this doc may be a follow-up commit)
 
 ## Destroyed (Project 1)

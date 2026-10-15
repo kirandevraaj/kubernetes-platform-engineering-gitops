@@ -55,7 +55,6 @@ def run_command(
             shell=False,
         )
     except subprocess.TimeoutExpired as exc:
-        duration = time.monotonic() - started
         raise CommandError(
             f"command timed out after {timeout}s: {' '.join(argv)}",
             returncode=None,

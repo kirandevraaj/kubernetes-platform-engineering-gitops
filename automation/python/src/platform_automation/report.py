@@ -7,7 +7,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from platform_automation.observability import DEFAULT_REPORT_DIR, Observability
+from platform_automation.errors import ValidationError
+
+DEFAULT_REPORT_DIR = "automation/reports"
 
 
 def build_report(
@@ -30,8 +32,13 @@ def write_report(
     *,
     report_dir: Path | str | None = None,
 ) -> Path:
-    obs = Observability(report_dir=report_dir or DEFAULT_REPORT_DIR)
-    return obs.write_report(name, payload)
+    if not name or Path(name).name != name or name in {".", ".."}:
+        raise ValidationError(f"invalid report name: {name!r}")
+    path = Path(report_dir or DEFAULT_REPORT_DIR)
+    path.mkdir(parents=True, exist_ok=True)
+    out = path / f"{name}.json"
+    out.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+    return out
 
 
 def format_text_report(payload: dict[str, Any]) -> str:
