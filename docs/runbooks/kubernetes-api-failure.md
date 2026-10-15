@@ -43,6 +43,27 @@ Python pin check: `pip show kubernetes` → `32.0.1`.
 | Timeout / not Ready | verify UNKNOWN | Inspect pods/events; fix image/pull/limits; then re-verify |
 | Client skew myths | odd decode errors | Stay on `32.0.1`; Core/Apps still OK on 1.36 |
 
+### Connectivity timeouts
+
+`platform-automate` bounds every Kubernetes API call: connect timeout `min(--timeout, 10)` seconds, read timeout `--timeout` seconds (default 30), and no urllib3 retries. An API server that is down, filtered or on the wrong network fails fast instead of hanging:
+
+| Message | Exit | Meaning |
+|---------|------|---------|
+| `Kubernetes API <host> did not respond within Xs connect / Ys read` | 6 | Packets go nowhere: VPN down, VM stopped, firewall drop, wrong IP |
+| `Kubernetes API <host> is unreachable: <reason>` | 5 | Connection refused, DNS failure or TLS error |
+| `... denied (HTTP 401)` / `(HTTP 403)` from preflight | 7 | Credentials or RBAC; see the table above |
+| `failed to load kubeconfig ...` | 7 | No kubeconfig, or the requested `--context` does not exist |
+
+Repeat the same bounded, read-only check (`GET /version` plus a read of the namespace; no writes):
+
+```powershell
+platform-automate --context ckad-lab --timeout 10 kubernetes preflight
+kubectl config get-contexts
+kubectl --request-timeout=10s get --raw /version
+```
+
+Only after preflight returns `"status": "OK"` is it worth re-running `platform plan` or `kubernetes ensure --dry-run`.
+
 ---
 
 ## GitOps interaction

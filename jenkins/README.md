@@ -227,6 +227,74 @@ Git commit: local + aws overlay digest=<same> + version=<APP_VERSION>
         +--> Argo CD platform-lab-aws    → EKS
 ```
 
+### Why `jenkins/Jenkinsfile` still has `|| true`
+
+Each remaining `|| true` is followed by an explicit check or guards a step whose failure cannot hide a broken build:
+
+| Line pattern | Why it may not fail the stage |
+|---|---|
+| `docker rm -f "$name" ... \|\| true` (cleanup trap and pre-run) | The validation container may not exist yet; removing a missing container is not an error |
+| `docker logout ... \|\| true` (post `always`) | Idempotent logout after the push stage, including when login never happened |
+| `full="$(docker image inspect ... \|\| true)"` | An empty value is caught on the next line and fails the build (`Published digest missing`) |
+| `git diff -- ... \|\| true` | Informational diff output only |
+| `other="$(git diff --name-only \| grep -v ... \|\| true)"` | `grep -v` exits 1 when there are no unexpected files (the success case); a non-empty result fails the build |
+
+## Automation lab pipeline (`Jenkinsfile.automation-lab`)
+
+A separate, manually started job for the Python/Ansible automation in `automation/`. It has no `triggers` block, so it never runs on a commit. Only `platform-lab-ci` polls Git. A merge that changes no `app/**` path still starts a `platform-lab-ci` build on the next poll; **Detect Application Change** then skips build, push and promotion, and the build ends SUCCESS without touching Docker Hub or GitOps.
+
+This pipeline has been validated statically (unit tests parse every `platform-automate` command it runs and check its structure, see `automation/python/tests/unit/test_jenkins_automation_lab.py`) and the same lint commands run in GitHub Actions. It has not been run on a real Jenkins controller in this change.
+
+### Stages
+
+| Stage | Contacts | Fails the build when |
+|---|---|---|
+| Agent toolchain preflight | Nothing | `python3` or `git` missing, Python < 3.12, or `venv`/`ensurepip` missing (`MISSING REQUIRED TOOL`) |
+| Python venv + install | PyPI | Install of `automation/python[dev]` fails |
+| Ruff / Mypy / Unit tests (offline) | Nothing | Any lint error, type error or failing test |
+| Ansible lint | Ansible Galaxy (collection download) | Collection install fails or any `ansible-lint` violation |
+| Offline CLI checks | Nothing (`doctor` reads the local kubeconfig file only) | `doctor` crashes |
+| Cluster dry-run (parameter `RUN_CLUSTER_DRY_RUN`) | `automation-lab` Kubernetes API, **read-only** | API unreachable, timed out, unauthorized, or plan/dry-run errors |
+| Live lab (parameter `RUN_LIVE_LAB`) | `automation-lab` Kubernetes API, **writes** | Apply, wait, or verify fails |
+
+Both parameters default to `false`. With both off, the build log ends with `Cluster-backed stages were SKIPPED ... no Kubernetes API was contacted.`, so a green build never implies that cluster checks ran. `RUN_LIVE_LAB` also runs the cluster dry-run first, and `--confirm` appears only in the live stage.
+
+### Required checks and agent tools
+
+Every check is required. There is no `|| true`, `catchError` or `returnStatus`, and every `sh` block starts with `set -eu`. Each lint and test command runs through `jenkins/scripts/run_check.py`, which prints and appends one line per check to `automation/reports/check-summary.txt` (archived and echoed in `post`):
+
+| Status | Meaning | Build |
+|---|---|---|
+| `PASSED` | Command exited 0 | continues |
+| `FAILED` | Non-zero exit or the per-check timeout expired | fails |
+| `MISSING REQUIRED TOOL` | Executable not on `PATH`; the message names the install command | fails |
+| `SKIPPED (optional tool not installed) ... did NOT run` | Only for checks declared `--optional` | continues, visibly |
+
+No check is currently optional: `ruff`, `mypy`, `pytest`, `ansible-core` (for `ansible-galaxy`) and `ansible-lint` are pinned in the `dev` extra of `automation/python/pyproject.toml` and installed into the job's venv. The agent image only needs Python 3.12+ with `venv`, `pip` and `git` (see [Agent](#agent)); the pipeline does not upgrade any tool beyond those pins. `ansible-lint` runs from `automation/ansible` so `ansible.cfg` and `.ansible-lint` apply, after `ansible-galaxy` installs the pinned collections from `collections/requirements.yml`.
+
+### Dry-run guarantees
+
+- `kubernetes ensure --dry-run` and `platform plan` never create, update or delete anything, including when a read fails. They do **read** the Kubernetes API, so they are not offline.
+- `kubernetes preflight` is a bounded `GET /version` plus a read of the `automation-lab` namespace.
+- Every API call uses `--timeout` (stage value `KUBE_TIMEOUT_SECONDS=20`): connect ≤ 10 s, read ≤ 20 s, no urllib3 retries. The stage itself has a 5-minute Jenkins timeout as a backstop.
+- An unreachable API exits 5 (`is unreachable`) or 6 (`did not respond within ...`) and fails the stage; it never hangs or passes.
+- `platform verify` exits 4 when the demo pods are missing or not Ready.
+
+Tests covering these guarantees run offline against a local fake API server (`automation/python/tests/unit/test_kubernetes_dry_run.py`).
+
+### Cluster stage prerequisites
+
+The agent needs a kubeconfig (`KUBECONFIG` or `~/.kube/config` for the `jenkins` user) whose current context, or `--context`, reaches the `ckad-lab` API, plus RBAC to read and, for the live stage, write in `automation-lab`. The agent image does not include one; provide it through a Jenkins credential, never through Git.
+
+### Troubleshooting a connectivity timeout
+
+1. Read the first error line: `did not respond within 10s connect / 20s read` means packets are dropped (VM stopped, VPN or route missing, wrong server IP). `is unreachable: NewConnectionError` (or `NameResolutionError`) means the connection was refused or the name did not resolve. `failed to load kubeconfig` means the agent has no kubeconfig or context.
+2. From the agent container, repeat the read-only check: `platform-automate --timeout 10 kubernetes preflight` (add `--context <name>` if needed).
+3. Confirm the server address in the kubeconfig is reachable from the Docker Desktop network, not just from the Windows host.
+4. Re-run the job with `RUN_CLUSTER_DRY_RUN` only; leave `RUN_LIVE_LAB` off until preflight is `OK`.
+
+More detail: [kubernetes-api-failure runbook](../docs/runbooks/kubernetes-api-failure.md#connectivity-timeouts).
+
 ## Next digest-pinned application release
 
 After this hardening lands on `main`, the next application release should bump `APP_VERSION` under `app/` (for example to `0.1.5`), push an `app/**` commit, and let Jenkins publish the new tag, capture the digest, and promote both overlays. Do not bump the version until that release milestone starts. This milestone does not publish a new application version.

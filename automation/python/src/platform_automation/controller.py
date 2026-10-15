@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
+from kubernetes.client.rest import ApiException
+
 from platform_automation.config import Settings
 from platform_automation.errors import ValidationError
 from platform_automation.kubernetes.idempotent import ensure_demo_stack
@@ -59,10 +61,12 @@ class PlatformController:
         }
         actual: dict[str, Any] = {"pods": []}
         if self.k8s is not None:
+            # API errors (e.g. RBAC) are part of the plan; connectivity and
+            # timeout failures raise AutomationError so callers exit non-zero.
             try:
                 actual["pods"] = self.k8s.list_pods("automation-lab")
-            except Exception as exc:  # noqa: BLE001 — plan should not crash on missing ns
-                actual["error"] = str(exc)
+            except ApiException as exc:
+                actual["error"] = f"list pods failed: HTTP {exc.status} {exc.reason}"
         changes = ["ensure automation-lab demo stack (create or no-op)"]
         risks = ["mutations limited to automation-lab", "requires --confirm to apply"]
         return {"desired": desired, "actual": actual, "changes": changes, "risks": risks}

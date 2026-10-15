@@ -1,5 +1,6 @@
 ---
 galaxy_info:
+  author: kirandevraaj
   role_name: platform_common
   description: Disposable localhost baseline markers for Section 24 Ansible lab
   license: MIT

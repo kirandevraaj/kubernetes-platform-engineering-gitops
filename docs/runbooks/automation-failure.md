@@ -7,7 +7,7 @@
 
 ## Symptoms
 
-- Non-zero exit (`2` config, `3` auth, `4` verify FAIL, `5` partial, `124` timeout)
+- Non-zero exit (`2` config, `3` validation or missing `--confirm`, `4` command or verify FAIL, `5` API error or unreachable, `6` timeout, `7` auth); see the [exit code map](../automation/automation-command-reference.md#exit-code-quick-map)
 - Jenkins automation stage red
 - Report shows phase stuck (discover/plan/apply/verify)
 - Some adapters OK, others failed
@@ -33,8 +33,9 @@
 | Bad AWS profile | `AccessDenied` / `ExpiredToken` | Fix profile/region; sts identity |
 | Missing pin/venv | ImportError | Recreate `.venv` from requirements |
 | Ansible play failed | Runner failed events | [ansible-failure](./ansible-failure.md) |
-| Verify timeout | UNKNOWN / 124 | Increase budget or fix underlying Ready |
-| Partial host failure | exit 5 | Fix failed targets; re-run idempotently |
+| Kubernetes API unreachable or silent | exit 5 (`unreachable`) / exit 6 (`did not respond`) | [kubernetes-api-failure](./kubernetes-api-failure.md#connectivity-timeouts) |
+| Wait/verify not Ready | exit 6 from `kubernetes wait`; exit 4 from `platform verify` | Increase `--timeout` or fix underlying Ready |
+| Partial host failure | non-zero Ansible rc (exit 4) | Fix failed targets; re-run idempotently |
 
 ---
 

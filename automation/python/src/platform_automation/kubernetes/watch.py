@@ -9,7 +9,7 @@ from kubernetes import watch
 from kubernetes.client.rest import ApiException
 
 from platform_automation.errors import APIError, AutomationTimeoutError
-from platform_automation.kubernetes.client import KubernetesFacade
+from platform_automation.kubernetes.client import MAX_CONNECT_TIMEOUT, KubernetesFacade
 
 
 def watch_deployment_ready(
@@ -28,6 +28,8 @@ def watch_deployment_ready(
             namespace=namespace,
             field_selector=f"metadata.name={name}",
             timeout_seconds=int(timeout),
+            # Read timeout must outlast the server-side watch window.
+            _request_timeout=(MAX_CONNECT_TIMEOUT, timeout + 10),
         ):
             obj = event["object"]
             desired = obj.spec.replicas or 0

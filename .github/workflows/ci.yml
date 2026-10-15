@@ -61,8 +61,27 @@ jobs:
           cache-dependency-path: automation/python/pyproject.toml
       - run: python -m pip install -e ".[dev]"
       - run: python -m pytest -q
-      - run: ruff check src tests
+      - run: ruff check src tests ../../jenkins/scripts
       - run: mypy src
+
+  ansible-lint:
+    name: Ansible lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: automation/python/pyproject.toml
+      - run: python -m pip install -e "automation/python[dev]"
+      # Same commands as the Jenkinsfile.automation-lab "Ansible lint" stage.
+      - name: Install pinned collections
+        working-directory: automation/ansible
+        run: ansible-galaxy collection install -r collections/requirements.yml -p collections
+      - name: ansible-lint
+        working-directory: automation/ansible
+        run: ansible-lint --offline playbooks
 
   terraform:
     name: Terraform fmt and validate
