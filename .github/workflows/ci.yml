@@ -64,6 +64,29 @@ jobs:
       - run: ruff check src tests
       - run: mypy src
 
+  ansible-lint-baseline:
+    name: TEMP ansible-lint baseline (measurement only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: python -m pip install -e "automation/python[dev]"
+      - name: Measure (records exit codes; replaced before review)
+        run: |
+          set +e
+          ansible-lint --version
+          echo "=== A: repo root, as Jenkinsfile.automation-lab runs it"
+          ansible-lint automation/ansible/playbooks; echo "RC_A=$?"
+          echo "=== B: from automation/ansible (picks up ansible.cfg)"
+          (cd automation/ansible && ansible-lint playbooks); echo "RC_B=$?"
+          echo "=== C: B with --offline"
+          (cd automation/ansible && ansible-lint --offline playbooks); echo "RC_C=$?"
+          echo "=== D: syntax-check only"
+          (cd automation/ansible && for p in playbooks/*.yml; do ansible-playbook -i inventory/hosts.yml --syntax-check "$p" >/dev/null 2>&1; echo "$p rc=$?"; done)
+          exit 0
+
   terraform:
     name: Terraform fmt and validate
     runs-on: ubuntu-latest
